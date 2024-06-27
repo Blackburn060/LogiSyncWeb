@@ -18,6 +18,14 @@ RUN npm run build
 
 # Use uma imagem de servidor HTTP para servir o build
 FROM nginx:alpine
+
+# Remova a configuração padrão do Nginx
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copie a configuração personalizada do Nginx
+COPY nginx.conf /etc/nginx/conf.d
+
+# Copie os arquivos do build do React para o diretório de servir do Nginx
 COPY --from=0 /app/build /usr/share/nginx/html
 
 # Exponha a porta

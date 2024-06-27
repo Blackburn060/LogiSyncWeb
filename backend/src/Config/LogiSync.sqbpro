@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="D:/FACULDADE/2024/TFC2/src/Config/LogiSync.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="125"/><column_width id="3" width="6313"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,16:maincadastrousuarios"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1">CREATE TABLE IF NOT EXISTS cadastrousuarios (
+    CodigoUsuario INTEGER PRIMARY KEY AUTOINCREMENT,
+    NomeCompleto TEXT NOT NULL,
+    Email TEXT NOT NULL,
+    Senha TEXT NOT NULL,
+    TipoUsuario TEXT NOT NULL,
+    SituacaoUsuario INTEGER NOT NULL,
+    NumeroCelular TEXT,
+    DataGeracao TEXT,
+    UsuarioAlteracao INTEGER,
+    DataAlteracao TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cadastroveiculo (
+    CodigoVeiculo INTEGER PRIMARY KEY AUTOINCREMENT,
+    CodigoUsuario INTEGER,
+    NomeVeiculo TEXT,
+    Placa TEXT,
+    Marca TEXT,
+    ModeloTipo TEXT,
+    AnoFabricacao INTEGER,
+    Cor TEXT,
+    CapacidadeCarga REAL,
+    SituacaoVeiculo INTEGER,
+    Bloqueado INTEGER,
+    UsuarioAlteracao INTEGER,
+    DataAlteracao TEXT,
+    FOREIGN KEY (CodigoUsuario) REFERENCES cadastrousuarios (CodigoUsuario)
+);
+
+CREATE TABLE IF NOT EXISTS cadastroprodutos (
+    CodigoProduto INTEGER PRIMARY KEY AUTOINCREMENT,
+    DescricaoProduto TEXT,
+    Categoria TEXT,
+    SituacaoProduto INTEGER,
+    DataGeracao TEXT,
+    UsuarioAlteracao INTEGER,
+    DataAlteracao TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cadastrotransportadora (
+    CodigoTransportadora INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nome TEXT,
+    NomeFantasia TEXT,
+    CNPJ TEXT,
+    SituacaoTransportadora INTEGER,
+    DataGeracao TEXT,
+    UsuarioAlteracao INTEGER,
+    DataAlteracao TEXT
+);
+
+CREATE TABLE IF NOT EXISTS agendamentos (
+    CodigoAgendamento INTEGER PRIMARY KEY AUTOINCREMENT,
+    CodigoUsuario INTEGER,
+    CodigoVeiculo INTEGER,
+    CodigoProduto INTEGER,
+    CodigoTransportadora INTEGER,
+    CodigoSafra INTEGER,
+    CodigoHorario INTEGER,
+    ArquivoAnexado BLOB,
+    Observacao TEXT,
+    DataAgendamento TEXT,
+    HoraAgendamento TEXT,
+    UsuarioAprovacao INTEGER,
+    MotivoRecusa TEXT,
+    QuantidadeAgendamento INTEGER,
+    SituacaoAgendamento TEXT,
+    TipoAgendamento TEXT,
+    FOREIGN KEY (CodigoUsuario) REFERENCES cadastrousuarios (CodigoUsuario),
+    FOREIGN KEY (CodigoVeiculo) REFERENCES cadastroveiculo (CodigoVeiculo),
+    FOREIGN KEY (CodigoProduto) REFERENCES cadastroprodutos (CodigoProduto),
+    FOREIGN KEY (CodigoTransportadora) REFERENCES cadastrotransportadora (CodigoTransportadora)
+);
+
+
+</sql><current_tab id="0"/></tab_sql></sqlb_project>

@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3001
 
 # Inicie o servidor Node.js
-CMD ["node", "app.js"]
+CMD ["node", "src/App.js"]

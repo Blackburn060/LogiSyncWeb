@@ -1,16 +1,14 @@
-version: '3.8'
-
 services:
   frontend:
     build:
       context: ./frontend
     ports:
       - "3000:80"
-  
+
   backend:
     build:
       context: ./backend
     ports:
       - "3001:3001"
-    volumes:
-      - ./backend:/app
+    environment:
+      - NODE_ENV=production
