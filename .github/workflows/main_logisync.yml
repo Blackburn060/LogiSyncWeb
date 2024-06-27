@@ -23,8 +23,8 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://logisync.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_47548d33f8a54e259d465e8c8c75c9fc }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_4049b77365c34ff4bfd6caeff374a5b8 }}
+        username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
