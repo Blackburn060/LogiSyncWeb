@@ -1,28 +1,13 @@
 import React from 'react';
-import './calendar.css';
+import AppointmentList from './AppointmentList';
 
-const Calendar = () => {
-  // Mock data, implement your logic to get dates and handle clicks
-  const dates = [...Array(31).keys()].map(i => i + 1);
-
+const Schedule = () => {
   return (
-    <div className="calendar">
-      <div className="calendar-header">
-        <span>Janeiro 2024</span>
-        <div className="calendar-navigation">
-          <button>{'<'}</button>
-          <button>{'>'}</button>
-        </div>
-      </div>
-      <div className="calendar-grid">
-        {dates.map(date => (
-          <div key={date} className="calendar-date">
-            {date}
-          </div>
-        ))}
-      </div>
+    <div className="bg-blue-600 text-white p-4 rounded-lg flex-grow">
+      <h2 className="text-lg mb-4">Segunda-Feira, 13 de Janeiro de 2024</h2>
+      <AppointmentList />
     </div>
   );
 };
 
-export default Calendar;
+export default Schedule;

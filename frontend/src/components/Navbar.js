@@ -1,20 +1,19 @@
 import React from 'react';
-import './navbar.css';
 
 const Navbar = () => {
   return (
-    <nav className="navbar">
-      <div className="logo">LogiSync</div>
-      <ul className="nav-links">
-        <li>Calendário</li>
-        <li>Agendamentos</li>
-        <li>Veículos</li>
-        <li>Transportadora</li>
-        <li>Sair</li>
+    <nav className="flex justify-between items-center bg-blue-500 p-4">
+      <div className="text-white font-bold">LogiSync</div>
+      <ul className="flex space-x-4">
+        <li className="text-white">Calendário</li>
+        <li className="text-white">Agendamentos</li>
+        <li className="text-white">Veículos</li>
+        <li className="text-white">Transportadora</li>
+        <li className="text-white">Sair</li>
       </ul>
-      <div className="user-profile">
-        <span>Marcelo Tizo</span>
-        <img src="/path/to/profile-pic.png" alt="User Profile" className="profile-pic"/>
+      <div className="flex items-center space-x-2">
+        <span className="text-white">Marcelo Tizo</span>
+        <img src="/path/to/profile-pic.png" alt="User Profile" className="w-8 h-8 rounded-full"/>
       </div>
     </nav>
   );
