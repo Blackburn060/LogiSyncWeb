@@ -23,14 +23,14 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://logisync.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_1d66eaf4d45d4aa9a36071c39391ae6f }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_d1db78d85ff54e0abcb979187155bccf }}
+        username: ${{ secrets.AzureAppService_ContainerUsername_3cf32fe65865455fa3f526ba48c38141 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_ae596fb67fde496e81a38dca8b3e2851 }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: logisync.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_1d66eaf4d45d4aa9a36071c39391ae6f }}/logisync-frontend:${{ github.sha }}
+        tags: logisync.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_3cf32fe65865455fa3f526ba48c38141 }}/logisync-frontend:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'logisync'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_68e76e0de5834c53b84bf024155abd00 }}
-        images: 'logisync.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_1d66eaf4d45d4aa9a36071c39391ae6f }}/logisync-frontend:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_4af31e2486184474b7074b85eb033572 }}
+        images: 'logisync.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_3cf32fe65865455fa3f526ba48c38141 }}/logisync-frontend:${{ github.sha }}'
