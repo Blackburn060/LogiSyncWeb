@@ -1,50 +1,51 @@
-name: Build and Deploy to Azure
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - logisync
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: 'ubuntu-latest'
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-      - name: Log in to Azure Container Registry
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
-          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
-          registry: logisync.azurecr.io
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://logisync.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_77ec720c40ba449ca537b3229441184d }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_ae5129c81276422c841b535ee36cc238 }}
 
-      - name: Build and push frontend Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend
-          push: true
-          tags: logisync.azurecr.io/myapp_frontend:v1
-
-      - name: Build and push backend Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./backend
-          push: true
-          tags: logisync.azurecr.io/myapp_backend:v1
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: logisync.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_77ec720c40ba449ca537b3229441184d }}/logisync-frontend:${{ github.sha }}
+        file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
     steps:
-      - name: Azure Web App Deploy
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: <Seu-Azure-Web-App-Name>
-          slot-name: production
-          images: |
-            logisync.azurecr.io/myapp_frontend:v1
-            logisync.azurecr.io/myapp_backend:v1
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'logisync'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_e60747fd2ee24edabbf8ce72f6ccebd0 }}
+        images: 'logisync.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_77ec720c40ba449ca537b3229441184d }}/logisync-frontend:${{ github.sha }}'
