@@ -44,7 +44,7 @@ jobs:
         uses: azure/cli@v1
         with:
           inlineScript: |
-            az login --service-principal --username ${{ secrets.AZURE_CREDENTIALS.clientId }} --password ${{ secrets.AZURE_CREDENTIALS.clientSecret }} --tenant ${{ secrets.AZURE_CREDENTIALS.tenantId }}
+            az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
             az aks get-credentials --resource-group LogiSync --name kubernete-logisync
 
       - name: Deploy to AKS
