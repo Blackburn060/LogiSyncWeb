@@ -2,10 +2,19 @@ const db = require('../Config/database');
 const moment = require('moment-timezone');
 
 // Buscar todos os usuários
-const getAllUsers = () => {
+// Model adaptado para aceitar filtros dinâmicos
+const getAllUsers = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastrousuarios';
-        db.all(sql, [], (err, rows) => {
+        let sql = 'SELECT * FROM cadastrousuarios WHERE 1=1';  // A condição sempre verdadeira inicia a cláusula WHERE
+        let params = [];
+
+        // Itera sobre os filtros e adiciona à cláusula WHERE
+        Object.keys(filters).forEach(key => {
+            sql += ` AND ${key} LIKE ?`;
+            params.push(`%${filters[key]}%`);  // Adiciona wildcards para busca parcial
+        });
+
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {
@@ -14,6 +23,7 @@ const getAllUsers = () => {
         });
     });
 };
+
 
 // Adicionar novo usuário com DataGeracao formatada
 const addUser = (user) => {

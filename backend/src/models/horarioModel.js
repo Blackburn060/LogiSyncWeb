@@ -2,10 +2,19 @@ const db = require('../Config/database');
 const moment = require('moment-timezone'); // Certifique-se de que esta linha está presente
 
 // Buscar todos os horários
-const getAllHorarios = () => {
+const getAllHorarios = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastrohorarios';
-        db.all(sql, [], (err, rows) => {
+        let sql = 'SELECT * FROM cadastrohorarios WHERE 1=1';
+        let params = [];
+
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined) {
+                sql += ` AND ${key} = ?`;
+                params.push(filters[key]);  
+            }
+        });
+
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {
@@ -14,7 +23,6 @@ const getAllHorarios = () => {
         });
     });
 };
-
 // Adicionar um novo horário
 const addHorario = (horario) => {
     return new Promise((resolve, reject) => {

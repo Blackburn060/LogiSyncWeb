@@ -2,13 +2,13 @@ const horarioModel = require('../models/horarioModel');
 
 const listarHorarios = async (req, res) => {
     try {
-        const horarios = await horarioModel.getAllHorarios();
+        const filters = req.query;
+        const horarios = await horarioModel.getAllHorarios(filters);
         res.json(horarios);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar horários: " + error.message });
     }
 };
-
 const adicionarHorario = async (req, res) => {
     try {
         const id = await horarioModel.addHorario(req.body);

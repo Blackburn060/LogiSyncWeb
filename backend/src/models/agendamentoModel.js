@@ -1,10 +1,17 @@
 const db = require('../Config/database');
 
 // Buscar todos os agendamentos
-const getAllAgendamentos = () => {
+const getAllAgendamentos = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM agendamentos';
-        db.all(sql, [], (err, rows) => {
+        let sql = 'SELECT * FROM agendamentos WHERE 1=1';
+        let params = [];
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined) {
+                sql += ` AND ${key} = ?`;
+                params.push(filters[key]);  
+            }
+        });
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {

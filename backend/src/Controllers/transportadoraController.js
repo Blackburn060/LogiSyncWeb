@@ -2,6 +2,7 @@ const transportadoraModel = require('../models/transportadoraModel');
 
 const listarTransportadoras = async (req, res) => {
     try {
+        const filters = req.query; 
         const transportadoras = await transportadoraModel.getAllTransportadoras();
         res.json(transportadoras);
     } catch (error) {

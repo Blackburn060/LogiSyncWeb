@@ -2,13 +2,13 @@ const produtoModel = require('../models/produtoModel');
 
 const listarProdutos = async (req, res) => {
     try {
-        const produtos = await produtoModel.getAllProdutos();
+        const filters = req.query;
+        const produtos = await produtoModel.getAllProdutos(filters);
         res.json(produtos);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar produtos: " + error.message });
     }
 };
-
 const adicionarProduto = async (req, res) => {
     try {
         const id = await produtoModel.addProduto(req.body);

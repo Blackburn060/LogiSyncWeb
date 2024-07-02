@@ -1,11 +1,21 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
-// Buscar todas as safras
-const getAllSafras = () => {
+// Buscar todas as safras com filtros
+const getAllSafras = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastrosafra';
-        db.all(sql, [], (err, rows) => {
+        let sql = 'SELECT * FROM cadastrosafra WHERE 1=1';
+        let params = [];
+
+        // Adiciona condições SQL com base nos filtros passados
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined) {
+                sql += ` AND ${key} = ?`;
+                params.push(filters[key]);  // Usa = para busca exata
+            }
+        });
+
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {
@@ -38,32 +48,30 @@ const updateSafra = (safra, id) => {
         let params = [];
         let updates = [];
 
-        if (safra.AnoSafra !== undefined) {
-            updates.push('AnoSafra = ?');
-            params.push(safra.AnoSafra);
-        }
-        if (safra.SituacaoSafra !== undefined) {
-            updates.push('SituacaoSafra = ?');
-            params.push(safra.SituacaoSafra);
+        Object.keys(safra).forEach(key => {
+            if (safra[key] !== undefined && key !== 'DataGeracao' && key !== 'DataAlteracao') {
+                updates.push(`${key} = ?`);
+                params.push(safra[key]);
+            }
+        });
+
+        if (updates.length === 0) {
+            reject(new Error("No fields to update"));
+            return;
         }
 
         updates.push('DataAlteracao = ?');
         params.push(dataAlteracao);
 
-        if (updates.length > 0) {
-            sql += updates.join(', ') + ' WHERE CodigoSafra = ?';
-            params.push(id);
+        sql += updates.join(', ') + ' WHERE CodigoSafra = ?';
+        params.push(id);
 
-            db.run(sql, params, function(err) {
-                if (err) reject(err);
-                else resolve(this.changes);
-            });
-        } else {
-            reject(new Error("No fields to update"));
-        }
+        db.run(sql, params, function(err) {
+            if (err) reject(err);
+            else resolve(this.changes);
+        });
     });
 };
-
 
 // Deletar uma safra
 const deleteSafra = (id) => {

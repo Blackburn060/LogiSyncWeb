@@ -2,10 +2,19 @@ const db = require('../Config/database');
 const moment = require('moment-timezone');
 
 // Buscar todos os produtos
-const getAllProdutos = () => {
+const getAllProdutos = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastroprodutos';
-        db.all(sql, [], (err, rows) => {
+        let sql = 'SELECT * FROM cadastroprodutos WHERE 1=1';
+        let params = [];
+
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined) {
+                sql += ` AND ${key} = ?`;
+                params.push(filters[key]); 
+            }
+        });
+
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {
@@ -14,13 +23,12 @@ const getAllProdutos = () => {
         });
     });
 };
-
 // Adicionar um novo produto
 const addProduto = (produto) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        const sql = `INSERT INTO cadastroprodutos (DescricaoProduto, Categoria, DataGeracao) VALUES (?, ?, ?)`;
-        db.run(sql, [produto.DescricaoProduto, produto.Categoria, dataGeracao], function(err) {
+        const sql = `INSERT INTO cadastroprodutos (DescricaoProduto, Categoria, SituacaoProduto, DataGeracao) VALUES (?, ?, ?, ?)`;
+        db.run(sql, [produto.DescricaoProduto, produto.Categoria, produto.SituacaoProduto, dataGeracao], function(err) {
             if (err) {
                 reject(err);
             } else {

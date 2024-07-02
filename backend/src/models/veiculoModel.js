@@ -2,10 +2,20 @@ const db = require('../Config/database');
 const moment = require('moment-timezone');
 
 // Buscar todos os veículos
-const getAllVeiculos = () => {
+const getAllVeiculos = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastroveiculo';
-        db.all(sql, [], (err, rows) => {
+        let sql = 'SELECT * FROM cadastroveiculo WHERE 1=1';
+        let params = [];
+
+        // Adiciona condições SQL com base nos filtros passados
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined) {
+                sql += ` AND ${key} LIKE ?`;
+                params.push(`%${filters[key]}%`);  // Usa LIKE para busca parcial
+            }
+        });
+
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
             } else {
@@ -14,11 +24,11 @@ const getAllVeiculos = () => {
         });
     });
 };
-
 // Adicionar um novo veículo
 
 const addVeiculo = (veiculo) => {
     return new Promise((resolve, reject) => {
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY');
         const sql = `INSERT INTO cadastroveiculo (CodigoUsuario, NomeVeiculo, Placa, Marca, ModeloTipo, AnoFabricacao, Cor, CapacidadeCarga, SituacaoVeiculo, Bloqueado, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, [veiculo.CodigoUsuario, veiculo.NomeVeiculo, veiculo.Placa, veiculo.Marca, veiculo.ModeloTipo, veiculo.AnoFabricacao, veiculo.Cor, veiculo.CapacidadeCarga, veiculo.SituacaoVeiculo, veiculo.Bloqueado, dataGeracao], function(err) {
             if (err) {

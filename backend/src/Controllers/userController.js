@@ -3,12 +3,14 @@ const userModel = require('../models/userModel');
 // Listar todos os usuários
 const listarUsuarios = async (req, res) => {
     try {
-        const usuarios = await userModel.getAllUsers();
+        const filters = req.query;
+        const usuarios = await userModel.getAllUsers(filters);  // Passa os filtros para o modelo
         res.json(usuarios);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar usuários: " + error.message });
     }
 };
+
 
 // Adicionar um usuário
 const adicionarUsuario = async (req, res) => {

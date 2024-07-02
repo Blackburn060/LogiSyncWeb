@@ -2,7 +2,8 @@ const safraModel = require('../models/safraModel');
 
 const listarSafras = async (req, res) => {
     try {
-        const safras = await safraModel.getAllSafras();
+        const filters = req.query;
+        const safras = await safraModel.getAllSafras(filters);
         res.json(safras);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar safras: " + error.message });
@@ -19,12 +20,15 @@ const adicionarSafra = async (req, res) => {
 };
 
 const atualizarSafra = async (req, res) => {
+    const safraId = req.params.id;
+    const changes = req.body;
+
     try {
-        const changes = await safraModel.updateSafra(req.body, req.params.id);
-        if (changes) {
-            res.send({ message: "Safra atualizada com sucesso" });
+        const updated = await safraModel.updateSafra(changes, safraId);
+        if (updated) {
+            res.send({ message: "Safra atualizada com sucesso." });
         } else {
-            res.status(404).send({ message: "Safra não encontrada" });
+            res.status(404).send({ message: "Safra não encontrada." });
         }
     } catch (error) {
         res.status(500).send({ message: "Erro ao atualizar safra: " + error.message });
