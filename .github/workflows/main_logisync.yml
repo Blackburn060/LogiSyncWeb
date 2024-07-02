@@ -52,13 +52,16 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          
+
+      - name: List files for debugging
+        run: ls -R
+        
       - name: Deploy to AKS
         uses: azure/k8s-deploy@v3
         with:
           manifests: |
-            ./k8s/frontend-deployment.yaml
-            ./k8s/backend-deployment.yaml
+            ./././k8s/frontend-deployment.yaml
+            ./././k8s/backend-deployment.yaml
           images: |
             logisync.azurecr.io/logisync-frontend:v1
             logisync.azurecr.io/logisync-backend:v1
