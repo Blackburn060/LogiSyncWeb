@@ -47,12 +47,18 @@ jobs:
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
             az aks get-credentials --resource-group LogiSync --name kubernete-logisync
 
+      - name: Set Kubernetes context
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          
       - name: Deploy to AKS
         uses: azure/k8s-deploy@v3
         with:
           manifests: |
-            k8s/frontend-deployment.yaml
-            k8s/backend-deployment.yaml
+            ./k8s/frontend-deployment.yaml
+            ./k8s/backend-deployment.yaml
           images: |
             logisync.azurecr.io/logisync-frontend:v1
             logisync.azurecr.io/logisync-backend:v1
