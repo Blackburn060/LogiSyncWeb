@@ -48,7 +48,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config container set --name logisync-frontend --resource-group LogiSync --docker-custom-image-name logisync.azurecr.io/logisync-frontend:v1 --docker-registry-server-url https://logisync.azurecr.io --docker-registry-server-user ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+            az webapp config container set --name logisync-frontend --resource-group LogiSync --container-image-name logisync.azurecr.io/logisync-frontend:v1 --container-registry-url https://logisync.azurecr.io --container-registry-user ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }} --container-registry-password ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
 
   deploy-backend:
     runs-on: ubuntu-latest
@@ -62,4 +62,4 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config container set --name logisync-backend --resource-group LogiSync --docker-custom-image-name logisync.azurecr.io/logisync-backend:v1 --docker-registry-server-url https://logisync.azurecr.io --docker-registry-server-user ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+            az webapp config container set --name logisync-backend --resource-group LogiSync --container-image-name logisync.azurecr.io/logisync-backend:v1 --container-registry-url https://logisync.azurecr.io --container-registry-user ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }} --container-registry-password ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
