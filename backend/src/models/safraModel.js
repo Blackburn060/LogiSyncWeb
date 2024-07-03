@@ -76,8 +76,9 @@ const updateSafra = (safra, id) => {
 // Deletar uma safra
 const deleteSafra = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM cadastrosafra WHERE CodigoSafra = ?';
-        db.run(sql, id, function(err) {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const sql = 'UPDATE cadastrosafra SET SituacaoSafra = 0, DataAlteracao = ? WHERE CodigoSafra = ?';
+        db.run(sql,[dataAlteracao, id], function(err) {
             if (err) {
                 reject(err);
             } else {

@@ -76,8 +76,9 @@ const updateUser = (user, id) => {
 // Deletar um usuário
 const deleteUser = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM cadastrousuarios WHERE CodigoUsuario = ?';
-        db.run(sql, id, function(err) {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const sql = 'UPDATE cadastrousuarios SET SituacaoUsuario = 0, DataAlteracao = ? WHERE CodigoUsuario = ?';
+        db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {
                 reject(err);
             } else {

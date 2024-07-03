@@ -1,7 +1,7 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
-// Buscar todos os veículos
+// Buscar todos os veículos com filtros
 const getAllVeiculos = (filters = {}) => {
     return new Promise((resolve, reject) => {
         let sql = 'SELECT * FROM cadastroveiculo WHERE 1=1';
@@ -10,8 +10,8 @@ const getAllVeiculos = (filters = {}) => {
         // Adiciona condições SQL com base nos filtros passados
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined) {
-                sql += ` AND ${key} LIKE ?`;
-                params.push(`%${filters[key]}%`);  // Usa LIKE para busca parcial
+                sql += ` AND ${key} = ?`;
+                params.push(filters[key]);  // Usa = para busca exata
             }
         });
 
@@ -24,13 +24,13 @@ const getAllVeiculos = (filters = {}) => {
         });
     });
 };
-// Adicionar um novo veículo
 
+// Adicionar um novo veículo
 const addVeiculo = (veiculo) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY');
-        const sql = `INSERT INTO cadastroveiculo (CodigoUsuario, NomeVeiculo, Placa, Marca, ModeloTipo, AnoFabricacao, Cor, CapacidadeCarga, SituacaoVeiculo, Bloqueado, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        db.run(sql, [veiculo.CodigoUsuario, veiculo.NomeVeiculo, veiculo.Placa, veiculo.Marca, veiculo.ModeloTipo, veiculo.AnoFabricacao, veiculo.Cor, veiculo.CapacidadeCarga, veiculo.SituacaoVeiculo, veiculo.Bloqueado, dataGeracao], function(err) {
+        const sql = `INSERT INTO cadastroveiculo (CodigoUsuario, NomeVeiculo, Placa, Marca, ModeloTipo, AnoFabricacao, Cor, CapacidadeCarga, SituacaoVeiculo, Bloqueado, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`;
+        db.run(sql, [veiculo.CodigoUsuario, veiculo.NomeVeiculo, veiculo.Placa, veiculo.Marca, veiculo.ModeloTipo, veiculo.AnoFabricacao, veiculo.Cor, veiculo.CapacidadeCarga, veiculo.Bloqueado, dataGeracao], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -74,15 +74,15 @@ const updateVeiculo = (veiculo, id) => {
     });
 };
 
-// Deletar um veículo
+// Inativar um veículo (atualizar SituacaoVeiculo para 0)
 const deleteVeiculo = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM cadastroveiculo WHERE CodigoVeiculo = ?';
-        db.run(sql, id, function(err) {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const sql = 'UPDATE cadastroveiculo SET SituacaoVeiculo = 0, DataAlteracao = ? WHERE CodigoVeiculo = ?';
+        db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {
                 reject(err);
-            }
-            else {
+            } else {
                 resolve(this.changes);
             }
         });

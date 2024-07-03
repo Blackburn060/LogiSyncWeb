@@ -75,8 +75,9 @@ const updateProduto = (produto, id) => {
 // Deletar um produto
 const deleteProduto = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM cadastroprodutos WHERE CodigoProduto = ?';
-        db.run(sql, id, function(err) {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const sql = 'UPDATE cadastroprodutos SET SituacaoProduto = 0, DataAlteracao = ? WHERE CodigoProduto = ?';
+        db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {
                 reject(err);
             } else {

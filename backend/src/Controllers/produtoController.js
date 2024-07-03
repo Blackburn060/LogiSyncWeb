@@ -35,12 +35,12 @@ const deletarProduto = async (req, res) => {
     try {
         const changes = await produtoModel.deleteProduto(req.params.id);
         if (changes) {
-            res.send({ message: "Produto deletado com sucesso" });
+            res.send({ message: "Produto inativado com sucesso" });
         } else {
             res.status(404).send({ message: "Produto não encontrado" });
         }
     } catch (error) {
-        res.status(500).send({ message: "Erro ao deletar produto: " + error.message });
+        res.status(500).send({ message: "Erro ao inativar produto: " + error.message });
     }
 };
 

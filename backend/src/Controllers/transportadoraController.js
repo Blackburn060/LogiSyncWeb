@@ -36,12 +36,12 @@ const deletarTransportadora = async (req, res) => {
     try {
         const changes = await transportadoraModel.deleteTransportadora(req.params.id);
         if (changes) {
-            res.send({ message: "Transportadora deletada com sucesso" });
+            res.send({ message: "Transportadora inativada com sucesso" });
         } else {
             res.status(404).send({ message: "Transportadora não encontrada" });
         }
     } catch (error) {
-        res.status(500).send({ message: "Erro ao deletar transportadora: " + error.message });
+        res.status(500).send({ message: "Erro ao inativar transportadora: " + error.message });
     }
 };
 

@@ -85,8 +85,9 @@ const updateTransportadora = (transportadora, id) => {
 // Deletar uma transportadora
 const deleteTransportadora = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM cadastrotransportadora WHERE CodigoTransportadora = ?';
-        db.run(sql, id, function(err) {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const sql = 'UPDATE cadastrotransportadora SET SituacaoTransportadora = 0, DataAlteracao = ? WHERE CodigoTransportadora = ?';
+        db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {
                 reject(err);
             } else {

@@ -48,12 +48,12 @@ const deletarUsuario = async (req, res) => {
     try {
         const changes = await userModel.deleteUser(req.params.id);
         if (changes) {
-            res.send({ message: "Usuário deletado com sucesso" });
+            res.send({ message: "Usuário inativado com sucesso" });
         } else {
             res.status(404).send({ message: "Usuário não encontrado" });
         }
     } catch (error) {
-        res.status(500).send({ message: "Erro ao deletar usuário: " + error.message });
+        res.status(500).send({ message: "Erro ao inativar usuário: " + error.message });
     }
 };
 
