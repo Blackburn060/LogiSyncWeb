@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const safraController = require('../Controllers/safraController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.get('/safras', safraController.listarSafras);
-router.post('/safras', safraController.adicionarSafra);
-router.put('/safras/:id', safraController.atualizarSafra);
-router.delete('/safras/:id', safraController.deletarSafra);
+router.get('/safras',authMiddleware, safraController.listarSafras);
+router.post('/safras',authMiddleware, safraController.adicionarSafra);
+router.put('/safras/:id',authMiddleware, safraController.atualizarSafra);
+router.delete('/safras/:id',authMiddleware, safraController.deletarSafra);
 
 module.exports = router;

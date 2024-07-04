@@ -7,11 +7,10 @@ const getAllVeiculos = (filters = {}) => {
         let sql = 'SELECT * FROM cadastroveiculo WHERE 1=1';
         let params = [];
 
-        // Adiciona condições SQL com base nos filtros passados
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined) {
                 sql += ` AND ${key} = ?`;
-                params.push(filters[key]);  // Usa = para busca exata
+                params.push(filters[key]);  
             }
         });
 
