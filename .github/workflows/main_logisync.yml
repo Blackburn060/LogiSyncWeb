@@ -15,26 +15,26 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Log in to Azure Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
-          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
-          registry: logisync.azurecr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+          registry: ghcr.io
 
       - name: Build and push frontend Docker image
         uses: docker/build-push-action@v3
         with:
           context: ./frontend
           push: true
-          tags: logisync.azurecr.io/logisync-frontend:v1
+          tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-frontend:v1
 
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v3
         with:
           context: ./backend
           push: true
-          tags: logisync.azurecr.io/logisync-backend:v1
+          tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-backend:v1
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config container set --name logisync-frontend --resource-group LogiSync --container-image-name logisync.azurecr.io/logisync-frontend:v1 --container-registry-url https://logisync.azurecr.io --container-registry-user ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }} --container-registry-password ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+            az webapp config container set --name logisync-frontend --resource-group LogiSync --docker-custom-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-frontend:v1 --docker-registry-server-url https://ghcr.io --docker-registry-server-user ${{ secrets.GHCR_USERNAME }} --docker-registry-server-password ${{ secrets.GHCR_TOKEN }}
 
   deploy-backend:
     runs-on: ubuntu-latest
@@ -62,4 +62,4 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config container set --name logisync-backend --resource-group LogiSync --container-image-name logisync.azurecr.io/logisync-backend:v1 --container-registry-url https://logisync.azurecr.io --container-registry-user ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }} --container-registry-password ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+            az webapp config container set --name logisync-backend --resource-group LogiSync --docker-custom-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-backend:v1 --docker-registry-server-url https://ghcr.io --docker-registry-server-user ${{ secrets.GHCR_USERNAME }} --docker-registry-server-password ${{ secrets.GHCR_TOKEN }}
