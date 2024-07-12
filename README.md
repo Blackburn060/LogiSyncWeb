@@ -1,70 +1,136 @@
-# Getting Started with Create React App
+# LogiSync
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+LogiSync é uma aplicação web para gerenciamento de agendamentos, veículos e transportadoras. Este projeto utiliza uma arquitetura de componentes modulares com React para o frontend e Node.js com SQLite para o backend. A aplicação é estilizada com Tailwind CSS e é implementada utilizando Docker para containers e GitHub Actions para CI/CD.
 
-## Available Scripts
+## Tecnologias Utilizadas
 
-In the project directory, you can run:
+- **Frontend:**
+  - React
+  - Tailwind CSS
+  - React Router
+  - Axios
 
-### `npm start`
+- **Backend:**
+  - Node.js
+  - Express
+  - SQLite
+  - JWT (JSON Web Tokens)
+  - bcrypt
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Outras Ferramentas:**
+  - Docker
+  - GitHub Actions
+  - Azure App Service
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+## Configuração e Execução
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Pré-requisitos
 
-### `npm run build`
+- Node.js (versão 14 ou superior)
+- Docker
+- Conta no Azure (para deploy)
+- Conta no GitHub (para CI/CD)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Configuração do Projeto
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone o repositório:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+git clone https://github.com/seu-usuario/logisync.git
+cd logisync
+```
+2. Instale as dependências do frontend:
 
-### `npm run eject`
+```bash
+cd frontend
+npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. Instale as dependências do backend:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+cd ../backend
+npm install
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Executando Localmente
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Usando Docker
 
-## Learn More
+1. Build e execute os containers:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+docker-compose up --build
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+2. Acesse a aplicação:
 
-### Code Splitting
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3001
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Usando Node.js
 
-### Analyzing the Bundle Size
+1. Execute o backend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+cd backend
+npm start
+```
 
-### Making a Progressive Web App
+2. Execute o frontend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+cd ../frontend
+npm start
+```
 
-### Advanced Configuration
+3. Acesse a aplicação:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3001
 
-### Deployment
+## Deploy no Azure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. Configure os secrets no GitHub:
 
-### `npm run build` fails to minify
+- AZURE_CLIENT_ID
+- AZURE_CLIENT_SECRET
+- AZURE_TENANT_ID
+- AZURE_SUBSCRIPTION_ID
+- GHCR_USERNAME
+- GHCR_TOKEN
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+2. Configure o workflow de GitHub Actions (`.github/workflows/deploy.yml`).
+
+3. Faça um push para o repositório principal:
+
+```bash
+git add .
+git commit -m "Configuração de CI/CD"
+git push origin main
+```
+
+O GitHub Actions irá automaticamente construir e implantar a aplicação no Azure App Service.
+
+## Estrutura de Arquivos Importantes
+
+- `src/index.css`:
+Contém as importações do Tailwind CSS e configurações globais de estilos.
+
+- `tailwind.config.js`:
+Configuração do Tailwind CSS, incluindo a importação da fonte Lato e cores personalizadas.
+
+- `Dockerfile`:
+Define a configuração do container Docker para frontend e backend.
+
+- `docker-compose.yml`:
+Configura o Docker Compose para executar múltiplos serviços (frontend e backend).
+
+## Customização
+
+- Adicionar Componentes:
+Adicione novos componentes em src/components/ e importe-os conforme necessário nas páginas.
+
+- Estilos Personalizados:
+Adicione ou modifique estilos em src/styles/ e configure o Tailwind CSS conforme necessário em tailwind.config.js.
