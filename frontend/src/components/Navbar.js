@@ -1,9 +1,14 @@
-import React from 'react';
+import React from "react";
+import logoLogiSync from "../assets/images/Logo-LogiSync-02-SF.png";
+import iconeUsuario from "../assets/icons/Icon-user-white.png";
 
 const Navbar = () => {
   return (
-    <nav className="flex justify-between items-center bg-blue-500 p-4">
-      <div className="text-white font-bold">LogiSync</div>
+    <nav className="flex justify-between items-center bg-logisync-color-blue-300 p-2 font-bold">
+      <div className="flex items-center space-x-2">
+        <img src={logoLogiSync} alt="Logo LogiSync" className="w-16 h-16 rounded-full" />
+        <span className="text-white">LogiSync</span>
+      </div>
       <ul className="flex space-x-4">
         <li className="text-white">Calendário</li>
         <li className="text-white">Agendamentos</li>
@@ -13,7 +18,11 @@ const Navbar = () => {
       </ul>
       <div className="flex items-center space-x-2">
         <span className="text-white">Marcelo Tizo</span>
-        <img src="/path/to/profile-pic.png" alt="User Profile" className="w-8 h-8 rounded-full"/>
+        <img
+          src={iconeUsuario}
+          alt="User icon"
+          className="w-16 h-16 rounded-full"
+        />
       </div>
     </nav>
   );
