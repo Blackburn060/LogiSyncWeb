@@ -14,7 +14,7 @@ const listarUsuarios = async (req, res) => {
 
 // Adicionar um usuário
 const adicionarUsuario = async (req, res) => {
-    const { nomeCompleto, email, senha, tipoUsuario } = req.body;
+    const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular } = req.body;
 
     try {
         const hashedPassword = await hashPassword(senha);
@@ -23,9 +23,9 @@ const adicionarUsuario = async (req, res) => {
             Email: email,
             Senha: hashedPassword,
             TipoUsuario: tipoUsuario,
-            CodigoTransportadora: null,
+            CodigoTransportadora: codigoTransportadora || null,
             SituacaoUsuario: 1,
-            NumeroCelular: null
+            NumeroCelular: numeroCelular || null
         };
 
         const userId = await userModel.addUser(user);
@@ -40,7 +40,15 @@ const atualizarUsuario = async (req, res) => {
     const userId = req.params.id;
     const changes = req.body;
 
-    console.log("Recebendo para atualizar:", changes); // Verifique os dados recebidos
+    // Verifique se a senha está sendo atualizada e hashe-a se necessário
+    if (changes.senha) {
+        try {
+            changes.Senha = await hashPassword(changes.senha);
+            delete changes.senha; // Remova a chave `senha` para evitar duplicação
+        } catch (error) {
+            return res.status(500).send({ message: "Erro ao hashear senha: " + error.message });
+        }
+    }
 
     try {
         const updated = await userModel.updateUser(changes, userId);
