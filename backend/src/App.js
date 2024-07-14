@@ -14,11 +14,21 @@ const PORT = process.env.PORT || 3000;
 
 // Configure o CORS
 app.use(cors({
-    origin: 'https://logisync-frontend.azurewebsites.net', 
+    origin: 'https://logisync-frontend.azurewebsites.net',
     optionsSuccessStatus: 200,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
 }));
 
 app.use(express.json());
+
+// Middleware para adicionar cabeçalhos CORS manualmente
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://logisync-frontend.azurewebsites.net');
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+});
 
 app.use('/api', userRoutes);
 app.use('/api', horarioRoutes);
