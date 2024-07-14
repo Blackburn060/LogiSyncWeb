@@ -27,6 +27,9 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'https://logisync-frontend.azurewebsites.net');
     res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
     next();
 });
 
@@ -43,4 +46,4 @@ app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
 
-module.exports = db;
+module.exports = app;
