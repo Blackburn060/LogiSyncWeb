@@ -51,7 +51,7 @@ const MeusAgendamentos = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse">
               <thead>
-                <tr>
+                <tr className="bg-gray-200 text-black">
                   <th className="border-b-2 border-black p-2 text-left">Data</th>
                   <th className="border-b-2 border-black p-2 text-left">Horário</th>
                   <th className="border-b-2 border-black p-2 text-left">Placa</th>
@@ -61,7 +61,7 @@ const MeusAgendamentos = () => {
               </thead>
               <tbody>
                 {agendamentos.map((agendamento, index) => (
-                  <tr key={index} className="bg-logisync-color-blue-100 text-white">
+                  <tr key={index} className="bg-white text-black">
                     <td className="border-b border-black p-2">{agendamento.DataAgendamento}</td>
                     <td className="border-b border-black p-2">{agendamento.HoraAgendamento}</td>
                     <td className="border-b border-black p-2">{agendamento.Placa}</td>
