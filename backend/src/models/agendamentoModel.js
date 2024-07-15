@@ -5,12 +5,12 @@ const getAllAgendamentos = (filters = {}) => {
     return new Promise((resolve, reject) => {
         let sql = 'SELECT * FROM agendamentos WHERE 1=1';
         let params = [];
+
         Object.keys(filters).forEach(key => {
-            if (filters[key] !== undefined) {
-                sql += ` AND ${key} = ?`;
-                params.push(filters[key]);  
-            }
+            sql += ` AND ${key} LIKE ?`;
+            params.push(`%${filters[key]}%`);
         });
+
         db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);

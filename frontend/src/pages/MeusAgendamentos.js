@@ -62,10 +62,10 @@ const MeusAgendamentos = () => {
               <tbody>
                 {agendamentos.map((agendamento, index) => (
                   <tr key={index} className="bg-logisync-color-blue-100 text-white">
-                    <td className="border-b border-black p-2">{agendamento.date}</td>
-                    <td className="border-b border-black p-2">{agendamento.time}</td>
-                    <td className="border-b border-black p-2">{agendamento.plate}</td>
-                    <td className="border-b border-black p-2">{agendamento.status}</td>
+                    <td className="border-b border-black p-2">{agendamento.DataAgendamento}</td>
+                    <td className="border-b border-black p-2">{agendamento.HoraAgendamento}</td>
+                    <td className="border-b border-black p-2">{agendamento.Placa}</td>
+                    <td className="border-b border-black p-2">{agendamento.SituacaoAgendamento}</td>
                     <td className="border-b border-black p-2">
                       <button className="text-red-600 hover:text-red-800">
                         <svg className="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -2,7 +2,8 @@ const agendamentoModel = require('../models/agendamentoModel');
 
 const listarAgendamentos = async (req, res) => {
     try {
-        const filters = req.query;
+        const userId = req.user.id;  // Obtém o ID do usuário a partir do token
+        const filters = { ...req.query, CodigoUsuario: userId };  // Adiciona o filtro pelo usuário
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);
         res.json(agendamentos);
     } catch (error) {
