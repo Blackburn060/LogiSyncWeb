@@ -7,8 +7,8 @@ const getAllAgendamentos = (filters = {}) => {
         let params = [];
 
         Object.keys(filters).forEach(key => {
-            sql += ` AND ${key} LIKE ?`;
-            params.push(`%${filters[key]}%`);
+            sql += ` AND ${key} = ?`;
+            params.push(filters[key]);
         });
 
         db.all(sql, params, (err, rows) => {

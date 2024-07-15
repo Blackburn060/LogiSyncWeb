@@ -2,15 +2,15 @@ const agendamentoModel = require('../models/agendamentoModel');
 
 const listarAgendamentos = async (req, res) => {
     try {
-        const userId = req.user.id;  // Obtém o ID do usuário a partir do token
-        const filters = { ...req.query, CodigoUsuario: userId };  // Adiciona o filtro pelo usuário
+        const filters = req.query;
+        // Adiciona o filtro de usuário logado
+        filters.CodigoUsuario = req.user.id;
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);
         res.json(agendamentos);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar agendamentos: " + error.message });
     }
 };
-
 const adicionarAgendamento = async (req, res) => {
     try {
         const id = await agendamentoModel.addAgendamento(req.body);
