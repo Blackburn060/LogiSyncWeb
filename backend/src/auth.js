@@ -1,7 +1,7 @@
 // src/auth.js
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const SECRET_KEY = process.env.SECRET_KEY || 'seu_segredo_super_secreto';
+const SECRET_KEY = process.env.SECRET_KEY;
 
 // Função para gerar o token JWT
 const generateToken = (user) => {

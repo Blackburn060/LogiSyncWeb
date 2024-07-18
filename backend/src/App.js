@@ -9,12 +9,13 @@ const transportadoraRoutes = require('./routes/transportadoraRoutes');
 const veiculoRoutes = require('./routes/veiculoRoutes'); 
 const portariaRoutes = require('./routes/portariaRoutes'); 
 const agendamentoRoutes = require('./routes/agendamentoRoutes'); 
+const frontendUrl = process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: frontendUrl,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
