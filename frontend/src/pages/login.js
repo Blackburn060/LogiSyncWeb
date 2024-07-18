@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/Logo-LogiSync-02-SF.png';  // Substitua pela imagem correta
-const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
   const [email, setEmail] = useState('');

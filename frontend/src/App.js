@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import './index.css';  // Importa o arquivo CSS principal
+import './index.css';
 
 const Login = lazy(() => import('./pages/login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
