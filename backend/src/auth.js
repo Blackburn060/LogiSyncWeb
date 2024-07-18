@@ -1,11 +1,11 @@
 // src/auth.js
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const SECRET_KEY = process.env.SECRET_KEY;
+const REACT_APP_SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
 
 // Função para gerar o token JWT
 const generateToken = (user) => {
-    return jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '1h' });
+    return jwt.sign({ id: user.id, email: user.email }, REACT_APP_SECRET_KEY, { expiresIn: '1h' });
 };
 
 // Função para hashear a senha

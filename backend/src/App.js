@@ -1,4 +1,4 @@
-require('dotenv').config(); 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
@@ -10,27 +10,20 @@ const transportadoraRoutes = require('./routes/transportadoraRoutes');
 const veiculoRoutes = require('./routes/veiculoRoutes'); 
 const portariaRoutes = require('./routes/portariaRoutes'); 
 const agendamentoRoutes = require('./routes/agendamentoRoutes'); 
+const frontendUrl = process.env.REACT_APP_FRONTEND_URL;
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(express.json());
+
 app.use(cors({
-    origin: process.env.REACT_APP_FRONTEND_URL,
-    optionsSuccessStatus: 200,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
+    origin: frontendUrl,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 
-app.use(express.json());
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', process.env.REACT_APP_FRONTEND_URL);
-    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    next();
-});
-
-app.use(express.json());
 app.use('/api', userRoutes);
 app.use('/api', authRoutes);
 app.use('/api', horarioRoutes);
