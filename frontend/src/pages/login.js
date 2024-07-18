@@ -16,10 +16,10 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('https://logisync-backend.azurewebsites.net/api/login', { email, senha: password });
+      const response = await axios.post('http://localhost:3001/api/login', { email, senha: password });
       if (response.data && response.data.token) {
         login(response.data.token);  // Armazena o token JWT
-        navigate('/dashboard');
+        navigate('/meus-agendamentos');
       } else {
         setError('Credenciais inválidas. Por favor, tente novamente.');
       }

@@ -1,3 +1,4 @@
+// src/models/userModel.js
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 const bcrypt = require('bcrypt');

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000/api';
 
 const MeusAgendamentos = () => {
   const { user, token } = useAuth();
@@ -12,13 +13,15 @@ const MeusAgendamentos = () => {
   useEffect(() => {
     const fetchAgendamentos = async () => {
       try {
-        const response = await axios.get('https://logisync-backend.azurewebsites.net/api/agendamentos', {
+        const response = await axios.get(`${backendUrl}/agendamentos?CodigoUsuario=${user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log('Agendamentos recebidos:', response.data);
         setAgendamentos(response.data);
       } catch (err) {
+        console.error('Erro ao carregar agendamentos:', err.response.data);
         setError('Erro ao carregar agendamentos.');
       } finally {
         setLoading(false);
@@ -28,7 +31,7 @@ const MeusAgendamentos = () => {
     if (token) {
       fetchAgendamentos();
     }
-  }, [token]);
+  }, [token, user]);
 
   if (!user) {
     return <p>Você precisa estar logado para ver seus agendamentos.</p>;
@@ -51,7 +54,7 @@ const MeusAgendamentos = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse">
               <thead>
-                <tr className="bg-gray-200 text-black">
+                <tr>
                   <th className="border-b-2 border-black p-2 text-left">Data</th>
                   <th className="border-b-2 border-black p-2 text-left">Horário</th>
                   <th className="border-b-2 border-black p-2 text-left">Placa</th>
@@ -61,7 +64,7 @@ const MeusAgendamentos = () => {
               </thead>
               <tbody>
                 {agendamentos.map((agendamento, index) => (
-                  <tr key={index} className="bg-white text-black">
+                  <tr key={index} className="bg-logisync-color-blue-100 text-white">
                     <td className="border-b border-black p-2">{agendamento.DataAgendamento}</td>
                     <td className="border-b border-black p-2">{agendamento.HoraAgendamento}</td>
                     <td className="border-b border-black p-2">{agendamento.Placa}</td>
