@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/Logo-LogiSync-02-SF.png';  // Substitua pela imagem correta
+const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3001/api/login', { email, senha: password });
+      const response = await axios.post(`${backendUrl}/login`, { email, senha: password });
       if (response.data && response.data.token) {
         login(response.data.token);  // Armazena o token JWT
         navigate('/meus-agendamentos');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
 
 const RegistroUsuario = () => {
   const { setUser, setToken } = useAuth();
@@ -24,7 +25,7 @@ const RegistroUsuario = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/usuarios', formData);
+      const response = await axios.post(`${backendUrl}/usuarios`, formData);
       setUser(response.data.user);
       setToken(response.data.token);
     } catch (err) {

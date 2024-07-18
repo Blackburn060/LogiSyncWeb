@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000/api';
+const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
 
 const MeusAgendamentos = () => {
   const { user, token } = useAuth();
