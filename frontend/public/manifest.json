@@ -18,11 +18,6 @@
       "type": "image/png"
     }
   ],
-  "related_applications": [
-    {
-      "platform": "web"
-    }
-  ],
   "scope": "/",
   "orientation": "any",
   "lang": "en-US"
