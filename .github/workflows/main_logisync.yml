@@ -28,8 +28,6 @@ jobs:
           context: ./frontend
           push: true
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1
-        env:
-          REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
 
       - name: Build and push backend homologation Docker image
         uses: docker/build-push-action@v3
@@ -37,9 +35,6 @@ jobs:
           context: ./backend
           push: true
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-backend:v1
-        env:
-          REACT_APP_FRONTEND_URL: ${{ secrets.REACT_APP_FRONTEND_URL }}
-          REACT_APP_SECRET_KEY: ${{ secrets.REACT_APP_SECRET_KEY }}
 
   deploy-frontend:
     runs-on: ubuntu-latest
