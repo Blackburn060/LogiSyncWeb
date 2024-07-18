@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+<<<<<<< HEAD
 const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
+=======
+>>>>>>> parent of adda741 (implementação de variáveis de ambiente)
 
 const MeusAgendamentos = () => {
   const { user, token } = useAuth();
@@ -13,7 +16,7 @@ const MeusAgendamentos = () => {
   useEffect(() => {
     const fetchAgendamentos = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/agendamentos?CodigoUsuario=${user.id}`, {
+        const response = await axios.get(`http://localhost:3001/api/agendamentos?CodigoUsuario=${user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
