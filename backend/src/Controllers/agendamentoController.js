@@ -1,18 +1,14 @@
 const agendamentoModel = require('../models/agendamentoModel');
 
 // Listar agendamentos por usuário
-const listarAgendamentos = async (req, res) => {
+const listarAgendamentos = async (req, res) => { //todo o controle de buscar os agendamentos de determinado usuario acontece aqui e no model
     try {
-        const userId = req.user.id;  // ID do usuário logado
-        const filters = { ...req.query, CodigoUsuario: userId };  // Adiciona o filtro de usuario logado
-
-        console.log("Filtros recebidos:", filters);
+        const filters = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);
-        console.log("Agendamentos encontrados:", agendamentos);
+        console.log('Agendamentos encontrados:', agendamentos);
         res.json(agendamentos);
     } catch (error) {
-        console.error("Erro ao buscar agendamentos:", error);
-        res.status(500).send({ message: "Erro ao buscar agendamentos: " + error.message });
+        res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
     }
 };
 

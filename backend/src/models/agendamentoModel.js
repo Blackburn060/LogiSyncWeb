@@ -6,10 +6,10 @@ const getAllAgendamentos = (filters = {}) => {
         let sql = 'SELECT * FROM agendamentos WHERE 1=1';
         let params = [];
 
-        Object.keys(filters).forEach(key => {
-            sql += ` AND ${key} = ?`;
-            params.push(filters[key]);
-        });
+        if (filters.CodigoUsuario) {
+            sql += ' AND CodigoUsuario = ?';
+            params.push(filters.CodigoUsuario);
+        }
 
         db.all(sql, params, (err, rows) => {
             if (err) {
@@ -20,6 +20,7 @@ const getAllAgendamentos = (filters = {}) => {
         });
     });
 };
+
 
 // Adicionar um novo agendamento
 const addAgendamento = (agendamento) => {

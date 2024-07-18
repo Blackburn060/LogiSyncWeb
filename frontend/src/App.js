@@ -6,6 +6,7 @@ import './index.css';  // Importa o arquivo CSS principal
 const Login = lazy(() => import('./pages/login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const MeusAgendamentos = lazy(() => import('./pages/MeusAgendamentos'));
+const RegistroUsuario = lazy(() => import('./pages/RegistroUsuario')); 
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Dashboard />} />
               <Route path="/meus-agendamentos" element={<MeusAgendamentos />} />
+              <Route path="/registro" element={<RegistroUsuario />} />  =
             </Routes>
           </Suspense>
         </div>

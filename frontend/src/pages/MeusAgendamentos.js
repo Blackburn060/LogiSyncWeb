@@ -12,13 +12,15 @@ const MeusAgendamentos = () => {
   useEffect(() => {
     const fetchAgendamentos = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/agendamentos', {
+        const response = await axios.get(`http://localhost:3001/api/agendamentos?CodigoUsuario=${user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log('Agendamentos recebidos:', response.data);
         setAgendamentos(response.data);
       } catch (err) {
+        console.error('Erro ao carregar agendamentos:', err.response.data);
         setError('Erro ao carregar agendamentos.');
       } finally {
         setLoading(false);
@@ -28,7 +30,7 @@ const MeusAgendamentos = () => {
     if (token) {
       fetchAgendamentos();
     }
-  }, [token]);
+  }, [token, user]);
 
   if (!user) {
     return <p>Você precisa estar logado para ver seus agendamentos.</p>;
@@ -64,7 +66,7 @@ const MeusAgendamentos = () => {
                   <tr key={index} className="bg-logisync-color-blue-100 text-white">
                     <td className="border-b border-black p-2">{agendamento.DataAgendamento}</td>
                     <td className="border-b border-black p-2">{agendamento.HoraAgendamento}</td>
-                    <td className="border-b border-black p-2">{agendamento.CodigoVeiculo}</td>
+                    <td className="border-b border-black p-2">{agendamento.Placa}</td>
                     <td className="border-b border-black p-2">{agendamento.SituacaoAgendamento}</td>
                     <td className="border-b border-black p-2">
                       <button className="text-red-600 hover:text-red-800">
