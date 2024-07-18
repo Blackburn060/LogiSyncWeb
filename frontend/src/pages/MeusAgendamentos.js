@@ -1,31 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
-<<<<<<< HEAD
-const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
-=======
->>>>>>> parent of adda741 (implementação de variáveis de ambiente)
+import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+
+const backendUrl =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:3001/api";
 
 const MeusAgendamentos = () => {
   const { user, token } = useAuth();
   const [agendamentos, setAgendamentos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/agendamentos?CodigoUsuario=${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log('Agendamentos recebidos:', response.data);
+        const response = await axios.get(
+          `${backendUrl}/agendamentos?CodigoUsuario=${user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Agendamentos recebidos:", response.data);
         setAgendamentos(response.data);
       } catch (err) {
-        console.error('Erro ao carregar agendamentos:', err.response.data);
-        setError('Erro ao carregar agendamentos.');
+        console.error("Erro ao carregar agendamentos:", err.response.data);
+        setError("Erro ao carregar agendamentos.");
       } finally {
         setLoading(false);
       }
@@ -58,24 +60,56 @@ const MeusAgendamentos = () => {
             <table className="min-w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="border-b-2 border-black p-2 text-left">Data</th>
-                  <th className="border-b-2 border-black p-2 text-left">Horário</th>
-                  <th className="border-b-2 border-black p-2 text-left">Placa</th>
-                  <th className="border-b-2 border-black p-2 text-left">Status</th>
-                  <th className="border-b-2 border-black p-2 text-left">Cancelar</th>
+                  <th className="border-b-2 border-black p-2 text-left">
+                    Data
+                  </th>
+                  <th className="border-b-2 border-black p-2 text-left">
+                    Horário
+                  </th>
+                  <th className="border-b-2 border-black p-2 text-left">
+                    Placa
+                  </th>
+                  <th className="border-b-2 border-black p-2 text-left">
+                    Status
+                  </th>
+                  <th className="border-b-2 border-black p-2 text-left">
+                    Cancelar
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {agendamentos.map((agendamento, index) => (
-                  <tr key={index} className="bg-logisync-color-blue-100 text-white">
-                    <td className="border-b border-black p-2">{agendamento.DataAgendamento}</td>
-                    <td className="border-b border-black p-2">{agendamento.HoraAgendamento}</td>
-                    <td className="border-b border-black p-2">{agendamento.Placa}</td>
-                    <td className="border-b border-black p-2">{agendamento.SituacaoAgendamento}</td>
+                  <tr
+                    key={index}
+                    className="bg-logisync-color-blue-100 text-white"
+                  >
+                    <td className="border-b border-black p-2">
+                      {agendamento.DataAgendamento}
+                    </td>
+                    <td className="border-b border-black p-2">
+                      {agendamento.HoraAgendamento}
+                    </td>
+                    <td className="border-b border-black p-2">
+                      {agendamento.Placa}
+                    </td>
+                    <td className="border-b border-black p-2">
+                      {agendamento.SituacaoAgendamento}
+                    </td>
                     <td className="border-b border-black p-2">
                       <button className="text-red-600 hover:text-red-800">
-                        <svg className="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <svg
+                          className="w-6 h-6 inline"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          ></path>
                         </svg>
                       </button>
                     </td>
