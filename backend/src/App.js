@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
@@ -10,7 +9,7 @@ const transportadoraRoutes = require('./routes/transportadoraRoutes');
 const veiculoRoutes = require('./routes/veiculoRoutes'); 
 const portariaRoutes = require('./routes/portariaRoutes'); 
 const agendamentoRoutes = require('./routes/agendamentoRoutes'); 
-const frontendUrl = process.env.REACT_APP_FRONTEND_URL;
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,7 +17,7 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 app.use(cors({
-    origin: frontendUrl,
+    origin: process.env.REACT_APP_FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
