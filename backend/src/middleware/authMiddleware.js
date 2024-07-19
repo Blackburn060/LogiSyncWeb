@@ -1,6 +1,6 @@
-// src/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const REACT_APP_SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
+require('dotenv').config();
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const authMiddleware = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
@@ -9,7 +9,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, REACT_APP_SECRET_KEY);
+        const decoded = jwt.verify(token, SECRET_KEY);
         req.user = decoded;
         next();
     } catch (error) {
