@@ -28,6 +28,8 @@ jobs:
           context: ./frontend
           push: true
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1
+        env:
+          VITE_APP_BACKEND_API_URL: ${{ env.VITE_APP_BACKEND_API_URL }}
 
       - name: Build and push backend homologation Docker image
         uses: docker/build-push-action@v3
