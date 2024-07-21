@@ -3,7 +3,7 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 
-const backendUrl = import.meta.env.VITE_API_URL;
+const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 interface Agendamento {
   DataAgendamento: string;

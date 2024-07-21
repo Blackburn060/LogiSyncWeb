@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/Logo-LogiSync-02-SF.png';
 
-const backendUrl = import.meta.env.VITE_API_URL;
+const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
