@@ -18,4 +18,4 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=${VITE_API_URL}
+      - VITE_APP_BACKEND_API_URL=${VITE_APP_BACKEND_API_URL}
