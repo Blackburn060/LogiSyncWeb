@@ -33,17 +33,16 @@ const Login: React.FC = () => {
   return (
     <div className="flex h-screen">
       <div className="w-1/2 flex items-center justify-center bg-gray-100">
-        <img src={logo} alt="LogiSync Logo" className="w-auto h-auto" />
+        <img src={logo} alt="LogiSync Logo" className="w-72 h-52" />
       </div>
       <div className="w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400">
-        <img src={logo} alt="LogiSync Logo" className="w-auto h-auto" />
+        <img src={logo} alt="LogiSync Logo" className="w-72 h-52" />
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
           <div className="mb-4">
             <label htmlFor="email" className="block text-white text-sm font-bold mb-2">Email</label>
             <input
               type="email"
               id="email"
-              autoComplete="email"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="Digite o seu Email"
               value={email}
@@ -56,12 +55,12 @@ const Login: React.FC = () => {
             <input
               type="password"
               id="password"
-              autoComplete="current-password"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="Digite a sua senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
             />
             <p className="text-white text-xs italic">Esqueceu sua senha?</p>
           </div>

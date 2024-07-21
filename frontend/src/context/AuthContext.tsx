@@ -1,8 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+// src/context/AuthContext.tsx
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 
+interface ExtendedJwtPayload extends JwtPayload {
+  id: string;  // Adicione outras propriedades conforme necessário
+}
+
 interface AuthContextType {
-  user: JwtPayload | null;
+  user: ExtendedJwtPayload | null;
   token: string | null;
   login: (token: string) => void;
   logout: () => void;
@@ -23,13 +28,13 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<JwtPayload | null>(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [user, setUser] = useState<ExtendedJwtPayload | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
   const login = (token: string) => {
     setToken(token);
     localStorage.setItem('token', token);
-    const decodedUser = jwtDecode<JwtPayload>(token);
+    const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
     setUser(decodedUser);
   };
 
@@ -38,6 +43,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
   };
+
+  useEffect(() => {
+    if (token) {
+      const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
+      setUser(decodedUser);
+    }
+  }, [token]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout }}>
