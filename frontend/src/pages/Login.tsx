@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/Logo-LogiSync-02-SF.png';
 
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+console.log(backendUrl);
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +20,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await axios.post(`${backendUrl}/login`, { email, senha: password });
+      console.log(backendUrl);
       if (response.data && response.data.token) {
         login(response.data.token);  // Armazena o token JWT
         navigate('/meus-agendamentos');
