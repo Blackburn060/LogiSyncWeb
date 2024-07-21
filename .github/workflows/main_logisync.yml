@@ -63,9 +63,8 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            echo "VITE_APP_BACKEND_API_URL=${{ secrets.VITE_APP_BACKEND_API_URL }}" >> $GITHUB_ENV
             az webapp config appsettings set --name logisync-homologation-frontend --resource-group LogiSync --settings VITE_APP_BACKEND_API_URL=${{ secrets.VITE_APP_BACKEND_API_URL }}
-            az webapp config container set --name logisync-homologation-frontend --resource-group LogiSync --docker-custom-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1 --docker-registry-server-url https://ghcr.io --docker-registry-server-user ${{ secrets.GHCR_USERNAME }} --docker-registry-server-password ${{ secrets.GHCR_TOKEN }}
+            az webapp config container set --name logisync-homologation-frontend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
 
   deploy-backend:
     runs-on: ubuntu-latest
@@ -79,7 +78,5 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            echo "REACT_APP_FRONTEND_URL=${{ secrets.REACT_APP_FRONTEND_URL }}" >> $GITHUB_ENV
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
             az webapp config appsettings set --name logisync-homologation-backend --resource-group LogiSync --settings REACT_APP_FRONTEND_URL=${{ secrets.REACT_APP_FRONTEND_URL }} SECRET_KEY=${{ secrets.SECRET_KEY }}
-            az webapp config container set --name logisync-homologation-backend --resource-group LogiSync --docker-custom-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-backend:v1 --docker-registry-server-url https://ghcr.io --docker-registry-server-user ${{ secrets.GHCR_USERNAME }} --docker-registry-server-password ${{ secrets.GHCR_TOKEN }}
+            az webapp config container set --name logisync-homologation-backend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-backend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
