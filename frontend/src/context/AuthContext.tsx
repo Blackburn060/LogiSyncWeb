@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 interface AuthContextType {
-  user: any;
+  user: JwtPayload | null;
   token: string | null;
   login: (token: string) => void;
   logout: () => void;
@@ -22,13 +23,14 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [user, setUser] = useState<JwtPayload | null>(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   const login = (token: string) => {
     setToken(token);
     localStorage.setItem('token', token);
-    // Decodificar o token e definir o usuário
+    const decodedUser = jwtDecode<JwtPayload>(token);
+    setUser(decodedUser);
   };
 
   const logout = () => {

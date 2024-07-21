@@ -21,12 +21,14 @@ const MeusAgendamentos: React.FC = () => {
   useEffect(() => {
     const fetchAgendamentos = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/agendamentos?CodigoUsuario=${user?.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setAgendamentos(response.data);
+        if (user && token) {
+          const response = await axios.get(`${backendUrl}/agendamentos?CodigoUsuario=${user.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setAgendamentos(response.data);
+        }
       } catch (err) {
         setError('Erro ao carregar agendamentos.');
       } finally {
@@ -34,9 +36,7 @@ const MeusAgendamentos: React.FC = () => {
       }
     };
 
-    if (token && user) {
-      fetchAgendamentos();
-    }
+    fetchAgendamentos();
   }, [token, user]);
 
   if (!user) {
