@@ -1,35 +1,44 @@
-# Use uma imagem oficial do Node.js como base
-FROM node:20 as build
+# Etapa de build - Utilizando uma imagem oficial do Node.js
+FROM node:20-alpine AS build
 
-# Defina o diretório de trabalho
+# Definindo o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copie o package.json e o package-lock.json
+# Copiando o package.json e o package-lock.json para instalar as dependências
 COPY package*.json ./
 
-# Instale as dependências do projeto
+# Instalando as dependências do projeto
 RUN npm install
 
-# Copie o restante dos arquivos da aplicação
+# Copiando o restante dos arquivos da aplicação
 COPY . .
 
-# Crie o build da aplicação Vite.js
+# Criando o build da aplicação Vite.js
 RUN npm run build
 
-# Use uma imagem de servidor HTTP para servir o build
+# Etapa de produção - Utilizando uma imagem de servidor HTTP (Nginx) para servir o build
 FROM nginx:alpine
 
-# Remova a configuração padrão do Nginx
+# Removendo a configuração padrão do Nginx
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Copie a configuração personalizada do Nginx
+# Copiando a configuração personalizada do Nginx
 COPY nginx.conf /etc/nginx/conf.d
 
-# Copie os arquivos do build do Vite.js para o diretório de servir do Nginx
+# Copiando os arquivos do build do Vite.js para o diretório de servir do Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Exponha a porta
-EXPOSE 80
+# Copiando o script entrypoint.sh para o container
+COPY entrypoint.sh /usr/share/nginx/entrypoint.sh
 
-# Inicie o Nginx
+# Dando permissão de execução ao script
+RUN chmod +x /usr/share/nginx/entrypoint.sh
+
+# Utilizando o script como entrypoint
+ENTRYPOINT ["/usr/share/nginx/entrypoint.sh"]
+
+# CMD padrão para iniciar o Nginx
 CMD ["nginx", "-g", "daemon off;"]
+
+# Expondo a porta 80 para o tráfego HTTP
+EXPOSE 80

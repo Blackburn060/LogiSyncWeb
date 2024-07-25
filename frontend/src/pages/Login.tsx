@@ -8,6 +8,7 @@ import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.png';
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 console.log(import.meta.env);
+console.log(backendUrl);
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
