@@ -13,17 +13,8 @@ RUN npm install
 # Copie o restante dos arquivos da aplicação
 COPY . .
 
-# Copie o script entrypoint.sh para o container
-COPY entrypoint.sh /app/entrypoint.sh
-
-# Dê permissão de execução ao script
-RUN chmod +x /app/entrypoint.sh
-
-# Utilize o script como entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
-
 # Exponha a porta
 EXPOSE 3001
 
-# CMD padrão para iniciar o servidor Node.js
+# Inicie o servidor Node.js
 CMD ["node", "src/App.js"]
