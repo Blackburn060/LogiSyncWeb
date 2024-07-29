@@ -13,8 +13,11 @@ RUN npm install
 # Copie o restante dos arquivos da aplicação
 COPY . .
 
+# Defina as variáveis de ambiente para o build
+ARG VITE_APP_BACKEND_API_URL
+
 # Crie o build da aplicação Vite.js
-RUN npm run build
+RUN VITE_APP_BACKEND_API_URL=$VITE_APP_BACKEND_API_URL npm run build
 
 # Use uma imagem de servidor HTTP para servir o build
 FROM nginx:alpine
