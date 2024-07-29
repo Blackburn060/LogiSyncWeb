@@ -8,8 +8,7 @@ dotenv.config();
 export default defineConfig({
   plugins: [react()],
   define: {
-    'process.env': process.env,
-    'process.env.VITE_APP_BACKEND_API_URL':JSON.stringify(process.env.VITE_APP_BACKEND_API_URL)
+    'import.meta.env.VITE_APP_BACKEND_API_URL': JSON.stringify(process.env.VITE_APP_BACKEND_API_URL)
   },
   build: {
     outDir: 'dist'
