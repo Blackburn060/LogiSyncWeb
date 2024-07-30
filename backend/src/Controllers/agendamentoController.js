@@ -5,7 +5,6 @@ const listarAgendamentos = async (req, res) => { //todo o controle de buscar os 
     try {
         const filters = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);
-        console.log('Agendamentos encontrados:', agendamentos);
         res.json(agendamentos);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
