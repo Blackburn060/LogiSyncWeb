@@ -22,7 +22,7 @@ const Login: React.FC = () => {
       const response = await axios.post(`${backendUrl}/login`, { email, senha: password });
       if (response.data && response.data.token) {
         login(response.data.token);
-        navigate('/meus-agendamentos');
+        navigate('/agendamentos');
       } else {
         setError('Credenciais inválidas. Por favor, tente novamente.');
       }
