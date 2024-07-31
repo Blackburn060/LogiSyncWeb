@@ -42,9 +42,9 @@ const MeusAgendamentos: React.FC = () => {
     fetchAgendamentos();
   }, [token, user]);
 
-  if (!user) {
-    return <Navigate to="/unauthorized" />;
-  }
+  if (!user || !token) {
+  return <Navigate to="/unauthorized" />;
+}
 
   if (loading) {
     return <p>Carregando agendamentos...</p>;

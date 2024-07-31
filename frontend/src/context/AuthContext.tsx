@@ -1,9 +1,8 @@
-// src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 interface ExtendedJwtPayload extends JwtPayload {
-  id: string;  // Adicione outras propriedades conforme necessário
+  id: string;
 }
 
 interface AuthContextType {

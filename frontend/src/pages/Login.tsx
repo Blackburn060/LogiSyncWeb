@@ -34,13 +34,13 @@ const Login: React.FC = () => {
     <div className="flex h-screen py-10 px-20">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="w-1/2 flex items-center justify-center bg-white rounded-l-lg">
-        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto max-h-screen h-auto" />
+        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-auto" />
       </div>
       <div className="w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 rounded-r-lg">
-        <img src={logoHorizontal} alt="LogiSync Logo" className="w-64 h-40 mb-10" />
-        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+        <img src={logoHorizontal} alt="LogiSync Logo" className="w-56 mb-20" />
+        <form onSubmit={handleSubmit} className="w-full max-w-sm mb-20">
           <div className="mb-4">
-            <label htmlFor="email" className="block text-white text-sm font-bold mb-2">Email</label>
+            <label htmlFor="email" className="block text-white text-lg font-extrabold mb-1">Email</label>
             <input
               type="email"
               id="email"
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label htmlFor="password" className="block text-white text-sm font-bold mb-2">Senha</label>
+            <label htmlFor="password" className="block text-white text-lg font-extrabold mb-1">Senha</label>
             <input
               type="password"
               id="password"
@@ -64,17 +64,17 @@ const Login: React.FC = () => {
               required
               autoComplete="current-password"
             />
-            <p className="text-white text-xs italic">Esqueceu sua senha?</p>
+            <p className="text-white text-md font-extrabold text-right">Esqueceu sua senha?</p>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center pt-8">
             <button
               type="submit"
-              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-2xl font-extrabold py-2 px-32 rounded focus:outline-none focus:shadow-outline"
             >
               Entrar
             </button>
           </div>
-          <p className="text-white text-xs mt-4">Não tem uma conta? Cadastre-se aqui!</p>
+          <p className="text-white text-lg font-extrabold mt-4 text-center">Não tem uma conta? Cadastre-se aqui!</p>
         </form>
       </div>
     </div>
