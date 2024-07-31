@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
@@ -28,6 +29,8 @@ const MeusAgendamentos: React.FC = () => {
             },
           });
           setAgendamentos(response.data);
+        } else {
+          setError('Usuário não autorizado.');
         }
       } catch (err) {
         setError('Erro ao carregar agendamentos.');
@@ -40,7 +43,7 @@ const MeusAgendamentos: React.FC = () => {
   }, [token, user]);
 
   if (!user) {
-    return <p>Você precisa estar logado para ver seus agendamentos.</p>;
+    return <Navigate to="/unauthorized" />;
   }
 
   if (loading) {

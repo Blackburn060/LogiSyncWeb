@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Toaster, toast } from 'react-hot-toast';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.png';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.png';
 
@@ -10,13 +11,11 @@ const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     try {
       const response = await axios.post(`${backendUrl}/login`, { email, senha: password });
@@ -24,20 +23,21 @@ const Login: React.FC = () => {
         login(response.data.token);
         navigate('/agendamentos');
       } else {
-        setError('Credenciais inválidas. Por favor, tente novamente.');
+        toast.error('Credenciais inválidas. Por favor, tente novamente.');
       }
     } catch (err) {
-      setError('Credenciais inválidas. Por favor, tente novamente.');
+      toast.error('Credenciais inválidas. Por favor, tente novamente.');
     }
   };
 
   return (
-    <div className="flex h-screen">
-      <div className="w-1/2 flex items-center justify-center bg-gray-100">
-        <img src={imagemLateralLogin} alt="LogiSync Logo" className="w-auto h-auto" />
+    <div className="flex h-screen py-10 px-20">
+      <Toaster position="top-right" reverseOrder={false} />
+      <div className="w-1/2 flex items-center justify-center bg-white rounded-l-lg">
+        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto max-h-screen h-auto" />
       </div>
-      <div className="w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400">
-        <img src={logoHorizontal} alt="LogiSync Logo" className="w-64 h-44" />
+      <div className="w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 rounded-r-lg">
+        <img src={logoHorizontal} alt="LogiSync Logo" className="w-64 h-40 mb-10" />
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
           <div className="mb-4">
             <label htmlFor="email" className="block text-white text-sm font-bold mb-2">Email</label>
@@ -66,7 +66,6 @@ const Login: React.FC = () => {
             />
             <p className="text-white text-xs italic">Esqueceu sua senha?</p>
           </div>
-          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
           <div className="flex items-center justify-between">
             <button
               type="submit"
