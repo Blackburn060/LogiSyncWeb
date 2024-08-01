@@ -12,7 +12,12 @@ const GerenciarHorarios: React.FC = () => {
       try {
         const data = await getHorarios();
         console.log('Horários recebidos:', data);
-        setHorarios(data);
+        const sortedData = data.sort((a, b) => {
+          const timeA = new Date(`1970-01-01T${a.horario_inicial}Z`).getTime();
+          const timeB = new Date(`1970-01-01T${b.horario_inicial}Z`).getTime();
+          return timeA - timeB;
+        });
+        setHorarios(sortedData);
       } catch (error) {
         console.error('Erro ao carregar horários', error);
       }
@@ -49,9 +54,9 @@ const GerenciarHorarios: React.FC = () => {
   const getIcon = (status: string | undefined) => {
     switch (status) {
       case 'disponível':
-        return '✔';
+        return '✅';
       case 'indisponível':
-        return '✖';
+        return '❌';
       case 'pendente':
         return '⚠️';
       default:
@@ -88,7 +93,7 @@ const GerenciarHorarios: React.FC = () => {
                     <td key={statusKey} className="border border-gray-300 p-2 text-center">
                       <button
                         onClick={() => handleDisponibilidadeChange(horario.id, statusKey as keyof HorarioDisponibilidade, status === 'disponível' ? 'indisponível' : 'disponível')}
-                        className={`${status === 'disponível' ? 'bg-green-500 hover:bg-green-700' : status === 'indisponível' ? 'bg-red-500 hover:bg-red-700' : 'bg-yellow-500 hover:bg-yellow-700'} text-white font-bold py-1 px-2 rounded-full`}
+                        className="text-white font-bold py-1 px-2 rounded-full"
                       >
                         {getIcon(status)}
                       </button>
