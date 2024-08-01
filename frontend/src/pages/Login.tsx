@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.png';
@@ -31,14 +31,14 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen py-10 px-20">
+    <div className="flex h-screen py-10 px-24">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="w-1/2 flex items-center justify-center bg-white rounded-l-lg">
-        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-auto" />
+        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-full" />
       </div>
       <div className="w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 rounded-r-lg">
-        <img src={logoHorizontal} alt="LogiSync Logo" className="w-56 mb-20" />
-        <form onSubmit={handleSubmit} className="w-full max-w-sm mb-20">
+        <img src={logoHorizontal} alt="LogiSync Logo" className="w-56 pb-3" />
+        <form onSubmit={handleSubmit} className="w-full max-w-sm">
           <div className="mb-4">
             <label htmlFor="email" className="block text-white text-lg font-extrabold mb-1">Email</label>
             <input
@@ -74,7 +74,7 @@ const Login: React.FC = () => {
               Entrar
             </button>
           </div>
-          <p className="text-white text-lg font-extrabold mt-4 text-center">Não tem uma conta? Cadastre-se aqui!</p>
+          <p className="text-white text-lg font-extrabold mt-4 text-center">Não tem uma conta? <Link to="/registro/usuario" target='_blank' className='underline'>Cadastre-se aqui!</Link></p>
         </form>
       </div>
     </div>
