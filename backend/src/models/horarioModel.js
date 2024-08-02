@@ -1,20 +1,11 @@
+// src/models/horarioModel.js
 const db = require('../Config/database');
-const moment = require('moment-timezone'); // Certifique-se de que esta linha está presente
 
-// Buscar todos os horários
-const getAllHorarios = (filters = {}) => {
+// Função para buscar todos os horários
+const getHorarios = () => {
     return new Promise((resolve, reject) => {
-        let sql = 'SELECT * FROM cadastrohorarios WHERE 1=1';
-        let params = [];
-
-        Object.keys(filters).forEach(key => {
-            if (filters[key] !== undefined) {
-                sql += ` AND ${key} = ?`;
-                params.push(filters[key]);  
-            }
-        });
-
-        db.all(sql, params, (err, rows) => {
+        const sql = 'SELECT * FROM cadastrohorarios';
+        db.all(sql, [], (err, rows) => {
             if (err) {
                 reject(err);
             } else {
@@ -23,12 +14,25 @@ const getAllHorarios = (filters = {}) => {
         });
     });
 };
-// Adicionar um novo horário
-const addHorario = (horario) => {
+
+// Função para adicionar um único conjunto de horários
+const addHorarios = (horario) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        const sql = `INSERT INTO cadastrohorarios (DataAgendamento, HorarioAgendamento, SituacaoHorario, DataGeracao) VALUES (?, ?, ?, ?)`;
-        db.run(sql, [horario.DataAgendamento, horario.HorarioAgendamento, horario.SituacaoHorario, dataGeracao], function(err) {
+        const sql = `
+            INSERT INTO cadastrohorarios (horario_inicial, horario_final, seg_status, ter_status, qua_status, qui_status, sex_status, sab_status, dom_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        db.run(sql, [
+            horario.horarioInicial,
+            horario.horarioFinal,
+            horario.seg_status,
+            horario.ter_status,
+            horario.qua_status,
+            horario.qui_status,
+            horario.sex_status,
+            horario.sab_status,
+            horario.dom_status
+        ], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -38,63 +42,40 @@ const addHorario = (horario) => {
     });
 };
 
-// Atualizar um horário
-const updateHorario = (horario, id) => {
+// Função para atualizar a disponibilidade de um horário
+const updateDayStatus = (id, day, status) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        let sql = 'UPDATE cadastrohorarios SET ';
-        let params = [];
-        let updates = [];
-
-        if (horario.DataAgendamento !== undefined) {
-            updates.push('DataAgendamento = ?');
-            params.push(horario.DataAgendamento);
-        }
-        if (horario.HorarioAgendamento !== undefined) {
-            updates.push('HorarioAgendamento = ?');
-            params.push(horario.HorarioAgendamento);
-        }
-        if (horario.SituacaoHorario !== undefined) {
-            updates.push('SituacaoHorario = ?');
-            params.push(horario.SituacaoHorario);
+        // Validação de 'day' para garantir que é um dia válido
+        const validDays = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
+        if (!validDays.includes(day)) {
+            console.error('Erro: Dia inválido fornecido:', day);
+            reject(new Error('Invalid day parameter'));
+            return; // Encerra a função para evitar mais execução
         }
 
-        // Adicionar a atualização de DataAlteracao automaticamente
-        updates.push('DataAlteracao = ?');
-        params.push(dataAlteracao);
+        const sql = `UPDATE cadastrohorarios SET ${day}_status = ?, data_atualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
 
-        if (updates.length === 0) {
-            reject(new Error("No fields to update"));
-            return;
-        }
-
-        sql += updates.join(', ') + ' WHERE CodigoHorario = ?';
-        params.push(id);
-
-        db.run(sql, params, function(err) {
-            if (err) reject(err);
-            else resolve(this.changes);
-        });
-    });
-};
-
-// Deletar um horário
-const deleteHorario = (id) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM cadastrohorarios WHERE CodigoHorario = ?';
-        db.run(sql, id, function(err) {
+        // Executando a consulta SQL
+        db.run(sql, [status, id], function(err) {
             if (err) {
+                // Log detalhado do erro incluindo os valores usados na consulta
+                console.error("Erro ao executar SQL:", sql, "Com valores:", status, id, err);
                 reject(err);
             } else {
-                resolve(this.changes);
+                if (this.changes === 0) {
+                    // Log se nenhuma linha foi atualizada
+                    console.error("Nenhuma linha atualizada, verifique o ID:", id);
+                    reject(new Error("No rows updated"));
+                } else {
+                    resolve({ id, changes: this.changes });
+                }
             }
         });
     });
 };
 
 module.exports = {
-    getAllHorarios,
-    addHorario,
-    updateHorario,
-    deleteHorario
+    getHorarios,
+    addHorarios,
+    updateDayStatus
 };

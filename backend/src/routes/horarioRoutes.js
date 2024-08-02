@@ -1,11 +1,12 @@
+// src/routes/horarioRoutes.js
 const express = require('express');
 const router = express.Router();
-const horarioController = require('../Controllers/horarioController');
-const authMiddleware = require('../middleware/authMiddleware');
+const HorarioController = require('../Controllers/horarioController');
 
-router.get('/horarios',authMiddleware, horarioController.listarHorarios);
-router.post('/horarios',authMiddleware, horarioController.adicionarHorario);
-router.put('/horarios/:id',authMiddleware, horarioController.atualizarHorario);
-router.delete('/horarios/:id',authMiddleware, horarioController.deletarHorario);
+// Rota para obter todos os horários
+router.get('/horarios', HorarioController.getHorarios);
+
+// Rota para atualizar a disponibilidade de um horário
+router.put('/horarios/:id', HorarioController.updateHorario);
 
 module.exports = router;
