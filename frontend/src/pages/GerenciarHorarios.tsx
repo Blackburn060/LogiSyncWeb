@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getHorarios, updateHorario } from '../services/HorarioService';
 import { HorarioDisponibilidade } from '../models/HorarioDisponibilidade';
 import axios from 'axios';
+import Navbar from '../components/Navbar';
 
 const GerenciarHorarios: React.FC = () => {
   const [horarios, setHorarios] = useState<HorarioDisponibilidade[]>([]);
@@ -40,7 +41,7 @@ const GerenciarHorarios: React.FC = () => {
       setHorarios(prevHorarios => prevHorarios.map(horario =>
         horario.id === id ? { ...horario, [statusKey]: novaDisponibilidade } : horario
       ));
-      setErrorMessage(null); // Limpa a mensagem de erro em caso de sucesso
+      setErrorMessage(null); 
     } catch (error) {
       console.error('Erro ao atualizar disponibilidade:', error);
       if (axios.isAxiosError(error) && error.response) {
@@ -65,45 +66,50 @@ const GerenciarHorarios: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">Ajuste de Horários Disponíveis</h1>
-      {errorMessage && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-          <strong className="font-bold">Erro: </strong>
-          <span className="block sm:inline">{errorMessage}</span>
+    <div>
+      <Navbar />
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="container mx-auto p-4 max-w-4xl">
+          <h1 className="text-2xl font-bold mb-4 text-center">Ajuste de Horários Disponíveis</h1>
+          {errorMessage && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+              <strong className="font-bold">Erro: </strong>
+              <span className="block sm:inline">{errorMessage}</span>
+            </div>
+          )}
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 p-2 text-center">Horário</th>
+                  {['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'].map((dia) => (
+                    <th key={dia} className="border border-gray-300 p-2 text-center">{dia}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {horarios.map((horario) => (
+                  <tr key={horario.id}>
+                    <td className="border border-gray-300 p-2 text-center">{`${horario.horario_inicial} - ${horario.horario_final}`}</td>
+                    {['seg_status', 'ter_status', 'qua_status', 'qui_status', 'sex_status', 'sab_status', 'dom_status'].map((statusKey) => {
+                      const status = horario[statusKey as keyof HorarioDisponibilidade] as string;
+                      return (
+                        <td key={statusKey} className="border border-gray-300 p-2 text-center">
+                          <button
+                            onClick={() => handleDisponibilidadeChange(horario.id, statusKey as keyof HorarioDisponibilidade, status === 'disponível' ? 'indisponível' : 'disponível')}
+                            className="text-xl" // Ajusta o tamanho do ícone para melhor visibilidade
+                          >
+                            {getIcon(status)}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      )}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border border-gray-300 p-2 text-center">Horário</th>
-              {['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'].map((dia) => (
-                <th key={dia} className="border border-gray-300 p-2 text-center">{dia}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {horarios.map((horario) => (
-              <tr key={horario.id}>
-                <td className="border border-gray-300 p-2 text-center">{`${horario.horario_inicial} - ${horario.horario_final}`}</td>
-                {['seg_status', 'ter_status', 'qua_status', 'qui_status', 'sex_status', 'sab_status', 'dom_status'].map((statusKey) => {
-                  const status = horario[statusKey as keyof HorarioDisponibilidade] as string;
-                  return (
-                    <td key={statusKey} className="border border-gray-300 p-2 text-center">
-                      <button
-                        onClick={() => handleDisponibilidadeChange(horario.id, statusKey as keyof HorarioDisponibilidade, status === 'disponível' ? 'indisponível' : 'disponível')}
-                        className="text-white font-bold py-1 px-2 rounded-full"
-                      >
-                        {getIcon(status)}
-                      </button>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );
