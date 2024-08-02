@@ -27,7 +27,6 @@ const getAllTransportadoras = (filters = {}) => {
 
 // Adicionar uma nova transportadora
 const addTransportadora = (transportadora) => {
-    console.log("Recebendo para adição:", transportadora); // Isto mostrará os dados recebidos
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
         const sql = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;

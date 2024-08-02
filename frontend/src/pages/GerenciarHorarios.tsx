@@ -13,7 +13,6 @@ const GerenciarHorarios: React.FC = () => {
     const fetchData = async () => {
       try {
         const data = await getHorarios();
-        console.log('Horários recebidos:', data);
         const sortedData = data.sort((a, b) => {
           const timeA = new Date(`1970-01-01T${a.horario_inicial}Z`).getTime();
           const timeB = new Date(`1970-01-01T${b.horario_inicial}Z`).getTime();
@@ -37,7 +36,6 @@ const GerenciarHorarios: React.FC = () => {
 
     const day = statusKey.replace('_status', '');
     try {
-      console.log(`Atualizando horário: id=${id}, statusKey=${statusKey}, novaDisponibilidade=${novaDisponibilidade}`);
       await updateHorario(id, day, novaDisponibilidade);
       setHorarios(prevHorarios => prevHorarios.map(horario =>
         horario.id === id ? { ...horario, [statusKey]: novaDisponibilidade } : horario
