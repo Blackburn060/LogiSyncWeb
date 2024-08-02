@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { jwtDecode, JwtPayload } from 'jwt-decode';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode,  JwtPayload } from 'jwt-decode';
+import axios from 'axios';
 
 interface ExtendedJwtPayload extends JwtPayload {
   id: string;
@@ -7,9 +9,11 @@ interface ExtendedJwtPayload extends JwtPayload {
 
 interface AuthContextType {
   user: ExtendedJwtPayload | null;
-  token: string | null;
-  login: (token: string) => void;
+  accessToken: string | null;
+  refreshToken: string | null;
+  login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
+  refreshAccessToken: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,36 +26,65 @@ export const useAuth = () => {
   return context;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<ExtendedJwtPayload | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
+  const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
+  const navigate = useNavigate();
 
-  const login = (token: string) => {
-    setToken(token);
-    localStorage.setItem('token', token);
-    const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
+  const login = useCallback((accessToken: string, refreshToken: string) => {
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
     setUser(decodedUser);
-  };
+  }, []);
 
-  const logout = () => {
-    setToken(null);
-    localStorage.removeItem('token');
+  const logout = useCallback(() => {
+    setAccessToken(null);
+    setRefreshToken(null);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     setUser(null);
-  };
+    navigate('/login');
+  }, [navigate]);
+
+  const refreshAccessToken = useCallback(async () => {
+    if (refreshToken) {
+      try {
+        const response = await axios.post(`${backendUrl}/refresh-token`, { refreshToken });
+        if (response.data && response.data.accessToken) {
+          login(response.data.accessToken, refreshToken);
+        } else {
+          logout();
+        }
+      } catch {
+        logout();
+      }
+    }
+  }, [refreshToken, login, logout]);
 
   useEffect(() => {
-    if (token) {
-      const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
+    if (accessToken) {
+      const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
       setUser(decodedUser);
+
+      const currentTime = Date.now() / 1000;
+      const timeUntilExpiry = (decodedUser.exp || 0) - currentTime;
+
+      if (timeUntilExpiry < 300) {
+        refreshAccessToken();
+      }
+    } else if (refreshToken) {
+      refreshAccessToken();
     }
-  }, [token]);
+  }, [accessToken, refreshToken, refreshAccessToken]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, refreshAccessToken }}>
       {children}
     </AuthContext.Provider>
   );

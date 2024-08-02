@@ -1,5 +1,5 @@
 const userModel = require('../models/userModel');
-const { hashPassword, verifyPassword } = require('../auth');
+const { hashPassword } = require('../auth');
 
 // Listar todos os usuários
 const listarUsuarios = async (req, res) => {

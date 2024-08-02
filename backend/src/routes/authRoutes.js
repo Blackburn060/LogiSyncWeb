@@ -1,23 +1,8 @@
-// src/routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
-const { generateToken, hashPassword, verifyPassword } = require('../auth');
-const userModel = require('../models/userModel');
+const { login, refreshAccessToken } = require('../Controllers/authController');
 
-router.post('/login', async (req, res) => {
-    const { email, senha } = req.body;
-
-    try {
-        const user = await userModel.findUserByEmail(email);
-        if (!user || !(await verifyPassword(senha, user.Senha))) {
-            return res.status(401).send({ message: 'Credenciais inválidas' });
-        }
-
-        const token = generateToken({ id: user.CodigoUsuario, email: user.Email });
-        res.send({ token });
-    } catch (error) {
-        res.status(500).send({ message: 'Erro no servidor' });
-    }
-});
+router.post('/login', login);
+router.post('/refresh-token', refreshAccessToken);
 
 module.exports = router;
