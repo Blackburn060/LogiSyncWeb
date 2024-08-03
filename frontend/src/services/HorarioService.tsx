@@ -10,7 +10,7 @@ export const getHorarios = async (): Promise<HorarioDisponibilidade[]> => {
 
 export const updateHorario = async (id: number, day: string, status: 'disponível' | 'indisponível' | 'pendente'): Promise<void> => {
   try {
-    const response = await axios.put(`${backendUrl}/horarios/${id}`, {
+    await axios.put(`${backendUrl}/horarios/${id}`, {
       day,
       status
     });
