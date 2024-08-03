@@ -17,8 +17,6 @@ const updateHorario = async (req, res) => {
     const { id } = req.params;
     const { day, status } = req.body;
 
-    console.log(`Recebido pedido de atualização: id=${id}, day=${day}, status=${status}`);
-
     // Validação de entrada para 'day' e 'status'
     const validDays = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
     const validStatuses = ['disponível', 'indisponível', 'pendente'];
