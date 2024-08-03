@@ -1,4 +1,3 @@
-// src/models/userModel.js
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 const bcrypt = require('bcrypt');
@@ -90,7 +89,6 @@ const updateUser = (user, id) => {
         });
     });
 };
-
 
 // Função para encontrar um usuário pelo email
 const findUserByEmail = (email) => {

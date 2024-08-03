@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
+import { FaSpinner } from 'react-icons/fa';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.png';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.png';
 
@@ -11,22 +12,38 @@ const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const response = await axios.post(`${backendUrl}/login`, { email, senha: password });
-      if (response.data && response.data.token) {
-        login(response.data.token);
+      if (response.data && response.data.accessToken && response.data.refreshToken) {
+        login(response.data.accessToken, response.data.refreshToken);
         navigate('/agendamentos');
       } else {
         toast.error('Credenciais inválidas. Por favor, tente novamente.');
       }
     } catch (err) {
-      toast.error('Credenciais inválidas. Por favor, tente novamente.');
+      if (axios.isAxiosError(err)) {
+        if (err.message === 'Network Error' && err.response === undefined) {
+          toast.error('Não foi possível conectar ao servidor. Por favor, tente mais tarde.');
+        } else if (err.response?.status === 500) {
+          toast.error('Erro interno do servidor. Por favor, tente mais tarde.');
+        } else if (err.response?.status === 401) {
+          toast.error('Credenciais inválidas. Por favor, tente novamente.');
+        } else {
+          toast.error('Erro desconhecido. Por favor, tente mais tarde.');
+        }
+      } else {
+        toast.error('Erro desconhecido. Por favor, tente mais tarde.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,9 +86,10 @@ const Login: React.FC = () => {
           <div className="flex items-center justify-center pt-8">
             <button
               type="submit"
-              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-2xl font-extrabold py-2 px-32 rounded focus:outline-none focus:shadow-outline"
+              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-2xl font-extrabold py-2 px-32 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
+              disabled={loading}
             >
-              Entrar
+              {loading ? <FaSpinner className="animate-spin text-3xl" /> : 'Entrar'}
             </button>
           </div>
           <p className="text-white text-lg font-extrabold mt-4 text-center">Não tem uma conta? <Link to="/registro/usuario" target='_blank' className='underline'>Cadastre-se aqui!</Link></p>
