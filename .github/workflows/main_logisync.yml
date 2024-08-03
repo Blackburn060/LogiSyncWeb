@@ -52,6 +52,7 @@ jobs:
         env:
           REACT_APP_FRONTEND_URL: ${{ secrets.REACT_APP_FRONTEND_URL }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -80,5 +81,5 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config appsettings set --name logisync-homologation-backend --resource-group LogiSync --settings REACT_APP_FRONTEND_URL=${{ secrets.REACT_APP_FRONTEND_URL }} SECRET_KEY=${{ secrets.SECRET_KEY }}
+            az webapp config appsettings set --name logisync-homologation-backend --resource-group LogiSync --settings REACT_APP_FRONTEND_URL=${{ secrets.REACT_APP_FRONTEND_URL }} SECRET_KEY=${{ secrets.SECRET_KEY }} REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }}
             az webapp config container set --name logisync-homologation-backend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-backend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}

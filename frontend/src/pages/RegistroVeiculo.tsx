@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Toaster, toast } from 'react-hot-toast';
 
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 const RegistroVeiculo: React.FC = () => {
-  const { user, token } = useAuth();
+  const { user, accessToken, refreshAccessToken } = useAuth();
   const [formData, setFormData] = useState({
     nomeVeiculo: '',
     placa: '',
@@ -16,9 +17,7 @@ const RegistroVeiculo: React.FC = () => {
     cor: '',
     capacidadeCarga: '',
     bloqueado: false,
-    codigoUsuario: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -32,20 +31,35 @@ const RegistroVeiculo: React.FC = () => {
     setLoading(true);
 
     try {
-      if (!user || !token) {
+      if (!user || !accessToken) {
         throw new Error('Usuário não autenticado.');
       }
 
-      formData.codigoUsuario = user.id;
-      await axios.post(`${backendUrl}/veiculos`, formData, {
+      const response = await axios.post(`${backendUrl}/veiculos`, { ...formData, codigoUsuario: user.id }, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      navigate('/Login');
-    } catch (err) {
-      setError('Erro ao cadastrar veículo. Tente novamente.');
+      if (response.status === 201) {
+        toast.success('Veículo cadastrado com sucesso!');
+        navigate('/agendamentos');
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          try {
+            await refreshAccessToken();
+            handleSubmit(e);
+          } catch (refreshError) {
+            toast.error('Erro ao renovar autenticação. Faça login novamente.');
+          }
+        } else {
+          toast.error('Erro ao cadastrar veículo. Tente novamente.');
+        }
+      } else {
+        toast.error('Erro desconhecido ao cadastrar veículo.');
+      }
     } finally {
       setLoading(false);
     }
@@ -53,6 +67,7 @@ const RegistroVeiculo: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-blue-500">
+      <Toaster position="top-right" />
       <div className="bg-white shadow-md rounded-lg p-8 max-w-md w-full">
         <h1 className="text-2xl font-bold mb-6 text-center">Registre o Veículo</h1>
         <form onSubmit={handleSubmit}>
@@ -174,7 +189,6 @@ const RegistroVeiculo: React.FC = () => {
               Bloqueado
             </label>
           </div>
-          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
           <div className="flex items-center justify-between">
             <button
               type="submit"
