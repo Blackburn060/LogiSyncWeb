@@ -1,4 +1,3 @@
-// services/usuarioService.ts
 import axios from 'axios';
 import { Usuario } from '../models/Usuario';
 

@@ -1,5 +1,5 @@
-// src/models/Transportadora.ts
 export interface Transportadora {
+    NomeEmpresa: string;
     CodigoTransportadora: number;
     Nome: string;
     NomeFantasia: string;

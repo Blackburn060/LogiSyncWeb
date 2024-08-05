@@ -111,7 +111,6 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
               </button>
               <button
                 onClick={() => {
-                  // Ação de inativar transportadora removida
                   setShowModal(false);
                 }}
                 className="px-4 py-2 bg-red-500 text-white rounded"
