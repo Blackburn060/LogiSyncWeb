@@ -18,9 +18,7 @@ const RegistroTransportadora: React.FC = () => {
     const fetchTransportadora = async () => {
       if (accessToken && user?.CodigoTransportadora) {
         try {
-          console.log('Fetching transportadora for CodigoTransportadora:', user.CodigoTransportadora);
           const transportadoraData = await getTransportadora(accessToken as string, user.CodigoTransportadora);
-          console.log('Fetched transportadora:', transportadoraData);
           setTransportadora(transportadoraData);
           const formattedData = {
             ...transportadoraData,

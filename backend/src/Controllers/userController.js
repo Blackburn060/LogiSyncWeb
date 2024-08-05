@@ -1,4 +1,3 @@
-// src/controllers/UserController.js
 const userModel = require('../models/userModel');
 const { hashPassword } = require('../auth');
 

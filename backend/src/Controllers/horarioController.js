@@ -1,4 +1,3 @@
-// src/controllers/horarioController.js
 const HorarioModel = require('../models/horarioModel');
 
 // Função para obter todos os horários

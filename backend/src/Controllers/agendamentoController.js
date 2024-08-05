@@ -1,7 +1,7 @@
 const agendamentoModel = require('../models/agendamentoModel');
 
 // Listar agendamentos por usuário
-const listarAgendamentos = async (req, res) => { //todo o controle de buscar os agendamentos de determinado usuario acontece aqui e no model
+const listarAgendamentos = async (req, res) => {
     try {
         const filters = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);

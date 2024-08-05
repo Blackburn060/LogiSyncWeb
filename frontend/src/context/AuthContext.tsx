@@ -7,7 +7,7 @@ interface ExtendedJwtPayload extends JwtPayload {
   id: string;
   nomeCompleto: string;
   tipoUsuario: string;
-  CodigoTransportadora: number; // Adicione essa linha
+  CodigoTransportadora: number;
 }
 
 interface AuthContextType {
@@ -41,7 +41,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
-    console.log('Decoded user on login:', decodedUser); // Adicione este log
     setUser(decodedUser);
   }, []);
 
@@ -72,7 +71,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (accessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
-      console.log('Decoded user on access token:', decodedUser); // Adicione este log
       setUser(decodedUser);
 
       const currentTime = Date.now() / 1000;
@@ -90,7 +88,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedAccessToken = localStorage.getItem('accessToken');
     if (storedAccessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(storedAccessToken);
-      console.log('Stored access token user:', decodedUser); // Adicione este log
       setUser(decodedUser);
       setAccessToken(storedAccessToken);
     }
