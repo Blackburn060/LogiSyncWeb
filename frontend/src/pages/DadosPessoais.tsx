@@ -4,8 +4,6 @@ import { getUsuario } from '../services/usuarioService';
 import { useAuth } from '../context/AuthContext';
 import UpdateUserForm from '../components/UpdateUserForm';
 import { Usuario } from '../models/Usuario';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const DadosPessoais: React.FC = () => {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -33,10 +31,11 @@ const DadosPessoais: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <ToastContainer />
       <div className="flex-grow flex justify-center items-center p-4">
-        <div className="w-full max-w-lg bg-blue-700 p-6 rounded-lg">
-          <h1 className="text-2xl font-bold mb-4 text-center text-white">Dados Pessoais</h1>
+        <div className="w-full max-w-lg bg-blue-700 p-6 rounded-lg relative">
+          <h1 className="text-2xl font-bold mb-4 text-center text-white">
+            <span className="bg-blue-900 px-2 py-1 rounded">Dados Pessoais</span>
+          </h1>
           {usuario && accessToken && (
             <UpdateUserForm userData={usuario} accessToken={accessToken} onUpdate={handleUpdate} />
           )}

@@ -8,5 +8,6 @@ router.get('/usuarios/:id', authMiddleware, userController.listarUsuario);
 router.post('/usuarios', authMiddleware, userController.adicionarUsuario);
 router.put('/usuarios/:id', authMiddleware, userController.atualizarUsuario);
 router.delete('/usuarios/:id', authMiddleware, userController.deletarUsuario);
+router.get('/verificar-email', authMiddleware, usuarioController.verificarEmailExistente);
 
 module.exports = router;

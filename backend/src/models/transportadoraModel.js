@@ -25,6 +25,19 @@ const getAllTransportadoras = (filters = {}) => {
     });
 };
 
+const getTransportadoraById = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastrotransportadora WHERE CodigoTransportadora = ?';
+        db.get(sql, [id], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+};
+
 // Adicionar uma nova transportadora
 const addTransportadora = (transportadora) => {
     return new Promise((resolve, reject) => {
@@ -100,5 +113,6 @@ module.exports = {
     getAllTransportadoras,
     addTransportadora,
     updateTransportadora,
+    getTransportadoraById,
     deleteTransportadora
 };

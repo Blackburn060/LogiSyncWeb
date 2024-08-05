@@ -9,7 +9,8 @@ const generateAccessToken = (user) => {
         id: user.id,
         email: user.email,
         nomeCompleto: user.nomeCompleto,
-        tipoUsuario: user.tipoUsuario
+        tipoUsuario: user.tipoUsuario,
+        CodigoTransportadora: user.CodigoTransportadora // Include CodigoTransportadora
     }, SECRET_KEY, { expiresIn: '15m' });
 };
 

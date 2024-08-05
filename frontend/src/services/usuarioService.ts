@@ -21,6 +21,17 @@ export const updateUsuario = async (token: string, id: number, usuario: Partial<
   });
 };
 
+
+export const checkEmailExists = async (email: string, accessToken: string): Promise<boolean> => {
+  const response = await axios.get(`/api/usuarios/check-email?email=${email}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return response.data.exists;
+};
+
+
 export const inactivateUsuario = async (token: string, id: number): Promise<void> => {
   await axios.delete(`${apiUrl}/usuarios/${id}`, {
     headers: {

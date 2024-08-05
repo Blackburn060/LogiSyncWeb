@@ -1,6 +1,6 @@
-import React, { useState } from 'react'; // Removido o useEffect da importação
+import React, { useState } from 'react';
 import { Usuario } from '../models/Usuario';
-import { updateUsuario, inactivateUsuario } from '../services/usuarioService';
+import { updateUsuario, inactivateUsuario, checkEmailExists } from '../services/usuarioService';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -18,7 +18,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
 
   const [formData, setFormData] = useState<Usuario>({
     ...userData,
-    CPF: formatCPF(userData.CPF || ''), // Garantir que o CPF seja uma string vazia se estiver ausente
+    CPF: formatCPF(userData.CPF || ''),
   });
 
   const [newPassword, setNewPassword] = useState<string>('');
@@ -29,7 +29,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'CPF' ? formatCPF(value) : value, // Formatar o CPF ao atualizar o valor
+      [name]: name === 'CPF' ? formatCPF(value) : value,
     });
   };
 
@@ -54,12 +54,24 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
     return true;
   };
 
+  const handleDisabledClick = () => {
+    toast.info('Clique no botão "Editar" para atualizar os dados.');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isEditing) {
       if (!validateCPF(formData.CPF)) {
         toast.error('CPF inválido!');
         return;
+      }
+
+      if (formData.Email !== userData.Email) {
+        const emailExists = await checkEmailExists(formData.Email, accessToken);
+        if (emailExists) {
+          toast.error('O email já está em uso!');
+          return;
+        }
       }
 
       const updatedData = { ...formData, CPF: formatCPF(formData.CPF) };
@@ -88,7 +100,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
   const handleInactivate = async () => {
     try {
       await inactivateUsuario(accessToken, formData.CodigoUsuario);
-      setShowModal(false); // Fechar o modal após a inativação bem-sucedida
+      setShowModal(false);
       toast.success('Usuário inativado com sucesso!', {
         onClose: () => window.location.reload()
       });
@@ -98,6 +110,11 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
         onClose: () => window.location.reload()
       });
     }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setFormData({ ...userData, CPF: formatCPF(userData.CPF || '') });
   };
 
   return (
@@ -113,7 +130,8 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
             value={formData.NomeCompleto}
             onChange={handleChange}
             disabled={!isEditing}
-            className="w-full p-2 border border-gray-300 rounded"
+            onClick={!isEditing ? handleDisabledClick : undefined}
+            className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
           />
         </div>
         <div className="mb-4">
@@ -125,7 +143,8 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
             value={formData.Email}
             onChange={handleChange}
             disabled={!isEditing}
-            className="w-full p-2 border border-gray-300 rounded"
+            onClick={!isEditing ? handleDisabledClick : undefined}
+            className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
           />
         </div>
         <div className="mb-4">
@@ -137,7 +156,8 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
             value={formData.CPF}
             onChange={handleChange}
             disabled={!isEditing}
-            className="w-full p-2 border border-gray-300 rounded"
+            onClick={!isEditing ? handleDisabledClick : undefined}
+            className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
           />
         </div>
         <div className="mb-4">
@@ -149,7 +169,8 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
             value={formData.NumeroCelular || ''}
             onChange={handleChange}
             disabled={!isEditing}
-            className="w-full p-2 border border-gray-300 rounded"
+            onClick={!isEditing ? handleDisabledClick : undefined}
+            className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
           />
         </div>
         {isEditing && (
@@ -175,10 +196,10 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
           </button>
           <button
             type="button"
-            onClick={() => setShowModal(true)}
+            onClick={isEditing ? handleCancelEdit : () => setShowModal(true)}
             className="px-4 py-2 bg-red-500 text-white rounded"
           >
-            Inativar Usuário
+            {isEditing ? 'Cancelar' : 'Inativar Usuário'}
           </button>
         </div>
       </form>

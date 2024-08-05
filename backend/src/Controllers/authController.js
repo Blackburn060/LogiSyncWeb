@@ -13,7 +13,8 @@ const login = async (req, res) => {
             id: user.CodigoUsuario,
             email: user.Email,
             nomeCompleto: user.NomeCompleto,
-            tipoUsuario: user.TipoUsuario
+            tipoUsuario: user.TipoUsuario,
+            CodigoTransportadora: user.CodigoTransportadora // Adicione isso
         });
         const refreshToken = generateRefreshToken({ id: user.CodigoUsuario });
 
@@ -35,7 +36,8 @@ const refreshAccessToken = async (req, res) => {
             id: user.CodigoUsuario,
             email: user.Email,
             nomeCompleto: user.NomeCompleto,
-            tipoUsuario: user.TipoUsuario
+            tipoUsuario: user.TipoUsuario,
+            CodigoTransportadora: user.CodigoTransportadora // Adicione isso
         });
         res.send({ accessToken });
     } catch (error) {

@@ -77,7 +77,20 @@ const atualizarUsuario = async (req, res) => {
         res.status(500).send({ message: "Erro ao atualizar usuário: " + error.message });
     }
 };
-
+const verificarEmailExistente = async (req, res) => {
+    const { email } = req.query;
+    try {
+      const usuario = await usuarioModel.findUserByEmail(email);
+      if (usuario) {
+        res.status(200).json({ exists: true });
+      } else {
+        res.status(200).json({ exists: false });
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao verificar email', error: error.message });
+    }
+  };
+  
 // Deletar um usuário
 const deletarUsuario = async (req, res) => {
     try {
@@ -96,6 +109,7 @@ module.exports = {
     listarUsuarios,
     adicionarUsuario,
     listarUsuario, 
+    verificarEmailExistente,
     atualizarUsuario,
     deletarUsuario
 };
