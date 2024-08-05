@@ -14,11 +14,11 @@ const login = async (req, res) => {
             email: user.Email,
             nomeCompleto: user.NomeCompleto,
             tipoUsuario: user.TipoUsuario,
-            CodigoTransportadora: user.CodigoTransportadora // Adicione isso
+            CodigoTransportadora: user.CodigoTransportadora
         });
         const refreshToken = generateRefreshToken({ id: user.CodigoUsuario });
 
-        res.send({ accessToken, refreshToken, nomeCompleto: user.NomeCompleto, tipoUsuario: user.TipoUsuario });
+        res.send({ accessToken, refreshToken });
     } catch (error) {
         res.status(500).send({ message: 'Erro no servidor' });
     }
@@ -37,7 +37,7 @@ const refreshAccessToken = async (req, res) => {
             email: user.Email,
             nomeCompleto: user.NomeCompleto,
             tipoUsuario: user.TipoUsuario,
-            CodigoTransportadora: user.CodigoTransportadora // Adicione isso
+            CodigoTransportadora: user.CodigoTransportadora
         });
         res.send({ accessToken });
     } catch (error) {
