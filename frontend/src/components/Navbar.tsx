@@ -32,6 +32,31 @@ const Navbar: React.FC = () => {
     };
   }, [isOpen]);
 
+  const renderNavLinks = () => {
+    if (user?.tipoUsuario === 'motorista') {
+      return (
+        <>
+          <Link to="/calendario" className="hover:text-gray-300">Calendário</Link>
+          <Link to="/agendamentos" className="hover:text-gray-300">Agendamentos</Link>
+          <Link to="/veiculos" className="hover:text-gray-300">Veículos</Link>
+          <Link to="/transportadora" className="hover:text-gray-300">Transportadora</Link>
+          <Link to="/usuarios" className="hover:text-gray-300">Usuários</Link> 
+        </>
+      );
+    } else if (user?.tipoUsuario === 'administrador') {
+      return (
+        <>
+          <Link to="/gestao/agendamentos" className="hover:text-gray-300">Agendamentos</Link>
+          <Link to="/gestao/portaria" className="hover:text-gray-300">Portaria</Link>
+          <Link to="/gestao/patio" className="hover:text-gray-300">Gestão de Pátio</Link>
+          <Link to="/gestao/relatorios" className="hover:text-gray-300">Relatórios</Link>
+          <Link to="/gestao/usuarios" className="hover:text-gray-300">Configurações</Link> 
+        </>
+      );
+    }
+    return null;
+  };
+
   return (
     <nav className="bg-logisync-color-blue-400 shadow-md w-full z-10">
       <div className="flex justify-between items-center px-2 py-1">
@@ -46,11 +71,8 @@ const Navbar: React.FC = () => {
           <span className="text-white font-bold text-xl ml-2">LogiSync</span>
         </div>
         <div className="hidden lg:flex items-center space-x-6 text-white font-bold text-xl">
-          <Link to="/calendario" className="hover:text-gray-200">Calendário</Link>
-          <Link to="/agendamentos" className="hover:text-gray-200">Agendamentos</Link>
-          <Link to="/veiculos" className="hover:text-gray-200">Veículos</Link>
-          <Link to="/transportadora" className="hover:text-gray-200">Transportadora</Link>
-          <button onClick={logout} className="hover:text-gray-200">Sair</button>
+          {renderNavLinks()}
+          <button onClick={logout} className="hover:text-gray-300">Sair</button>
         </div>
         <div className="hidden lg:flex items-center">
           <span className="text-white font-bold text-xl mr-3">{user ? user.nomeCompleto : 'Usuário'}</span>
@@ -69,12 +91,9 @@ const Navbar: React.FC = () => {
           <span className="text-white font-bold text-xl">Menu</span>
           <button onClick={toggleMenu} className="text-white text-2xl">×</button>
         </div>
-        <nav className="flex flex-col p-4 space-y-2 font-bold text-xl items-start">
-          <Link to="/calendario" className="text-white">Calendário</Link>
-          <Link to="/agendamentos" className="text-white">Agendamentos</Link>
-          <Link to="/veiculos" className="text-white">Veículos</Link>
-          <Link to="/transportadora" className="text-white">Transportadora</Link>
-          <button onClick={logout} className="text-white">Sair</button>
+        <nav className="flex flex-col p-4 space-y-2 font-bold text-xl items-start text-white">
+          {renderNavLinks()}
+          <button onClick={logout} className="hover:text-gray-300">Sair</button>
         </nav>
       </div>
     </nav>

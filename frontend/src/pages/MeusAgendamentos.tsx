@@ -1,4 +1,3 @@
-// src/pages/MeusAgendamentos.tsx
 import React, { useEffect, useState } from 'react';
 import api, { isAxiosError } from '../services/axiosConfig';
 import Navbar from '../components/Navbar';

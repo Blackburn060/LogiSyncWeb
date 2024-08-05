@@ -1,4 +1,3 @@
-// models/HorarioDisponibilidade.ts
 export type HorarioDisponibilidade = {
     id: number;
     horario_inicial: string;

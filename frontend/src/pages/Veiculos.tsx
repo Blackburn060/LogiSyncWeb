@@ -1,4 +1,3 @@
-// veiculos.tsx
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { getVeiculos, addVeiculo, updateVeiculo, deleteVeiculo } from '../services/veiculoService';
