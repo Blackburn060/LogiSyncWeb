@@ -1,6 +1,5 @@
-// models/Veiculo.ts
 export interface Veiculo {
-  CodigoVeiculo?: number;  // Tornar opcional
+  CodigoVeiculo?: number;
   CodigoUsuario: number;
   NomeVeiculo: string;
   Placa?: string;

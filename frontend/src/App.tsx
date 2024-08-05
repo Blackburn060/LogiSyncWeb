@@ -20,15 +20,15 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/agendamentos" element={<MeusAgendamentos />} />
           <Route path="/registro/veiculo" element={<RegistroVeiculo />} />
           <Route path="/registro/usuario" element={<RegistroUsuario />} />
           <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
-          <Route path="/gerenciar/horarios" element={<GerenciarHorarios />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/agendamentos" element={<MeusAgendamentos />} />
           <Route path="/veiculos" element={<Veiculos />} />
           <Route path="/dados-pessoais" element={<DadosPessoais />} /> 
-
+          <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
+          <Route path="/gestao/agendamentos" element={<GerenciarHorarios />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

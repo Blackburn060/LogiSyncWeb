@@ -1,4 +1,3 @@
-// services/veiculoService.ts
 import axios from 'axios';
 import { Veiculo } from '../models/Veiculo';
 
