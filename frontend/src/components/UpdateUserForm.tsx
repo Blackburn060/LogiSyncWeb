@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Usuario } from '../models/Usuario';
-import { updateUsuario } from '../services/usuarioService';
+import { updateUsuario, inactivateUsuario } from '../services/usuarioService';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -15,7 +15,9 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
     ...userData,
     CPF: userData.CPF || '', // Garantir que o CPF seja uma string vazia se estiver ausente
   });
+  const [newPassword, setNewPassword] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -54,8 +56,13 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
         return;
       }
 
+      const updatedData = { ...formData };
+      if (newPassword) {
+        updatedData.Senha = newPassword;
+      }
+
       try {
-        await updateUsuario(accessToken, formData.CodigoUsuario, formData);
+        await updateUsuario(accessToken, formData.CodigoUsuario, updatedData);
         onUpdate();
         setIsEditing(false);
         toast.success('Dados atualizados com sucesso!', {
@@ -69,6 +76,21 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
       }
     } else {
       setIsEditing(true);
+    }
+  };
+
+  const handleInactivate = async () => {
+    try {
+      await inactivateUsuario(accessToken, formData.CodigoUsuario);
+      setShowModal(false); // Fechar o modal após a inativação bem-sucedida
+      toast.success('Usuário inativado com sucesso!', {
+        onClose: () => window.location.reload()
+      });
+    } catch (error) {
+      console.error('Erro ao inativar usuário', error);
+      toast.error('Erro ao inativar usuário.', {
+        onClose: () => window.location.reload()
+      });
     }
   };
 
@@ -124,15 +146,59 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
             className="w-full p-2 border border-gray-300 rounded"
           />
         </div>
-        <div className="text-left">
+        {isEditing && (
+          <div className="mb-4">
+            <label className="block text-white mb-2" htmlFor="Senha">Nova Senha</label>
+            <input
+              type="password"
+              id="Senha"
+              name="Senha"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+            />
+            <small className="text-white block mt-1">Deixe em branco se não quiser alterar a senha.</small>
+          </div>
+        )}
+        <div className="flex justify-between">
           <button
             type="submit"
             className="px-4 py-2 bg-green-500 text-white rounded"
           >
             {isEditing ? 'Atualizar' : 'Editar'}
           </button>
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="px-4 py-2 bg-red-500 text-white rounded"
+          >
+            Inativar Usuário
+          </button>
         </div>
       </form>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Confirmação</h2>
+            <p className="mb-4">Você tem certeza que deseja inativar este usuário?</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-gray-300 text-black rounded mr-2"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleInactivate}
+                className="px-4 py-2 bg-red-500 text-white rounded"
+              >
+                Inativar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -20,3 +20,11 @@ export const updateUsuario = async (token: string, id: number, usuario: Partial<
     }
   });
 };
+
+export const inactivateUsuario = async (token: string, id: number): Promise<void> => {
+  await axios.delete(`${apiUrl}/usuarios/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
