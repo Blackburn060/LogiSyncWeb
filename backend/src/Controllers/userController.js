@@ -12,6 +12,18 @@ const listarUsuarios = async (req, res) => {
     }
 };
 
+const listarUsuario = async (req, res) => {
+    try {
+        const usuario = await userModel.getUserById(req.params.id);
+        if (usuario) {
+            res.json(usuario);
+        } else {
+            res.status(404).send({ message: "Usuário não encontrado" });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao buscar usuário: " + error.message });
+    }
+};
 // Adicionar um usuário
 const adicionarUsuario = async (req, res) => {
     const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular } = req.body;
@@ -80,6 +92,7 @@ const deletarUsuario = async (req, res) => {
 module.exports = {
     listarUsuarios,
     adicionarUsuario,
+    listarUsuario, 
     atualizarUsuario,
     deletarUsuario
 };

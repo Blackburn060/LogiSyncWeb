@@ -23,6 +23,20 @@ const getAllUsers = (filters = {}) => {
     });
 };
 
+// Função para buscar um usuário pelo ID
+const getUserById = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastrousuarios WHERE CodigoUsuario = ?';
+        db.get(sql, [id], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+};
+
 // Função para adicionar um novo usuário com DataGeracao formatada
 const addUser = (user) => {
     return new Promise((resolve, reject) => {
@@ -123,6 +137,7 @@ module.exports = {
     getAllUsers,
     addUser,
     updateUser,
+    getUserById, 
     findUserByEmail,
     deleteUser
 };
