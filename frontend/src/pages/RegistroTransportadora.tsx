@@ -12,15 +12,13 @@ const RegistroTransportadora: React.FC = () => {
   const { accessToken, user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Transportadora | null>(null);
-  const [initialFormData, setInitialFormData] = useState<Transportadora | null>(null); // Para armazenar os dados iniciais
+  const [initialFormData, setInitialFormData] = useState<Transportadora | null>(null);
 
   useEffect(() => {
     const fetchTransportadora = async () => {
       if (accessToken && user?.CodigoTransportadora) {
         try {
-          console.log('Fetching transportadora for CodigoTransportadora:', user.CodigoTransportadora);
           const transportadoraData = await getTransportadora(accessToken as string, user.CodigoTransportadora);
-          console.log('Fetched transportadora:', transportadoraData);
           setTransportadora(transportadoraData);
           const formattedData = {
             ...transportadoraData,
@@ -29,7 +27,7 @@ const RegistroTransportadora: React.FC = () => {
             CNPJ: cnpj.format(transportadoraData.CNPJ || ''),
           };
           setFormData(formattedData);
-          setInitialFormData(formattedData); // Salvar os dados iniciais
+          setInitialFormData(formattedData);
         } catch (error) {
           console.error('Erro ao buscar detalhes da transportadora', error);
         }
@@ -74,7 +72,7 @@ const RegistroTransportadora: React.FC = () => {
   };
 
   const handleCancel = () => {
-    setFormData(initialFormData); // Restaurar os dados iniciais
+    setFormData(initialFormData);
     setIsEditing(false);
   };
 

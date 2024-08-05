@@ -1,4 +1,3 @@
-// src/models/Usuario.ts
 export interface Usuario {
   CodigoUsuario: number;
   NomeCompleto: string;

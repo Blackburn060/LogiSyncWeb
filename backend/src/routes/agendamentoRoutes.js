@@ -9,4 +9,3 @@ router.put('/agendamentos/:id',authMiddleware, agendamentoController.atualizarAg
 router.delete('/agendamentos/:id',authMiddleware, agendamentoController.deletarAgendamento);
 
 module.exports = router;
-

@@ -1,4 +1,3 @@
-// src/models/horarioModel.js
 const db = require('../Config/database');
 
 // Função para buscar todos os horários

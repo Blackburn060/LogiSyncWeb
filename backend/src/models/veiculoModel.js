@@ -1,10 +1,6 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
-
-
-// Buscar todos os veículos com filtros
-// Buscar todos os veículos
 const getAllVeiculos = (filters = {}) => {
     return new Promise((resolve, reject) => {
         let sql = 'SELECT * FROM cadastroveiculo WHERE 1=1';
@@ -52,7 +48,7 @@ const updateVeiculo = (veiculo, id) => {
 
         // Verifica cada campo e adiciona à lista de updates se não for indefinido
         Object.entries(veiculo).forEach(([key, value]) => {
-            if (value !== undefined && !['DataGeracao', 'DataAlteracao'].includes(key)) {  // Ignora campos de data
+            if (value !== undefined && !['DataGeracao', 'DataAlteracao'].includes(key)) {
                 updates.push(`${key} = ?`);
                 params.push(value);
             }
