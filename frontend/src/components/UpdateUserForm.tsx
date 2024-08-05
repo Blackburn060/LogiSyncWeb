@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // Removido o useEffect da importação
 import { Usuario } from '../models/Usuario';
 import { updateUsuario, inactivateUsuario } from '../services/usuarioService';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,10 +11,16 @@ interface UpdateUserFormProps {
 }
 
 const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, onUpdate }) => {
+  const formatCPF = (cpf: string) => {
+    cpf = cpf.replace(/[^\d]/g, '');
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  };
+
   const [formData, setFormData] = useState<Usuario>({
     ...userData,
-    CPF: userData.CPF || '', // Garantir que o CPF seja uma string vazia se estiver ausente
+    CPF: formatCPF(userData.CPF || ''), // Garantir que o CPF seja uma string vazia se estiver ausente
   });
+
   const [newPassword, setNewPassword] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -23,7 +29,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: name === 'CPF' ? formatCPF(value) : value, // Formatar o CPF ao atualizar o valor
     });
   };
 
@@ -56,7 +62,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
         return;
       }
 
-      const updatedData = { ...formData };
+      const updatedData = { ...formData, CPF: formatCPF(formData.CPF) };
       if (newPassword) {
         updatedData.Senha = newPassword;
       }
