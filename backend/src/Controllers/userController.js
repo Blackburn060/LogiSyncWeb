@@ -12,6 +12,7 @@ const listarUsuarios = async (req, res) => {
     }
 };
 
+// Listar um usuário pelo ID
 const listarUsuario = async (req, res) => {
     try {
         const usuario = await userModel.getUserById(req.params.id);
@@ -24,9 +25,10 @@ const listarUsuario = async (req, res) => {
         res.status(500).send({ message: "Erro ao buscar usuário: " + error.message });
     }
 };
+
 // Adicionar um usuário
 const adicionarUsuario = async (req, res) => {
-    const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular } = req.body;
+    const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular, cpf } = req.body;
 
     try {
         const hashedPassword = await hashPassword(senha);
@@ -37,7 +39,8 @@ const adicionarUsuario = async (req, res) => {
             TipoUsuario: tipoUsuario,
             CodigoTransportadora: codigoTransportadora || null,
             SituacaoUsuario: 1,
-            NumeroCelular: numeroCelular || null
+            NumeroCelular: numeroCelular || null,
+            CPF: cpf || null
         };
 
         const userId = await userModel.addUser(user);

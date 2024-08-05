@@ -1,4 +1,3 @@
-// src/models/userModel.js
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 const bcrypt = require('bcrypt');
@@ -49,8 +48,8 @@ const addUser = (user) => {
             if (err) {
                 reject(err);
             } else {
-                const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-                db.run(sql, [user.NomeCompleto, user.CodigoTransportadora, user.Email, hashedPassword, user.TipoUsuario, user.SituacaoUsuario, user.NumeroCelular, dataGeracao], function(err) {
+                const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, DataGeracao, CPF) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                db.run(sql, [user.NomeCompleto, user.CodigoTransportadora, user.Email, hashedPassword, user.TipoUsuario, user.SituacaoUsuario, user.NumeroCelular, dataGeracao, user.CPF], function(err) {
                     if (err) {
                         reject(err);
                     } else {
