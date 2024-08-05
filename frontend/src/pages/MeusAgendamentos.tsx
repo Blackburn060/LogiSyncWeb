@@ -1,12 +1,11 @@
+// src/pages/MeusAgendamentos.tsx
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api, { isAxiosError } from '../services/axiosConfig';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
-
-const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 interface Agendamento {
   DataAgendamento: string;
@@ -41,21 +40,13 @@ const MeusAgendamentos: React.FC = () => {
       setAuthChecked(true);
 
       try {
-        const response = await axios.get(`${backendUrl}/agendamentos?CodigoUsuario=${user?.id}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        const response = await api.get(`/agendamentos?CodigoUsuario=${user?.id}`);
         setAgendamentos(response.data);
       } catch (err: unknown) {
-        if (axios.isAxiosError(err) && err.response?.status === 401 && refreshToken) {
+        if (isAxiosError(err) && err.response?.status === 401 && refreshToken) {
           try {
             await refreshAccessToken();
-            const response = await axios.get(`${backendUrl}/agendamentos?CodigoUsuario=${user?.id}`, {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            });
+            const response = await api.get(`/agendamentos?CodigoUsuario=${user?.id}`);
             setAgendamentos(response.data);
           } catch (refreshError) {
             toast.error('Erro ao carregar agendamentos.');

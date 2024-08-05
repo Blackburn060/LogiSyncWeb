@@ -1,3 +1,4 @@
+// src/models/userModel.js
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 const bcrypt = require('bcrypt');
@@ -104,6 +105,20 @@ const findUserByEmail = (email) => {
     });
 };
 
+// Função para encontrar um usuário pelo ID
+const findUserById = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastrousuarios WHERE CodigoUsuario = ?';
+        db.get(sql, [id], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+};
+
 // Função para "deletar" (inativar) um usuário
 const deleteUser = (id) => {
     return new Promise((resolve, reject) => {
@@ -124,5 +139,6 @@ module.exports = {
     addUser,
     updateUser,
     findUserByEmail,
+    findUserById,
     deleteUser
 };

@@ -5,7 +5,12 @@ const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_SECRET_KEY;
 
 const generateAccessToken = (user) => {
-    return jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '15m' });
+    return jwt.sign({
+        id: user.id,
+        email: user.email,
+        nomeCompleto: user.nomeCompleto,
+        tipoUsuario: user.tipoUsuario
+    }, SECRET_KEY, { expiresIn: '15m' });
 };
 
 const generateRefreshToken = (user) => {
@@ -13,7 +18,11 @@ const generateRefreshToken = (user) => {
 };
 
 const verifyRefreshToken = (token) => {
-    return jwt.verify(token, REFRESH_SECRET_KEY);
+    try {
+        return jwt.verify(token, REFRESH_SECRET_KEY);
+    } catch (error) {
+        throw new Error('Token inválido');
+    }
 };
 
 const hashPassword = async (password) => {

@@ -4,7 +4,7 @@ const { hashPassword } = require('../auth');
 // Listar todos os usuários
 const listarUsuarios = async (req, res) => {
     try {
-        const filters = req.query;  
+        const filters = req.query;
         const usuarios = await userModel.getAllUsers(filters);
         res.json(usuarios);
     } catch (error) {

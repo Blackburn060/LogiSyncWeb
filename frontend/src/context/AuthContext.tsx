@@ -1,10 +1,13 @@
+// src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode,  JwtPayload } from 'jwt-decode';
-import axios from 'axios';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
+import api from '../services/axiosConfig';
 
 interface ExtendedJwtPayload extends JwtPayload {
   id: string;
+  nomeCompleto: string;
+  tipoUsuario: string;
 }
 
 interface AuthContextType {
@@ -14,7 +17,6 @@ interface AuthContextType {
   login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
-  getToken: () => string | null;  // Adicionamos isso aqui
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const refreshAccessToken = useCallback(async () => {
     if (refreshToken) {
       try {
-        const response = await axios.post(`${backendUrl}/refresh-token`, { refreshToken });
+        const response = await api.post('/refresh-token', { refreshToken });
         if (response.data && response.data.accessToken) {
           login(response.data.accessToken, refreshToken);
         } else {
@@ -67,10 +69,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
   }, [refreshToken, login, logout]);
-
-  const getToken = () => {
-    return accessToken;
-  };
 
   useEffect(() => {
     if (accessToken) {
@@ -88,8 +86,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [accessToken, refreshToken, refreshAccessToken]);
 
+  useEffect(() => {
+    const storedAccessToken = localStorage.getItem('accessToken');
+    if (storedAccessToken) {
+      const decodedUser = jwtDecode<ExtendedJwtPayload>(storedAccessToken);
+      setUser(decodedUser);
+      setAccessToken(storedAccessToken);
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, refreshAccessToken, getToken }}>
+    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, refreshAccessToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,3 +1,4 @@
+// src/components/Navbar.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -6,7 +7,7 @@ import iconeUsuario from '../assets/icons/Icon-user-white.png';
 import iconeMenu from '../assets/icons/Icone-barra-de-menu.png';
 
 const Navbar: React.FC = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +53,7 @@ const Navbar: React.FC = () => {
           <button onClick={logout} className="hover:text-gray-200">Sair</button>
         </div>
         <div className="hidden lg:flex items-center">
-          <span className="text-white font-bold text-xl mr-3">Marcelo Tizo</span>
+          <span className="text-white font-bold text-xl mr-3">{user ? user.nomeCompleto : 'Usuário'}</span>
           <img src={iconeUsuario} alt="User Icon" className="w-11" />
         </div>
       </div>

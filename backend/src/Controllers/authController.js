@@ -9,10 +9,15 @@ const login = async (req, res) => {
             return res.status(401).send({ message: 'Credenciais inválidas' });
         }
 
-        const accessToken = generateAccessToken({ id: user.CodigoUsuario, email: user.Email });
+        const accessToken = generateAccessToken({
+            id: user.CodigoUsuario,
+            email: user.Email,
+            nomeCompleto: user.NomeCompleto,
+            tipoUsuario: user.TipoUsuario
+        });
         const refreshToken = generateRefreshToken({ id: user.CodigoUsuario });
 
-        res.send({ accessToken, refreshToken });
+        res.send({ accessToken, refreshToken, nomeCompleto: user.NomeCompleto, tipoUsuario: user.TipoUsuario });
     } catch (error) {
         res.status(500).send({ message: 'Erro no servidor' });
     }
@@ -22,10 +27,19 @@ const refreshAccessToken = async (req, res) => {
     const { refreshToken } = req.body;
     try {
         const decoded = verifyRefreshToken(refreshToken);
-        const accessToken = generateAccessToken({ id: decoded.id });
+        const user = await userModel.findUserById(decoded.id);
+        if (!user) {
+            return res.status(401).send({ message: 'Usuário não encontrado' });
+        }
+        const accessToken = generateAccessToken({
+            id: user.CodigoUsuario,
+            email: user.Email,
+            nomeCompleto: user.NomeCompleto,
+            tipoUsuario: user.TipoUsuario
+        });
         res.send({ accessToken });
     } catch (error) {
-        res.status(401).send({ message: 'Token inválido' });
+        res.status(401).send({ message: error.message });
     }
 };
 

@@ -1,3 +1,4 @@
+// src/pages/Login.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
@@ -6,8 +7,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { FaSpinner } from 'react-icons/fa';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.png';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.png';
-
-const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+import api from '../services/axiosConfig';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${backendUrl}/login`, { email, senha: password });
+      const response = await api.post('/login', { email, senha: password });
       if (response.data && response.data.accessToken && response.data.refreshToken) {
         login(response.data.accessToken, response.data.refreshToken);
         navigate('/agendamentos');
