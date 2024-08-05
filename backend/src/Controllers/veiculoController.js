@@ -2,13 +2,14 @@ const veiculoModel = require('../models/veiculoModel');
 
 const listarVeiculos = async (req, res) => {
     try {
-        const filters = req.query;
-        const veiculos = await veiculoModel.getAllVeiculos(filters);
+        const userId = req.user.id; 
+        const veiculos = await veiculoModel.getAllVeiculos({ CodigoUsuario: userId });
         res.json(veiculos);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar veículos: " + error.message });
     }
 };
+
 
 const adicionarVeiculo = async (req, res) => {
     try {

@@ -1,7 +1,10 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
+
+
 // Buscar todos os veículos com filtros
+// Buscar todos os veículos
 const getAllVeiculos = (filters = {}) => {
     return new Promise((resolve, reject) => {
         let sql = 'SELECT * FROM cadastroveiculo WHERE 1=1';

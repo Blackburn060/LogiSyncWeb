@@ -9,6 +9,7 @@ import RegistroUsuario from './pages/RegistroUsuario';
 import RegistroTransportadora from './pages/RegistroTransportadora';
 import Unauthorized from './pages/Unauthorized';
 import GerenciarHorarios from './pages/GerenciarHorarios';
+import Veiculos from './pages/Veiculos';  // Importe a página Veiculos
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,8 @@ const App: React.FC = () => {
           <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
           <Route path="/gerenciar/horarios" element={<GerenciarHorarios />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/veiculos" element={<Veiculos />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

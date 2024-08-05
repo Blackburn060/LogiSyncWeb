@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
+  getToken: () => string | null;  // Adicionamos isso aqui
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,6 +68,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [refreshToken, login, logout]);
 
+  const getToken = () => {
+    return accessToken;
+  };
+
   useEffect(() => {
     if (accessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
@@ -84,7 +89,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [accessToken, refreshToken, refreshAccessToken]);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, refreshAccessToken }}>
+    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, refreshAccessToken, getToken }}>
       {children}
     </AuthContext.Provider>
   );
