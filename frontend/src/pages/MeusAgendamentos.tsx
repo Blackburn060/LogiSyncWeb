@@ -86,27 +86,27 @@ const MeusAgendamentos: React.FC = () => {
           <ClipLoader size={150} />
         </div>
       ) : (
-        <div className="container mx-auto p-4">
-          <h1 className="text-2xl font-bold mb-4">Meus agendamentos</h1>
-          <div className="border border-black rounded-md p-4 max-w-3xl mx-auto">
+        <div className="container mx-auto pt-10">
+          <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">Meus agendamentos</h1>
+          <div className="border border-black rounded-md px-4 pb-4 max-w-3xl mx-auto">
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse">
                 <thead>
-                  <tr>
-                    <th className="border-b-2 border-black p-2 text-left">Data</th>
-                    <th className="border-b-2 border-black p-2 text-left">Horário</th>
-                    <th className="border-b-2 border-black p-2 text-left">Placa</th>
-                    <th className="border-b-2 border-black p-2 text-left">Status</th>
-                    <th className="border-b-2 border-black p-2 text-left">Cancelar</th>
+                  <tr className='text-2xl text-center font-extrabold'>
+                    <th className="p-2">Data</th>
+                    <th className="p-2">Horário</th>
+                    <th className="p-2">Placa</th>
+                    <th className="p-2">Status</th>
+                    <th className="p-2">Cancelar</th>
                   </tr>
                 </thead>
                 <tbody>
                   {agendamentos.map((agendamento, index) => (
                     <tr key={index} className="bg-logisync-color-blue-100 text-white">
-                      <td className="border-b border-black p-2">{agendamento.DataAgendamento}</td>
-                      <td className="border-b border-black p-2">{agendamento.HoraAgendamento}</td>
-                      <td className="border-b border-black p-2">{agendamento.Placa}</td>
-                      <td className="border-b border-black p-2">{agendamento.SituacaoAgendamento}</td>
+                      <td className="border-b border-black p-2 text-center">{agendamento.DataAgendamento}</td>
+                      <td className="border-b border-black p-2 text-center">{agendamento.HoraAgendamento}</td>
+                      <td className="border-b border-black p-2 text-center">{agendamento.Placa}</td>
+                      <td className="border-b border-black p-2 text-left">{agendamento.SituacaoAgendamento}</td>
                       <td className="border-b border-black p-2">
                         <button className="text-red-600 hover:text-red-800">
                           <svg className="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
