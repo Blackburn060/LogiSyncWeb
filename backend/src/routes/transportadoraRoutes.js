@@ -7,6 +7,6 @@ router.get('/transportadoras', authMiddleware, transportadoraController.listarTr
 router.post('/transportadoras', authMiddleware, transportadoraController.adicionarTransportadora);
 router.put('/transportadoras/:id', authMiddleware, transportadoraController.atualizarTransportadora);
 router.delete('/transportadoras/:id', authMiddleware, transportadoraController.deletarTransportadora);
-router.get('/transportadoras/:id', authMiddleware, transportadoraController.buscarTransportadoraPorId); 
+router.get('/transportadoras/:id', authMiddleware, transportadoraController.getTransportadoraById); 
 
 module.exports = router;

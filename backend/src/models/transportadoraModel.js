@@ -1,10 +1,10 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
-// Buscar todas as transportadoras
+// Buscar todas as transportadoras ativas
 const getAllTransportadoras = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        let sql = 'SELECT * FROM cadastrotransportadora WHERE 1=1';
+        let sql = 'SELECT * FROM cadastrotransportadora WHERE SituacaoTransportadora = 1';
         let params = [];
 
         // Adiciona condições SQL com base nos filtros passados
@@ -25,9 +25,10 @@ const getAllTransportadoras = (filters = {}) => {
     });
 };
 
+// Buscar transportadora por ID, apenas se estiver ativa
 const getTransportadoraById = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastrotransportadora WHERE CodigoTransportadora = ?';
+        const sql = 'SELECT * FROM cadastrotransportadora WHERE CodigoTransportadora = ? AND SituacaoTransportadora = 1';
         db.get(sql, [id], (err, row) => {
             if (err) {
                 reject(err);
@@ -53,7 +54,6 @@ const addTransportadora = (transportadora) => {
     });
 };
 
-
 // Atualizar uma transportadora
 const updateTransportadora = (transportadora, id) => {
     return new Promise((resolve, reject) => {
@@ -74,7 +74,6 @@ const updateTransportadora = (transportadora, id) => {
             updates.push('NomeFantasia = ?');
             params.push(transportadora.NomeFantasia);
         }
-        
 
         updates.push('DataAlteracao = ?');
         params.push(dataAlteracao);
@@ -92,7 +91,6 @@ const updateTransportadora = (transportadora, id) => {
         }
     });
 };
-
 
 // Deletar uma transportadora
 const deleteTransportadora = (id) => {
@@ -113,6 +111,6 @@ module.exports = {
     getAllTransportadoras,
     addTransportadora,
     updateTransportadora,
-    getTransportadoraById,
-    deleteTransportadora
+    deleteTransportadora,
+    getTransportadoraById 
 };

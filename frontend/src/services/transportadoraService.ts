@@ -1,3 +1,4 @@
+// services/transportadoraService.ts
 import axios from 'axios';
 import { Transportadora } from '../models/Transportadora';
 
@@ -22,6 +23,23 @@ export const updateTransportadora = async (token: string, id: number, transporta
 
 export const deleteTransportadora = async (token: string, id: number): Promise<void> => {
   await axios.delete(`${apiUrl}/transportadoras/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
+
+export const addTransportadora = async (token: string, transportadora: Partial<Transportadora>): Promise<Transportadora> => {
+  const response = await axios.post(`${apiUrl}/transportadoras`, transportadora, {
+    headers: {
+      Authorization: `Bearer {token}`
+    }
+  });
+  return response.data;
+};
+
+export const updateUserTransportadora = async (token: string, userId: number, transportadoraId: number): Promise<void> => {
+  await axios.put(`${apiUrl}/usuarios/${userId}/transportadora`, { transportadoraId }, {
     headers: {
       Authorization: `Bearer ${token}`
     }

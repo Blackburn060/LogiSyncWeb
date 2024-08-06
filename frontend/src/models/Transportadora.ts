@@ -5,7 +5,7 @@ export interface Transportadora {
     NomeFantasia: string;
     CNPJ: string;
     SituacaoTransportadora: number;
-    DataGeracao: string;
+    DataGeracao?: string;
     DataAlteracao?: string;
   }
   
