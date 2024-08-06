@@ -1,4 +1,3 @@
-// services/transportadoraService.ts
 import axios from 'axios';
 import { Transportadora } from '../models/Transportadora';
 
@@ -39,7 +38,7 @@ export const addTransportadora = async (token: string, transportadora: Partial<T
 };
 
 export const updateUserTransportadora = async (token: string, userId: number, transportadoraId: number): Promise<void> => {
-  await axios.put(`${apiUrl}/usuarios/${userId}/transportadora`, { transportadoraId }, {
+  await axios.put(`${apiUrl}/usuarios/${userId}/transportadoras`, { transportadoraId }, {
     headers: {
       Authorization: `Bearer ${token}`
     }
