@@ -37,9 +37,9 @@ const RegistroTransportadora: React.FC = () => {
   }, [accessToken, user]);
 
   const handleUpdate = async () => {
-    if (isEditing && formData) {
+    if (isEditing && formData && transportadora) {
       try {
-        await updateTransportadora(accessToken as string, transportadora!.CodigoTransportadora, formData);
+        await updateTransportadora(accessToken as string, transportadora.CodigoTransportadora, formData);
         setIsEditing(false);
         setTransportadora(formData as Transportadora);
         toast.success('Transportadora atualizada com sucesso!');
@@ -116,7 +116,7 @@ const RegistroTransportadora: React.FC = () => {
                       type="text"
                       id="Nome"
                       name="Nome"
-                      value={formData?.Nome || ''}
+                      value={formData.Nome || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
                       className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200' : ''}`}
@@ -128,7 +128,7 @@ const RegistroTransportadora: React.FC = () => {
                       type="text"
                       id="NomeFantasia"
                       name="NomeFantasia"
-                      value={formData?.NomeFantasia || ''}
+                      value={formData.NomeFantasia || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
                       className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200' : ''}`}
@@ -140,7 +140,7 @@ const RegistroTransportadora: React.FC = () => {
                       type="text"
                       id="CNPJ"
                       name="CNPJ"
-                      value={formData?.CNPJ || ''}
+                      value={formData.CNPJ || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
                       className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200' : ''}`}
