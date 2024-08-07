@@ -102,9 +102,7 @@ const RegistroTransportadora: React.FC = () => {
           <h1 className="text-2xl font-bold mb-4 text-center text-white">Dados da Transportadora</h1>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
-              <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full" role="status">
-                <span className="visually-hidden">Carregando...</span>
-              </div>
+              <l-helix size="45" speed="2.5" color="white"></l-helix>
             </div>
           ) : (
             <>

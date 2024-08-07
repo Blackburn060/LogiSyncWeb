@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api, { isAxiosError } from '../services/axiosConfig';
 import Navbar from '../components/Navbar';
+import { Agendamento } from '../models/Agendamento';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { ClipLoader } from 'react-spinners';
-
-interface Agendamento {
-  DataAgendamento: string;
-  HoraAgendamento: string;
-  Placa: string;
-  SituacaoAgendamento: string;
-}
 
 const MeusAgendamentos: React.FC = () => {
   const { user, accessToken, refreshToken, refreshAccessToken } = useAuth();
@@ -63,11 +56,11 @@ const MeusAgendamentos: React.FC = () => {
 
   if (!authChecked) {
     return (
-      <div>
+      <div className="min-h-screen flex flex-col">
         <Navbar />
         <Toaster position="top-right" />
-        <div className="flex justify-center items-center h-screen">
-          <ClipLoader size={150} />
+        <div className="flex flex-grow justify-center items-center">
+          <l-helix size="45" speed="2.5" color="black"></l-helix>
         </div>
       </div>
     );
@@ -78,15 +71,15 @@ const MeusAgendamentos: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <Toaster position="top-right" />
       {loading ? (
-        <div className="flex justify-center items-center h-screen">
-          <ClipLoader size={150} />
+        <div className="flex flex-grow justify-center items-center">
+          <l-helix size="45" speed="2.5" color="black"></l-helix>
         </div>
       ) : (
-        <div className="container mx-auto pt-10">
+        <div className="container mx-auto pt-10 flex-grow">
           <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">Meus agendamentos</h1>
           <div className="border border-black rounded-md px-4 pb-4 max-w-3xl mx-auto">
             <div className="overflow-x-auto">
