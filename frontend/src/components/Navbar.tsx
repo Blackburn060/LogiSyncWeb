@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
           <Link to="/transportadora" className="hover:text-gray-300">Transportadora</Link>
         </>
       );
-    } else if (user?.tipoUsuario === 'administrador') {
+    } else if (user?.tipoUsuario != 'motorista') {
       return (
         <>
           <Link to="/gestao/agendamentos" className="hover:text-gray-300">Agendamentos</Link>

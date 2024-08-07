@@ -11,7 +11,7 @@ const getAllTransportadoras = (filters = {}) => {
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined && filters[key] !== '') {
                 sql += ` AND ${key} LIKE ?`;
-                params.push(`%${filters[key]}%`);  // Usa LIKE para busca parcial
+                params.push(`%${filters[key]}%`);
             }
         });
 

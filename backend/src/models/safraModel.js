@@ -11,7 +11,7 @@ const getAllSafras = (filters = {}) => {
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined) {
                 sql += ` AND ${key} = ?`;
-                params.push(filters[key]);  // Usa = para busca exata
+                params.push(filters[key]);
             }
         });
 
