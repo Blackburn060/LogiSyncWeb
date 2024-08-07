@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Transportadora } from '../models/Transportadora';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { cnpj } from 'cpf-cnpj-validator';
 
 const RegistroTransportadora: React.FC = () => {
   const [transportadora, setTransportadora] = useState<Transportadora | null>(null);
@@ -37,6 +38,11 @@ const RegistroTransportadora: React.FC = () => {
   }, [accessToken, user]);
 
   const handleUpdate = async () => {
+    if (!formData.CNPJ || !cnpj.isValid(formData.CNPJ)) {
+      toast.error('CNPJ inválido!');
+      return;
+    }
+
     if (isEditing && formData && transportadora) {
       try {
         await updateTransportadora(accessToken as string, transportadora.CodigoTransportadora, formData);
@@ -75,11 +81,16 @@ const RegistroTransportadora: React.FC = () => {
   };
 
   const handleAddTransportadora = async () => {
+    if (!formData.CNPJ || !cnpj.isValid(formData.CNPJ)) {
+      toast.error('CNPJ inválido!');
+      return;
+    }
+
     if (!user) {
       toast.error('Usuário não está autenticado');
       return;
     }
-    
+
     try {
       const newTransportadora = await addTransportadora(accessToken as string, formData as Transportadora);
       await updateUserTransportadora(accessToken as string, Number(user.id), newTransportadora.CodigoTransportadora);
