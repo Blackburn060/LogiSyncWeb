@@ -1,10 +1,10 @@
-// src/components/Navbar.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/Logo-LogiSync-02-SF.png';
 import iconeUsuario from '../assets/icons/Icon-user-white.png';
 import iconeMenu from '../assets/icons/Icone-barra-de-menu.png';
+import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaUserCog, FaSignOutAlt, FaClock } from 'react-icons/fa';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -36,20 +36,20 @@ const Navbar: React.FC = () => {
     if (user?.tipoUsuario === 'motorista') {
       return (
         <>
-          <Link to="/calendario" className="hover:text-gray-300">Calendário</Link>
-          <Link to="/agendamentos" className="hover:text-gray-300">Agendamentos</Link>
-          <Link to="/veiculos" className="hover:text-gray-300">Veículos</Link>
-          <Link to="/transportadora" className="hover:text-gray-300">Transportadora</Link>
+          <Link to="/calendario" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Calendário</Link>
+          <Link to="/agendamentos" className="hover:text-gray-300 flex items-center"><FaClock className="mr-2" /> Agendamentos</Link>
+          <Link to="/veiculos" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Veículos</Link>
+          <Link to="/transportadora" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Transportadora</Link>
         </>
       );
-    } else if (user?.tipoUsuario != 'motorista') {
+    } else if (user?.tipoUsuario !== 'motorista') {
       return (
         <>
-          <Link to="/gestao/agendamentos" className="hover:text-gray-300">Agendamentos</Link>
-          <Link to="/gestao/portaria" className="hover:text-gray-300">Portaria</Link>
-          <Link to="/gestao/patio" className="hover:text-gray-300">Gestão de Pátio</Link>
-          <Link to="/gestao/relatorios" className="hover:text-gray-300">Relatórios</Link>
-          <Link to="/gestao/usuarios" className="hover:text-gray-300">Configurações</Link> 
+          <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
+          <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
+          <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
+          <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
+          <Link to="/gestao/usuarios" className="hover:text-gray-300 flex items-center"><FaUserCog className="mr-2" /> Configurações</Link>
         </>
       );
     }
@@ -71,10 +71,10 @@ const Navbar: React.FC = () => {
         </div>
         <div className="hidden lg:flex items-center space-x-6 text-white font-bold text-xl">
           {renderNavLinks()}
-          <button onClick={logout} className="hover:text-gray-300">Sair</button>
+          <button onClick={logout} className="hover:text-gray-300 flex items-center"><FaSignOutAlt className="mr-2" /> Sair</button>
         </div>
         <div className="hidden lg:flex items-center">
-          <span className="text-white font-bold text-xl mr-3">{user ? user.nomeCompleto : 'Usuário'}</span>
+          <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomeCompleto}` : 'Usuário'}</span>
           <img src={iconeUsuario} alt="User Icon" className="w-11" />
         </div>
       </div>
@@ -92,7 +92,7 @@ const Navbar: React.FC = () => {
         </div>
         <nav className="flex flex-col p-4 space-y-2 font-bold text-xl items-start text-white">
           {renderNavLinks()}
-          <button onClick={logout} className="hover:text-gray-300">Sair</button>
+          <button onClick={logout} className="hover:text-gray-300 flex items-center"><FaSignOutAlt className="mr-2" /> Sair</button>
         </nav>
       </div>
     </nav>
