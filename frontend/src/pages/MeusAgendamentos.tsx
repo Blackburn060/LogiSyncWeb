@@ -6,9 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
+interface AgendamentoComPlaca extends Agendamento {
+  Placa: string;
+}
+
 const MeusAgendamentos: React.FC = () => {
   const { user, accessToken, refreshToken, refreshAccessToken } = useAuth();
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [agendamentos, setAgendamentos] = useState<AgendamentoComPlaca[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -32,13 +36,13 @@ const MeusAgendamentos: React.FC = () => {
       setAuthChecked(true);
 
       try {
-        const response = await api.get(`/agendamentos?CodigoUsuario=${user?.id}`);
+        const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
         setAgendamentos(response.data);
       } catch (err: unknown) {
         if (isAxiosError(err) && err.response?.status === 401 && refreshToken) {
           try {
             await refreshAccessToken();
-            const response = await api.get(`/agendamentos?CodigoUsuario=${user?.id}`);
+            const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
             setAgendamentos(response.data);
           } catch (refreshError) {
             toast.error('Erro ao carregar agendamentos.');
@@ -94,8 +98,8 @@ const MeusAgendamentos: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {agendamentos.map((agendamento, index) => (
-                    <tr key={index} className="bg-logisync-color-blue-100 text-white">
+                  {agendamentos.map((agendamento) => (
+                    <tr key={agendamento.CodigoAgendamento} className="bg-logisync-color-blue-100 text-white">
                       <td className="border-b border-black p-2 text-center">{agendamento.DataAgendamento}</td>
                       <td className="border-b border-black p-2 text-center">{agendamento.HoraAgendamento}</td>
                       <td className="border-b border-black p-2 text-center">{agendamento.Placa}</td>

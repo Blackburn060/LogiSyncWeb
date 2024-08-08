@@ -50,9 +50,10 @@ const RegistroVeiculo: React.FC = () => {
         if (err.response?.status === 401) {
           try {
             await refreshAccessToken();
-            handleSubmit(e);
+            handleSubmit(e); // Chama novamente após atualizar o token
           } catch (refreshError) {
             toast.error('Erro ao renovar autenticação. Faça login novamente.');
+            navigate('/login'); // Redireciona para login após falha na renovação do token
           }
         } else {
           toast.error('Erro ao cadastrar veículo. Tente novamente.');

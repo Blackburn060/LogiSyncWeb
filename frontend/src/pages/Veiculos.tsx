@@ -111,9 +111,9 @@ const Veiculos: React.FC = () => {
             </div>
           ) : (
             <>
-              <ul className="space-y-2">
+              <ul className="space-y-2 max-h-96 overflow-y-scroll scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
                 {veiculos.map(veiculo => (
-                  <li key={veiculo.CodigoVeiculo} className="flex items-center justify-between mb-2 bg-white p-2 rounded">
+                  <li key={veiculo.CodigoVeiculo} className="flex items-center justify-between mb-2 bg-white p-2 rounded shadow-sm">
                     <span className="flex-grow mr-2 truncate">{veiculo.NomeVeiculo}</span>
                     <div className="flex-shrink-0">
                       <button
@@ -137,7 +137,7 @@ const Veiculos: React.FC = () => {
               </ul>
               <div className="mt-6 flex justify-left">
                 <button
-                  className="px-4 py-2 bg-green-500 text-white rounded"
+                  className="px-4 py-2 bg-green-500 text-white rounded shadow-md hover:bg-green-600 transition duration-300"
                   onClick={() => {
                     setSelectedVeiculo({ NomeVeiculo: '', CodigoUsuario: Number(user?.id) });
                     setShowForm(true);

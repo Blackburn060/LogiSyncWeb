@@ -21,6 +21,44 @@ const getAllAgendamentos = (filters = {}) => {
     });
 };
 
+// função para buscar agendamentos com placa do veículo
+const getAllAgendamentosWithPlaca = (filters = {}) => {
+    return new Promise((resolve, reject) => {
+        let sql = `
+            SELECT ag.*, ve.Placa
+            FROM agendamentos ag
+            JOIN cadastroveiculo ve ON ag.CodigoVeiculo = ve.CodigoVeiculo
+            WHERE 1=1
+        `;
+        let params = [];
+
+        if (filters.CodigoUsuario) {
+            sql += ' AND ag.CodigoUsuario = ?';
+            params.push(filters.CodigoUsuario);
+        }
+        db.all(sql, params, (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+// Função para cancelar um agendamento
+const cancelarAgendamento = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'UPDATE agendamentos SET SituacaoAgendamento = "Cancelado" WHERE CodigoAgendamento = ?';
+        db.run(sql, id, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);
+            }
+        });
+    });
+};
 
 // Adicionar um novo agendamento
 const addAgendamento = (agendamento) => {
@@ -74,5 +112,7 @@ module.exports = {
     getAllAgendamentos,
     addAgendamento,
     updateAgendamento,
-    deleteAgendamento
+    getAllAgendamentosWithPlaca,
+    deleteAgendamento,
+    cancelarAgendamento 
 };

@@ -11,6 +11,17 @@ const listarAgendamentos = async (req, res) => {
     }
 };
 
+// Método para listar agendamentos com placa do veículo
+const listarAgendamentosComPlaca = async (req, res) => {
+    try {
+        const filters = req.query;
+        const agendamentos = await agendamentoModel.getAllAgendamentosWithPlaca(filters);
+        res.json(agendamentos);
+    } catch (error) {
+        res.status(500).send({ message: 'Erro ao buscar agendamentos com placa: ' + error.message });
+    }
+};
+
 // Adicionar agendamento
 const adicionarAgendamento = async (req, res) => {
     try {
@@ -38,6 +49,20 @@ const atualizarAgendamento = async (req, res) => {
     }
 };
 
+// Cancelar agendamento
+const cancelarAgendamento = async (req, res) => {
+    try {
+        const changes = await agendamentoModel.cancelarAgendamento(req.params.id);
+        if (changes) {
+            res.send({ message: 'Agendamento cancelado com sucesso' });
+        } else {
+            res.status(404).send({ message: 'Agendamento não encontrado' });
+        }
+    } catch (error) {
+        res.status(500).send({ message: 'Erro ao cancelar agendamento: ' + error.message });
+    }
+};
+
 // Deletar agendamento
 const deletarAgendamento = async (req, res) => {
     try {
@@ -54,7 +79,9 @@ const deletarAgendamento = async (req, res) => {
 
 module.exports = {
     listarAgendamentos,
+    listarAgendamentosComPlaca,
     adicionarAgendamento,
     atualizarAgendamento,
+    cancelarAgendamento,
     deletarAgendamento
 };

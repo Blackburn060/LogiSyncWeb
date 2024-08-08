@@ -24,6 +24,16 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Verifica se todos os campos obrigatórios estão preenchidos
+    const requiredFields = ['NomeVeiculo', 'Placa', 'Marca', 'ModeloTipo', 'AnoFabricacao', 'Cor', 'CapacidadeCarga'];
+    for (const field of requiredFields) {
+      if (!veiculo[field as keyof Veiculo]) {
+        alert(`O campo ${field} é obrigatório.`);
+        return;
+      }
+    }
+
     await onSave(veiculo);
   };
 
@@ -41,6 +51,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.NomeVeiculo || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
             <div>
@@ -51,6 +62,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.Placa || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
             <div>
@@ -61,6 +73,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.Marca || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
             <div>
@@ -71,6 +84,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.ModeloTipo || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
             <div>
@@ -81,6 +95,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.AnoFabricacao || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
             <div>
@@ -91,6 +106,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.Cor || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
             <div>
@@ -101,6 +117,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.CapacidadeCarga || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                required
               />
             </div>
           </div>
