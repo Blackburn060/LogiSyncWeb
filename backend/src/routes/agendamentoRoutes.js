@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const agendamentoController = require('../controllers/agendamentoController');
+const agendamentoController = require('../Controllers/agendamentoController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.get('/agendamentos', authMiddleware, agendamentoController.listarAgendamentos);
