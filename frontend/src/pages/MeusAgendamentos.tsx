@@ -82,6 +82,10 @@ const MeusAgendamentos: React.FC = () => {
     }
   };
 
+  const handleInactiveCancelClick = () => {
+    toast.error('Somente pode inativar com o status PENDENTE');
+  };
+
   if (!authChecked) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -139,7 +143,10 @@ const MeusAgendamentos: React.FC = () => {
                             </svg>
                           </button>
                         ) : (
-                          <button className="text-gray-400 cursor-not-allowed" disabled>
+                          <button
+                            className="text-gray-400 cursor-not-allowed"
+                            onClick={handleInactiveCancelClick}
+                          >
                             <svg className="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
