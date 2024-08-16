@@ -76,25 +76,36 @@ const Navbar: React.FC = () => {
   };
 
   const renderSidebarLinks = () => {
-    return (
-      <>
-        <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
-        <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
-        <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
-        <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
-        <div className="w-full">
-          <div onClick={toggleSidebarDropdown} className="hover:text-gray-300 flex items-center cursor-pointer">
-            <FaCog className="mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isSidebarDropdownOpen ? 'rotate-180' : ''}`} />
+    if (user?.tipoUsuario === 'motorista') {
+      return (
+        <>
+          <Link to="/calendario" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Calendário</Link>
+          <Link to="/agendamentos" className="hover:text-gray-300 flex items-center"><FaClock className="mr-2" /> Agendamentos</Link>
+          <Link to="/veiculos" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Veículos</Link>
+          <Link to="/transportadora" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Transportadora</Link>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
+          <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
+          <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
+          <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
+          <div className="w-full">
+            <div onClick={toggleSidebarDropdown} className="hover:text-gray-300 flex items-center cursor-pointer">
+              <FaCog className="mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isSidebarDropdownOpen ? 'rotate-180' : ''}`} />
+            </div>
+            <div className={`ml-4 mt-2 ${isSidebarDropdownOpen ? 'block' : 'hidden'}`}>
+              <Link to="/gestao/usuarios" className="block py-2 text-gray-200 hover:text-gray-400">Usuários</Link>
+              <Link to="/gestao/produtos" className="block py-2 text-gray-200 hover:text-gray-400">Produtos</Link>
+              <Link to="/gestao/horarios" className="block py-2 text-gray-200 hover:text-gray-400">Horários</Link>
+              <Link to="/gestao/safra" className="block py-2 text-gray-200 hover:text-gray-400">Safra</Link>
+            </div>
           </div>
-          <div className={`ml-4 mt-2 ${isSidebarDropdownOpen ? 'block' : 'hidden'}`}>
-            <Link to="/gestao/usuarios" className="block py-2 text-gray-200 hover:text-gray-400">Usuários</Link>
-            <Link to="/gestao/produtos" className="block py-2 text-gray-200 hover:text-gray-400">Produtos</Link>
-            <Link to="/gestao/horarios" className="block py-2 text-gray-200 hover:text-gray-400">Horários</Link>
-            <Link to="/gestao/safra" className="block py-2 text-gray-200 hover:text-gray-400">Safra</Link>
-          </div>
-        </div>
-      </>
-    );
+        </>
+      );
+    }
   };
 
   return (
