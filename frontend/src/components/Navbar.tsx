@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import UserMenu from './UserMenu';
 import logo from '../assets/images/Logo-LogiSync-02-SF.webp';
 import iconeMenu from '../assets/icons/Icone-barra-de-menu.webp';
-import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaSignOutAlt, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog } from 'react-icons/fa';
+import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog } from 'react-icons/fa';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
