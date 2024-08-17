@@ -50,12 +50,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ logout, user }) => {
                     <Link to="/conta"
                         className="px-4 py-2 text-gray-800 hover:bg-blue-500 hover:text-white flex items-center transition-colors duration-300"><FaUserAlt className="mr-2" /> Minha Conta
                     </Link>
-                    <Link to="/gestao/horarios" className="px-4 py-2 text-gray-800 hover:bg-blue-500 hover:text-white flex items-center transition-colors duration-300"><FaCog className="mr-2" /> Configurações
-                    </Link>
                     <button onClick={logout} className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-500 hover:text-white flex items-center transition-colors duration-300"><FaSignOutAlt className="mr-2" /> Sair
                     </button>
                     <div className="px-4 py-2 text-gray-800 italic">
-                        Version: Alpha 1.5.31
+                        Version: Alpha 1.5.34
                     </div>
                 </div>
             )}
