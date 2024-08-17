@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
 import { FaSpinner } from 'react-icons/fa';
-import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.png';
-import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.png';
+import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.webp';
+import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.webp';
 import api from '../services/axiosConfig';
 
 const Login: React.FC = () => {

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import logo from '../assets/images/Logo-LogiSync-02-SF.png';
-import iconeUsuario from '../assets/icons/Icon-user-white.png';
-import iconeMenu from '../assets/icons/Icone-barra-de-menu.png';
-import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaUserCog, FaSignOutAlt, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog } from 'react-icons/fa';
+import UserMenu from './UserMenu';
+import logo from '../assets/images/Logo-LogiSync-02-SF.webp';
+import iconeMenu from '../assets/icons/Icone-barra-de-menu.webp';
+import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaSignOutAlt, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog } from 'react-icons/fa';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -123,11 +123,12 @@ const Navbar: React.FC = () => {
         </div>
         <div className="hidden min-[1400px]:flex items-center space-x-6 text-white font-bold text-xl">
           {renderNavLinks()}
-          <button onClick={logout} className="hover:text-gray-300 flex items-center"><FaSignOutAlt className="mr-2" /> Sair</button>
         </div>
-        <div className="hidden min-[1400px]:flex items-center">
-          <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomeCompleto}` : 'Usuário'}</span>
-          <img src={iconeUsuario} alt="User Icon" className="w-11" />
+        <div className='flex items-center'>
+          <div className="hidden min-[1400px]:flex items-center">
+            <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomeCompleto}` : 'Usuário'}</span>
+          </div>
+          <UserMenu logout={logout} user={user} />
         </div>
       </div>
       <div
@@ -143,7 +144,7 @@ const Navbar: React.FC = () => {
         </div>
         <nav className="flex flex-col p-4 space-y-2 font-bold text-xl items-start text-white">
           {renderSidebarLinks()}
-          <button onClick={logout} className="hover:text-gray-300 flex items-center"><FaSignOutAlt className="mr-2" /> Sair</button>
+          {/* <button onClick={logout} className="hover:text-gray-300 flex items-center"><FaSignOutAlt className="mr-2" /> Sair</button> */}
         </nav>
       </div>
     </nav>
