@@ -11,7 +11,7 @@ import Unauthorized from './pages/Unauthorized';
 import GerenciarHorarios from './pages/GerenciarHorarios';
 import Veiculos from './pages/Veiculos';  
 import DadosPessoais from './pages/DadosPessoais'; 
-import DadosTransportadora from './pages/RegistroTransportadora';
+import DadosTransportadora from './pages/Transportadora';
 
 
 const App: React.FC = () => {
