@@ -37,7 +37,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ logout, user }) => {
         <div className="relative" ref={menuRef}><img
             src={iconeUsuario}
             alt="User Icon"
-            className="w-11 h-11 cursor-pointer hover:shadow-lg transition-shadow duration-300"
+            className="w-11 h-11 cursor-pointer hover:shadow-lg transition-shadow duration-300 object-contain"
             onClick={toggleMenu}
         />
             {isMenuOpen && (

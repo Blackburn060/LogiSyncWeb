@@ -41,7 +41,7 @@ const RegistroTransportadora: React.FC = () => {
     <div className="flex lg:flex-row h-screen lg:py-10 lg:px-24">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
-        <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full" />
+        <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full object-contain" />
       </div>
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">
         <form onSubmit={handleSubmit} className="w-full max-w-sm">

@@ -50,10 +50,10 @@ const Login: React.FC = () => {
     <div className="flex lg:flex-row h-screen lg:py-10 lg:px-24">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
-        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-full" />
+        <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-full object-contain" />
       </div>
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">
-        <img src={logoHorizontal} alt="LogiSync Logo" className="w-48 lg:w-56 pb-6" />
+        <img src={logoHorizontal} alt="LogiSync Logo" className="w-48 lg:w-56 pb-6 object-contain" />
         <form onSubmit={handleSubmit} className="w-full max-w-sm px-8">
           <div className="mb-4">
             <label htmlFor="email" className="block text-white text-lg font-extrabold mb-1">Email</label>

@@ -73,7 +73,7 @@ const RegistroVeiculo: React.FC = () => {
       <Toaster position="top-right" reverseOrder={false} />
       
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
-        <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full" />
+        <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full object-contain" />
       </div>
       
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">

@@ -27,10 +27,10 @@ const App: React.FC = () => {
           <Route path="/agendamentos" element={<MeusAgendamentos />} />
           <Route path="/veiculos" element={<Veiculos />} />
           <Route path="/conta" element={<DadosPessoais />} /> 
-          <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
           <Route path="/transportadora" element={<DadosTransportadora />} /> 
+          <Route path="/calendario" element={<CalendarioAgendamentos />} />
+          <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
           <Route path="/gestao/agendamentos" element={<GerenciarHorarios />} />
-          <Route path="/calendario" element={<CalendarioAgendamentos />} /> {/* Rota do Calendário */}
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -115,10 +115,10 @@ const Navbar: React.FC = () => {
           <img
             src={iconeMenu}
             alt="Menu Icon"
-            className="w-11 cursor-pointer min-[1400px]:hidden"
+            className="w-11 cursor-pointer min-[1400px]:hidden object-contain"
             onClick={toggleMenu}
           />
-          <img src={logo} alt="LogiSync Logo" className="w-16 ml-2" />
+          <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
           <span className="text-white font-bold text-xl ml-2">LogiSync</span>
         </div>
         <div className="hidden min-[1400px]:flex items-center space-x-6 text-white font-bold text-xl">
