@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import api, { isAxiosError } from '../services/axiosConfig';
-import Navbar from '../components/Navbar';
-import { Agendamento } from '../models/Agendamento';
-import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
-import Modal from 'react-modal';
+import React, { useEffect, useState } from "react";
+import api, { isAxiosError } from "../services/axiosConfig";
+import Navbar from "../components/Navbar";
+import { Agendamento } from "../models/Agendamento";
+import { useAuth } from "../context/AuthContext";
+import { Navigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import Modal from "react-modal";
 
-Modal.setAppElement('#root');
+Modal.setAppElement("#root");
 
 const MeusAgendamentos: React.FC = () => {
   const { user, accessToken, refreshToken, refreshAccessToken } = useAuth();
@@ -15,7 +15,8 @@ const MeusAgendamentos: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
+  const [selectedAgendamento, setSelectedAgendamento] =
+    useState<Agendamento | null>(null);
 
   useEffect(() => {
     const checkAuthAndFetchAgendamentos = async () => {
@@ -24,7 +25,9 @@ const MeusAgendamentos: React.FC = () => {
           try {
             await refreshAccessToken();
           } catch (err) {
-            toast.error('Erro ao renovar autenticação. Redirecionando para login.');
+            toast.error(
+              "Erro ao renovar autenticação. Redirecionando para login."
+            );
             setAuthChecked(true);
             return;
           }
@@ -37,19 +40,23 @@ const MeusAgendamentos: React.FC = () => {
       setAuthChecked(true);
 
       try {
-        const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
+        const response = await api.get(
+          `/agendamentos-com-placa?CodigoUsuario=${user?.id}`
+        );
         setAgendamentos(response.data);
       } catch (err: unknown) {
         if (isAxiosError(err) && err.response?.status === 401 && refreshToken) {
           try {
             await refreshAccessToken();
-            const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
+            const response = await api.get(
+              `/agendamentos-com-placa?CodigoUsuario=${user?.id}`
+            );
             setAgendamentos(response.data);
           } catch (refreshError) {
-            toast.error('Erro ao carregar agendamentos.');
+            toast.error("Erro ao carregar agendamentos.");
           }
         } else {
-          toast.error('Erro ao carregar agendamentos.');
+          toast.error("Erro ao carregar agendamentos.");
         }
       } finally {
         setLoading(false);
@@ -68,22 +75,32 @@ const MeusAgendamentos: React.FC = () => {
     if (!selectedAgendamento) return;
 
     try {
-      await api.put(`/agendamentos/cancelar/${selectedAgendamento.CodigoAgendamento}`, null, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      toast.success('Agendamento cancelado com sucesso!');
-      setAgendamentos(prev => prev.filter(a => a.CodigoAgendamento !== selectedAgendamento.CodigoAgendamento));
+      await api.put(
+        `/agendamentos/cancelar/${selectedAgendamento.CodigoAgendamento}`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      toast.success("Agendamento cancelado com sucesso!");
+      setAgendamentos((prev) =>
+        prev.filter(
+          (a) => a.CodigoAgendamento !== selectedAgendamento.CodigoAgendamento
+        )
+      );
     } catch (error) {
-      toast.error('Erro ao cancelar agendamento.');
+      toast.error("Erro ao cancelar agendamento.");
     } finally {
       setIsCancelModalOpen(false);
     }
   };
 
   const handleInactiveCancelClick = () => {
-    toast.error('Somente pode inativar com o status PENDENTE');
+    toast.error(
+      "Somente é possível cancelar o agendamento com o status pendente"
+    );
   };
 
   if (!authChecked) {
@@ -112,43 +129,78 @@ const MeusAgendamentos: React.FC = () => {
         </div>
       ) : (
         <div className="container mx-auto pt-10 flex-grow">
-          <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">Meus agendamentos</h1>
+          <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">
+            Meus agendamentos
+          </h1>
           <div className="border border-black rounded-md px-4 pb-4 max-w-3xl mx-auto">
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse">
                 <thead>
-                  <tr className='text-2xl text-center font-extrabold'>
-                    <th className="p-2">Data</th>
-                    <th className="p-2">Horário</th>
-                    <th className="p-2">Placa</th>
-                    <th className="p-2">Status</th>
-                    <th className="p-2">Cancelar</th>
+                  <tr className="text-lg text-center font-extrabold">
+                    <th className="p-1">Data</th>
+                    <th className="p-1">Horário</th>
+                    <th className="p-1">Placa</th>
+                    <th className="p-1">Status</th>
+                    <th className="p-1">Cancelar</th>
                   </tr>
                 </thead>
                 <tbody>
                   {agendamentos.map((agendamento, index) => (
-                    <tr key={index} className="bg-logisync-color-blue-100 text-white">
-                      <td className="border-b border-black p-2 text-center">{agendamento.DataAgendamento}</td>
-                      <td className="border-b border-black p-2 text-center">{agendamento.HoraAgendamento}</td>
-                      <td className="border-b border-black p-2 text-center">{agendamento.Placa}</td>
-                      <td className="border-b border-black p-2 text-left">{agendamento.SituacaoAgendamento}</td>
-                      <td className="border-b border-black p-2 text-center">
-                        {agendamento.SituacaoAgendamento === 'Pendente' ? (
+                    <tr
+                      key={index}
+                      className="bg-logisync-color-blue-100 text-white"
+                    >
+                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
+                        {agendamento.DataAgendamento}
+                      </td>
+                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
+                        {agendamento.HoraAgendamento}
+                      </td>
+                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
+                        {agendamento.Placa}
+                      </td>
+                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
+                        {agendamento.SituacaoAgendamento}
+                      </td>
+                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
+                        {agendamento.SituacaoAgendamento === "Pendente" ? (
                           <button
-                            className="text-red-600 hover:text-red-800"
+                            className="text-red-600 hover:text-red-800 p-1"
                             onClick={() => handleCancelClick(agendamento)}
                           >
-                            <svg className="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <svg
+                              className="w-4 h-4 inline"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              ></path>
                             </svg>
                           </button>
                         ) : (
                           <button
-                            className="text-gray-400 cursor-not-allowed"
+                            className="text-gray-400 cursor-not-allowed p-1"
                             onClick={handleInactiveCancelClick}
                           >
-                            <svg className="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <svg
+                              className="w-4 h-4 inline"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              ></path>
                             </svg>
                           </button>
                         )}
@@ -172,7 +224,9 @@ const MeusAgendamentos: React.FC = () => {
         <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
           <h2 className="text-xl font-bold mb-4">Confirmar Cancelamento</h2>
           <p className="mb-4">
-            Tem certeza que deseja cancelar o agendamento de {selectedAgendamento?.DataAgendamento} às {selectedAgendamento?.HoraAgendamento}?
+            Tem certeza que deseja cancelar o agendamento de{" "}
+            {selectedAgendamento?.DataAgendamento} às{" "}
+            {selectedAgendamento?.HoraAgendamento}?
           </p>
           <div className="flex justify-end">
             <button

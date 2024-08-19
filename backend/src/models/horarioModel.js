@@ -3,7 +3,7 @@ const db = require('../Config/database');
 // Função para buscar todos os horários
 const getHorarios = () => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM cadastrohorarios';
+        const sql = 'SELECT * FROM cadastroHorarios';
         db.all(sql, [], (err, rows) => {
             if (err) {
                 reject(err);
@@ -14,60 +14,79 @@ const getHorarios = () => {
     });
 };
 
-// Função para adicionar um único conjunto de horários
-const addHorarios = (horario) => {
+// Função para gerar horários disponíveis entre horarioInicio e horarioFim com o intervalo dado
+const generateHorarios = (horarioInicio, horarioFim, intervalo) => {
+    const horarios = [];
+    let current = new Date(`1970-01-01T${horarioInicio}:00`);
+    const end = new Date(`1970-01-01T${horarioFim}:00`);
+
+    while (current < end) {
+        const next = new Date(current.getTime() + intervalo * 60000);
+        if (next > end) break;
+        horarios.push({
+            horarioInicio: current.toTimeString().substring(0, 5),
+            horarioFim: next.toTimeString().substring(0, 5),
+            agendado: false,
+        });
+        current = next;
+    }
+
+    return horarios;
+};
+
+// Função para verificar se um horário específico está agendado em uma data específica
+const isHorarioAgendado = (horarioIntervalo, data) => {
     return new Promise((resolve, reject) => {
         const sql = `
-            INSERT INTO cadastrohorarios (horario_inicial, horario_final, seg_status, ter_status, qua_status, qui_status, sex_status, sab_status, dom_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            SELECT COUNT(*) as count
+            FROM agendamentos
+            WHERE DataAgendamento = ? AND HoraAgendamento = ?
         `;
-        db.run(sql, [
-            horario.horarioInicial,
-            horario.horarioFinal,
-            horario.seg_status,
-            horario.ter_status,
-            horario.qua_status,
-            horario.qui_status,
-            horario.sex_status,
-            horario.sab_status,
-            horario.dom_status
-        ], function(err) {
+        db.get(sql, [data, horarioIntervalo], (err, row) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(this.lastID);
+                resolve(row.count > 0);
             }
         });
     });
 };
 
-// Função para atualizar a disponibilidade de um horário
-const updateDayStatus = (id, day, status) => {
-    return new Promise((resolve, reject) => {
-        // Validação de 'day' para garantir que é um dia válido
-        const validDays = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
-        if (!validDays.includes(day)) {
-            console.error('Erro: Dia inválido fornecido:', day);
-            reject(new Error('Invalid day parameter'));
-            return; // Encerra a função para evitar mais execução
-        }
-
-        const sql = `UPDATE cadastrohorarios SET ${day}_status = ?, data_atualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
-
-        // Executando a consulta SQL
-        db.run(sql, [status, id], function(err) {
+// Função para buscar horários disponíveis em uma data específica
+const getHorariosDisponiveisPorData = (data) => {
+    return new Promise(async (resolve, reject) => {
+        const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
+        db.get(sql, [], async (err, row) => {
             if (err) {
-                // Log detalhado do erro incluindo os valores usados na consulta
-                console.error("Erro ao executar SQL:", sql, "Com valores:", status, id, err);
                 reject(err);
             } else {
-                if (this.changes === 0) {
-                    // Log se nenhuma linha foi atualizada
-                    console.error("Nenhuma linha atualizada, verifique o ID:", id);
-                    reject(new Error("No rows updated"));
+                if (row) {
+                    const horarios = generateHorarios(row.horarioInicio, row.horarioFim, row.intervaloHorario);
+                    
+                    for (let horario of horarios) {
+                        const horarioIntervalo = `${horario.horarioInicio} - ${horario.horarioFim}`;
+                        const agendado = await isHorarioAgendado(horarioIntervalo, data);
+                        horario.agendado = agendado;
+                    }
+
+                    resolve(horarios);
                 } else {
-                    resolve({ id, changes: this.changes });
+                    resolve([]);
                 }
+            }
+        });
+    });
+};
+
+// Função para atualizar o intervalo de um horário
+const updateIntervaloHorario = (id, intervaloHorario) => {
+    return new Promise((resolve, reject) => {
+        const sql = `UPDATE cadastroHorarios SET intervaloHorario = ?, dataAtualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
+        db.run(sql, [intervaloHorario, id], function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ id, changes: this.changes });
             }
         });
     });
@@ -75,6 +94,6 @@ const updateDayStatus = (id, day, status) => {
 
 module.exports = {
     getHorarios,
-    addHorarios,
-    updateDayStatus
+    getHorariosDisponiveisPorData,
+    updateIntervaloHorario,
 };

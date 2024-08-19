@@ -12,7 +12,7 @@ import GerenciarHorarios from './pages/GerenciarHorarios';
 import Veiculos from './pages/Veiculos';  
 import DadosPessoais from './pages/DadosPessoais'; 
 import DadosTransportadora from './pages/RegistroTransportadora';
-
+import CalendarioAgendamentos from './pages/CalendarioAgendamentos'; // Importe o componente de calendário
 
 const App: React.FC = () => {
   return (
@@ -30,6 +30,7 @@ const App: React.FC = () => {
           <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
           <Route path="/transportadora" element={<DadosTransportadora />} /> 
           <Route path="/gestao/agendamentos" element={<GerenciarHorarios />} />
+          <Route path="/calendario" element={<CalendarioAgendamentos />} /> {/* Rota do Calendário */}
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

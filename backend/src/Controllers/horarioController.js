@@ -11,39 +11,45 @@ const getHorarios = async (req, res) => {
     }
 };
 
-// Função para atualizar a disponibilidade de um horário
-const updateHorario = async (req, res) => {
-    const { id } = req.params;
-    const { day, status } = req.body;
-
-    // Validação de entrada para 'day' e 'status'
-    const validDays = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
-    const validStatuses = ['disponível', 'indisponível', 'pendente'];
-
-    if (!day || !status) {
-        console.error("Faltam dados: dia ou status.");
-        return res.status(400).send({ message: "Faltam dados: dia ou status." });
-    }
-
-    if (!validDays.includes(day) || !validStatuses.includes(status)) {
-        console.error("Dados inválidos fornecidos para dia ou status.");
-        return res.status(400).send({ message: "Dados inválidos fornecidos para dia ou status." });
+// Função para buscar horários disponíveis em uma data específica
+const getHorariosDisponiveisPorData = async (req, res) => {
+    const { data } = req.query;
+    if (!data) {
+        return res.status(400).send({ message: 'A data é obrigatória.' });
     }
 
     try {
-        const result = await HorarioModel.updateDayStatus(id, day, status);
+        const horariosDisponiveis = await HorarioModel.getHorariosDisponiveisPorData(data);
+        res.json(horariosDisponiveis);
+    } catch (err) {
+        console.error('Erro ao buscar horários disponíveis:', err);
+        res.status(500).send({ message: 'Erro ao buscar horários disponíveis.' });
+    }
+};
+
+// Função para atualizar o intervalo de horário
+const updateHorario = async (req, res) => {
+    const { id } = req.params;
+    const { intervaloHorario } = req.body;
+
+    if (intervaloHorario == null) {
+        return res.status(400).send({ message: 'O intervalo de horário é obrigatório.' });
+    }
+
+    try {
+        const result = await HorarioModel.updateIntervaloHorario(id, intervaloHorario);
         if (result.changes === 0) {
-            console.error("Horário não encontrado.");
             return res.status(404).send({ message: 'Horário não encontrado.' });
         }
-        res.send({ message: 'Disponibilidade atualizada com sucesso.', details: result });
+        res.send({ message: 'Intervalo de horário atualizado com sucesso.', details: result });
     } catch (err) {
-        console.error('Erro ao atualizar horário:', err);
-        res.status(500).send({ message: 'Erro ao atualizar disponibilidade.' });
+        console.error('Erro ao atualizar intervalo de horário:', err);
+        res.status(500).send({ message: 'Erro ao atualizar intervalo de horário.' });
     }
 };
 
 module.exports = {
     getHorarios,
-    updateHorario
+    getHorariosDisponiveisPorData,
+    updateHorario,
 };
