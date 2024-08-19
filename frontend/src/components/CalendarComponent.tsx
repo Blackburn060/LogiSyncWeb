@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Calendar, { CalendarProps } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { Horario } from '../models/Horario';
-import { getHorariosDisponiveis, confirmarHorario } from '../services/horarioService';
-import Modal from 'react-modal';
-import { toast } from 'react-toastify';
+import { getHorariosDisponiveis } from '../services/horarioService';
+import RevisarDadosAgendamento from './RevisarDadosAgendamento';
 
 const CalendarComponent: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<Horario[]>([]);
+  const [horarioSelecionadoId, setHorarioSelecionadoId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(null);
 
   useEffect(() => {
     const fetchHorariosDisponiveis = async () => {
@@ -20,9 +19,9 @@ const CalendarComponent: React.FC = () => {
         const formattedDate = selectedDate.toISOString().split('T')[0];
         const horarios = await getHorariosDisponiveis(formattedDate);
         setHorariosDisponiveis(horarios);
+        setHorarioSelecionadoId(null); // Resetar o horário selecionado ao mudar a data
       } catch (error) {
-        toast.error('Erro ao buscar horários disponíveis');
-        console.error(error);
+        console.error('Erro ao buscar horários disponíveis', error);
       }
     };
 
@@ -32,42 +31,22 @@ const CalendarComponent: React.FC = () => {
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
       setSelectedDate(value);
-    } else if (Array.isArray(value)) {
-      setSelectedDate(value[0]);
-    } else {
-      setSelectedDate(null);
+      setHorarioSelecionadoId(null); // Resetar o horário selecionado ao mudar a data
     }
   };
 
   const handleHorarioClick = (horario: Horario) => {
-    if (!horario.agendado) {
-      setHorarioSelecionado(horario);
+    setHorarioSelecionadoId(horario.id); // Definir o ID do horário selecionado
+  };
+
+  const handleRevisarAgendamento = () => {
+    if (horarioSelecionadoId !== null && selectedDate) {
       setIsModalOpen(true);
     }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setHorarioSelecionado(null);
-  };
-
-  const handleConfirmarHorario = async () => {
-    if (!horarioSelecionado || !selectedDate) return;
-
-    try {
-      await confirmarHorario({
-        id: horarioSelecionado.id,
-        horarioInicio: horarioSelecionado.horarioInicio,
-        horarioFim: horarioSelecionado.horarioFim,
-        intervaloHorario: horarioSelecionado.intervaloHorario,
-        dataAtualizacao: selectedDate.toISOString().split('T')[0],
-      });
-      toast.success('Agendamento confirmado!');
-      handleCloseModal();
-    } catch (error) {
-      toast.error('Erro ao confirmar agendamento.');
-      console.error(error);
-    }
   };
 
   return (
@@ -79,7 +58,7 @@ const CalendarComponent: React.FC = () => {
             onChange={handleDateChange} 
             value={selectedDate} 
             className="text-xl bg-gray-800 p-6 rounded-lg shadow w-full h-full"
-            tileClassName="text-white text-2xl h-20" // Aumentando o texto e altura dos tiles
+            tileClassName="text-white text-2xl h-20" 
           />
         </div>
 
@@ -104,10 +83,9 @@ const CalendarComponent: React.FC = () => {
                   <li key={horario.id} className="mb-2 flex justify-between px-4">
                     <button
                       className={`px-4 py-2 rounded-lg w-full flex justify-between items-center text-sm ${
-                        !horario.agendado ? 'bg-blue-600 hover:bg-blue-800' : 'bg-gray-500 cursor-not-allowed'
-                      }`}
+                        horarioSelecionadoId === horario.id ? 'bg-blue-800' : 'bg-blue-600'
+                      } hover:bg-blue-800`}
                       onClick={() => handleHorarioClick(horario)}
-                      disabled={horario.agendado}
                     >
                       <span>{horario.horarioInicio}</span>
                       <span 
@@ -126,42 +104,24 @@ const CalendarComponent: React.FC = () => {
             )}
           </div>
 
-          <button className="mt-4 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+          <button 
+            onClick={handleRevisarAgendamento} 
+            className="mt-4 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
+            disabled={horarioSelecionadoId === null}
+          >
             Revisar Agendamento
           </button>
         </div>
       </div>
 
-      {/* Modal de Confirmação */}
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={handleCloseModal}
-        contentLabel="Confirmar Agendamento"
-        className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto mt-20"
-        overlayClassName="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
-      >
-        <h2 className="text-lg font-semibold mb-4">Confirmar Agendamento</h2>
-        {horarioSelecionado && (
-          <>
-            <p className="mb-4">
-              Deseja confirmar o agendamento para o horário{' '}
-              {horarioSelecionado.horarioInicio}?
-            </p>
-            <button
-              onClick={handleConfirmarHorario}
-              className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded mr-4"
-            >
-              Confirmar
-            </button>
-            <button
-              onClick={handleCloseModal}
-              className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded"
-            >
-              Cancelar
-            </button>
-          </>
-        )}
-      </Modal>
+      {/* Modal de Revisão de Agendamento */}
+      {isModalOpen && horarioSelecionadoId !== null && selectedDate && (
+        <RevisarDadosAgendamento 
+          selectedDate={selectedDate}
+          horarioSelecionado={horariosDisponiveis.find(horario => horario.id === horarioSelecionadoId)!} // Passar o horário selecionado
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 };
