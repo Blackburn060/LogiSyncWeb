@@ -47,14 +47,14 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen py-10 px-24">
+    <div className="flex lg:flex-row h-screen lg:py-10 lg:px-24">
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="w-1/2 flex items-center justify-center bg-white rounded-l-lg">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
         <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-full" />
       </div>
-      <div className="w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 rounded-r-lg">
-        <img src={logoHorizontal} alt="LogiSync Logo" className="w-56 pb-3" />
-        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">
+        <img src={logoHorizontal} alt="LogiSync Logo" className="w-48 lg:w-56 pb-6" />
+        <form onSubmit={handleSubmit} className="w-full max-w-sm px-8">
           <div className="mb-4">
             <label htmlFor="email" className="block text-white text-lg font-extrabold mb-1">Email</label>
             <input
@@ -85,7 +85,7 @@ const Login: React.FC = () => {
           <div className="flex items-center justify-center pt-8">
             <button
               type="submit"
-              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-2xl font-extrabold py-2 px-32 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
+              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-2xl font-extrabold py-2 px-20 lg:px-32 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
               disabled={loading}
             >
               {loading ? <FaSpinner className="animate-spin text-3xl" /> : 'Entrar'}

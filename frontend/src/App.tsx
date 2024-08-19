@@ -11,8 +11,13 @@ import Unauthorized from './pages/Unauthorized';
 import GerenciarHorarios from './pages/GerenciarHorarios';
 import Veiculos from './pages/Veiculos';  
 import DadosPessoais from './pages/DadosPessoais'; 
+<<<<<<< HEAD
 import DadosTransportadora from './pages/RegistroTransportadora';
 import CalendarioAgendamentos from './pages/CalendarioAgendamentos'; // Importe o componente de calendário
+=======
+import DadosTransportadora from './pages/Transportadora';
+
+>>>>>>> d2c991bd3dd0ac677651e90543cb415c8b299914
 
 const App: React.FC = () => {
   return (
