@@ -5,4 +5,6 @@ export interface Usuario {
   CPF: string;
   NumeroCelular: string; 
   Senha?: string; 
+  CodigoTransportadora?: number; 
+
 }

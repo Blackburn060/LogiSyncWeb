@@ -4,12 +4,14 @@ import 'react-calendar/dist/Calendar.css';
 import { Horario } from '../models/Horario';
 import { getHorariosDisponiveis } from '../services/horarioService';
 import RevisarDadosAgendamento from './RevisarDadosAgendamento';
+import Modal from 'react-modal';
 
 const CalendarComponent: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<Horario[]>([]);
   const [horarioSelecionadoId, setHorarioSelecionadoId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchHorariosDisponiveis = async () => {
@@ -36,7 +38,13 @@ const CalendarComponent: React.FC = () => {
   };
 
   const handleHorarioClick = (horario: Horario) => {
-    setHorarioSelecionadoId(horario.id); // Definir o ID do horário selecionado
+    if (horario.agendado) {
+      // Se o horário já está agendado, mostrar modal de alerta
+      setIsAlertModalOpen(true);
+    } else {
+      // Se o horário não está agendado, selecionar horário
+      setHorarioSelecionadoId(horario.id);
+    }
   };
 
   const handleRevisarAgendamento = () => {
@@ -47,6 +55,10 @@ const CalendarComponent: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleCloseAlertModal = () => {
+    setIsAlertModalOpen(false);
   };
 
   return (
@@ -87,7 +99,7 @@ const CalendarComponent: React.FC = () => {
                       } hover:bg-blue-800`}
                       onClick={() => handleHorarioClick(horario)}
                     >
-                      <span>{horario.horarioInicio}</span>
+                      <span>{`${horario.horarioInicio} - ${horario.horarioFim}`}</span>
                       <span 
                         className={`w-4 h-4 rounded-full ${
                           !horario.agendado 
@@ -122,6 +134,24 @@ const CalendarComponent: React.FC = () => {
           onClose={handleCloseModal}
         />
       )}
+
+      {/* Modal de Alerta de Horário já agendado */}
+      <Modal
+        isOpen={isAlertModalOpen}
+        onRequestClose={handleCloseAlertModal}
+        contentLabel="Horário Já Agendado"
+        className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
+        overlayClassName="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
+      >
+        <h2 className="text-xl font-bold text-center">Horário Indisponível</h2>
+        <p className="mt-4 text-center">Este horário já está agendado. Por favor, selecione outro horário.</p>
+        <button 
+          onClick={handleCloseAlertModal} 
+          className="mt-6 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded mx-auto"
+        >
+          Fechar
+        </button>
+      </Modal>
     </div>
   );
 };
