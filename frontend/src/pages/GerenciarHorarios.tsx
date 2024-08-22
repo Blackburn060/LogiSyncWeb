@@ -6,6 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { registrarIndisponibilidade, getIndisponibilidades, deleteIndisponibilidade } from '../services/agendamentoService';
 import { useAuth } from '../context/AuthContext';
 import { Agendamento } from '../models/Agendamento';
+import { format } from 'date-fns';
 
 const GerenciarHorarios: React.FC = () => {
   const { user, accessToken } = useAuth();
@@ -16,6 +17,8 @@ const GerenciarHorarios: React.FC = () => {
   const [diaTodo, setDiaTodo] = useState<boolean>(false);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
   const [indisponibilidades, setIndisponibilidades] = useState<Agendamento[]>([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchHorarios = async () => {
@@ -34,7 +37,8 @@ const GerenciarHorarios: React.FC = () => {
         const indisponibilidadesAtualizadas = data.map((ind) => ({
           ...ind,
           HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
-          DiaTodo: !ind.HoraAgendamento
+          DiaTodo: !ind.HoraAgendamento,
+          DataAgendamento: format(new Date(ind.DataAgendamento), 'dd/MM/yyyy'),
         }));
         setIndisponibilidades(indisponibilidadesAtualizadas);
       } catch (error) {
@@ -80,8 +84,7 @@ const GerenciarHorarios: React.FC = () => {
         toast.success('Horário atualizado com sucesso.');
         setEditingHorario(null);
 
-        const updatedHorarios = await getHorarios();
-        setHorarios(updatedHorarios);
+        window.location.reload();
       } catch (error) {
         console.error('Erro ao atualizar horário', error);
         toast.error('Erro ao atualizar horário.');
@@ -121,7 +124,8 @@ const GerenciarHorarios: React.FC = () => {
       const indisponibilidadesAtualizadas = updatedIndisponibilidades.map((ind) => ({
         ...ind,
         HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
-        DiaTodo: !ind.HoraAgendamento
+        DiaTodo: !ind.HoraAgendamento,
+        DataAgendamento: format(new Date(ind.DataAgendamento), 'dd/MM/yyyy'),
       }));
       setIndisponibilidades(indisponibilidadesAtualizadas);
     } catch (error) {
@@ -130,22 +134,37 @@ const GerenciarHorarios: React.FC = () => {
     }
   };
 
-  const handleDeleteIndisponibilidade = async (id: number) => {
+  const handleDeleteIndisponibilidade = async () => {
+    if (idToDelete === null) return;
+
     try {
-      await deleteIndisponibilidade(accessToken!, id);
+      await deleteIndisponibilidade(accessToken!, idToDelete);
       toast.success('Indisponibilidade excluída com sucesso.');
 
       const updatedIndisponibilidades = await getIndisponibilidades(accessToken!);
       const indisponibilidadesAtualizadas = updatedIndisponibilidades.map((ind) => ({
         ...ind,
         HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
-        DiaTodo: !ind.HoraAgendamento
+        DiaTodo: !ind.HoraAgendamento,
+        DataAgendamento: format(new Date(ind.DataAgendamento), 'dd/MM/yyyy'),
       }));
       setIndisponibilidades(indisponibilidadesAtualizadas);
+      setModalVisible(false);
+      setIdToDelete(null);
     } catch (error) {
       console.error('Erro ao excluir indisponibilidade', error);
       toast.error('Erro ao excluir indisponibilidade.');
     }
+  };
+
+  const openModal = (id: number) => {
+    setIdToDelete(id);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setIdToDelete(null);
   };
 
   return (
@@ -284,13 +303,14 @@ const GerenciarHorarios: React.FC = () => {
                 </button>
               </div>
 
+              {/* Lista de indisponibilidades */}
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Indisponibilidades Registradas</h2>
               <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
                 {indisponibilidades.map((ind) => (
                   <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
                     {ind.DataAgendamento} - {ind.HoraAgendamento}
                     <button
-                      onClick={() => handleDeleteIndisponibilidade(ind.CodigoAgendamento!)}
+                      onClick={() => openModal(ind.CodigoAgendamento!)}
                       className="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                     >
                       Excluir
@@ -302,6 +322,30 @@ const GerenciarHorarios: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      {modalVisible && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6">
+            <h2 className="text-xl font-bold mb-4">Confirmar Exclusão</h2>
+            <p>Tem certeza que deseja excluir esta indisponibilidade?</p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeModal}
+                className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-gray-600"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteIndisponibilidade}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
