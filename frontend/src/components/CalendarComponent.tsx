@@ -9,7 +9,7 @@ import Modal from 'react-modal';
 const CalendarComponent: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<Horario[]>([]);
-  const [horarioSelecionadoId, setHorarioSelecionadoId] = useState<number | null>(null);
+  const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
@@ -21,7 +21,7 @@ const CalendarComponent: React.FC = () => {
         const formattedDate = selectedDate.toISOString().split('T')[0];
         const horarios = await getHorariosDisponiveis(formattedDate);
         setHorariosDisponiveis(horarios);
-        setHorarioSelecionadoId(null); // Resetar o horário selecionado ao mudar a data
+        setHorarioSelecionado(null); // Resetar o horário selecionado ao mudar a data
       } catch (error) {
         console.error('Erro ao buscar horários disponíveis', error);
       }
@@ -33,7 +33,7 @@ const CalendarComponent: React.FC = () => {
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
       setSelectedDate(value);
-      setHorarioSelecionadoId(null); // Resetar o horário selecionado ao mudar a data
+      setHorarioSelecionado(null); // Resetar o horário selecionado ao mudar a data
     }
   };
 
@@ -43,12 +43,12 @@ const CalendarComponent: React.FC = () => {
       setIsAlertModalOpen(true);
     } else {
       // Se o horário não está agendado, selecionar horário
-      setHorarioSelecionadoId(horario.id);
+      setHorarioSelecionado(horario);
     }
   };
 
   const handleRevisarAgendamento = () => {
-    if (horarioSelecionadoId !== null && selectedDate) {
+    if (horarioSelecionado && selectedDate) {
       setIsModalOpen(true);
     }
   };
@@ -92,10 +92,10 @@ const CalendarComponent: React.FC = () => {
             {horariosDisponiveis.length > 0 ? (
               <ul className="space-y-2">
                 {horariosDisponiveis.map((horario) => (
-                  <li key={horario.id} className="mb-2 flex justify-between px-4">
+                  <li key={`${horario.horarioInicio}-${horario.horarioFim}`} className="mb-2 flex justify-between px-4">
                     <button
                       className={`px-4 py-2 rounded-lg w-full flex justify-between items-center text-sm ${
-                        horarioSelecionadoId === horario.id ? 'bg-blue-800' : 'bg-blue-600'
+                        horarioSelecionado === horario ? 'bg-blue-800' : 'bg-blue-600'
                       } hover:bg-blue-800`}
                       onClick={() => handleHorarioClick(horario)}
                     >
@@ -119,7 +119,7 @@ const CalendarComponent: React.FC = () => {
           <button 
             onClick={handleRevisarAgendamento} 
             className="mt-4 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
-            disabled={horarioSelecionadoId === null}
+            disabled={!horarioSelecionado}
           >
             Revisar Agendamento
           </button>
@@ -127,10 +127,10 @@ const CalendarComponent: React.FC = () => {
       </div>
 
       {/* Modal de Revisão de Agendamento */}
-      {isModalOpen && horarioSelecionadoId !== null && selectedDate && (
+      {isModalOpen && horarioSelecionado && selectedDate && (
         <RevisarDadosAgendamento 
           selectedDate={selectedDate}
-          horarioSelecionado={horariosDisponiveis.find(horario => horario.id === horarioSelecionadoId)!} // Passar o horário selecionado
+          horarioSelecionado={horarioSelecionado} 
           onClose={handleCloseModal}
         />
       )}

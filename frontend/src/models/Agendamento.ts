@@ -5,7 +5,7 @@ export interface Agendamento {
   CodigoProduto?: number | null;
   CodigoTransportadora: number | null;
   CodigoSafra?: number | null;
-  CodigoHorario: number;
+  CodigoHorario: string | number; 
   ArquivoAnexado?: string;
   Observacao?: string;
   DataAgendamento: string;
@@ -16,4 +16,5 @@ export interface Agendamento {
   SituacaoAgendamento: string;
   TipoAgendamento?: string;
   Placa?: string; 
+
 }

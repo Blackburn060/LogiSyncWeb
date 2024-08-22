@@ -56,15 +56,17 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       return alert('Preencha todos os campos obrigatórios!');
     }
 
+    const horarioId = horarioSelecionado.id ?? `${horarioSelecionado.horarioInicio}-${horarioSelecionado.horarioFim}`;
+
     try {
       const novoAgendamento = {
         CodigoUsuario: usuario.CodigoUsuario,
         CodigoVeiculo: Number(veiculoSelecionado),
         CodigoProduto: produto ? Number(produto) : null,
         CodigoTransportadora: transportadora?.CodigoTransportadora || null,
-        CodigoHorario: horarioSelecionado.id,
+        CodigoHorario: horarioId, 
         DataAgendamento: selectedDate.toISOString().split('T')[0],
-        HoraAgendamento: horarioSelecionado.horarioInicio,
+        HoraAgendamento: `${horarioSelecionado.horarioInicio} - ${horarioSelecionado.horarioFim}`,
         Observacao: observacao,
         QuantidadeAgendamento: quantidade ? Number(quantidade) : null,
         ArquivoAnexado: arquivo ? arquivo.name : '',
@@ -129,7 +131,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
         <div className="border p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Dados do Agendamento</h3>
           <div><strong>Data:</strong> {selectedDate.toLocaleDateString()}</div>
-          <div><strong>Horário:</strong> {horarioSelecionado.horarioInicio}</div>
+          <div><strong>Horário:</strong> {horarioSelecionado.horarioInicio} - {horarioSelecionado.horarioFim}</div>
           <div>
             <label><strong>Produto (Opcional):</strong></label>
             <select className="border rounded p-2 w-full" value={produto} onChange={(e) => setProduto(e.target.value)}>
