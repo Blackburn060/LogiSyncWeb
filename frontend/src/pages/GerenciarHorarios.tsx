@@ -303,7 +303,6 @@ const GerenciarHorarios: React.FC = () => {
                 </button>
               </div>
 
-              {/* Lista de indisponibilidades */}
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Indisponibilidades Registradas</h2>
               <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
                 {indisponibilidades.map((ind) => (
@@ -323,7 +322,6 @@ const GerenciarHorarios: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal de Confirmação */}
       {modalVisible && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6">
