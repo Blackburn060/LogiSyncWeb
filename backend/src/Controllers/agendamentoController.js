@@ -77,11 +77,50 @@ const deletarAgendamento = async (req, res) => {
     }
 };
 
+// Registrar indisponibilidade
+const registrarIndisponibilidadeHorario = async (req, res) => {
+    try {
+        const id = await agendamentoModel.registrarIndisponibilidade(req.body);
+        res.status(201).send({ id, message: 'Horário registrado como indisponível com sucesso' });
+    } catch (error) {
+        res.status(500).send({ message: 'Erro ao registrar indisponibilidade: ' + error.message });
+    }
+};
+
+// Listar indisponibilidades registradas por usuário
+const listarIndisponibilidades = async (req, res) => {
+    try {
+        const CodigoUsuario = req.query.CodigoUsuario;
+        const indisponibilidades = await agendamentoModel.getIndisponibilidades(CodigoUsuario);
+        res.json(indisponibilidades);
+    } catch (error) {
+        res.status(500).send({ message: 'Erro ao buscar indisponibilidades: ' + error.message });
+    }
+};
+
+// Deletar indisponibilidade
+const deletarIndisponibilidade = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const changes = await agendamentoModel.deleteIndisponibilidade(id);
+        if (changes) {
+            res.send({ message: 'Indisponibilidade deletada com sucesso' });
+        } else {
+            res.status(404).send({ message: 'Indisponibilidade não encontrada' });
+        }
+    } catch (error) {
+        res.status(500).send({ message: 'Erro ao deletar indisponibilidade: ' + error.message });
+    }
+};
+
 module.exports = {
     listarAgendamentos,
     listarAgendamentosComPlaca,
     adicionarAgendamento,
     atualizarAgendamento,
     cancelarAgendamento,
-    deletarAgendamento
+    deletarAgendamento,
+    registrarIndisponibilidadeHorario,
+    listarIndisponibilidades,
+    deletarIndisponibilidade
 };

@@ -108,11 +108,61 @@ const deleteAgendamento = (id) => {
     });
 };
 
+// Registrar indisponibilidade
+const registrarIndisponibilidade = (agendamento) => {
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO agendamentos (CodigoUsuario, DataAgendamento, HoraAgendamento, TipoAgendamento, SituacaoAgendamento, DiaTodo) 
+                     VALUES (?, ?, ?, 'Indisponível', 'Indisponível', ?)`;
+        db.run(sql, [agendamento.CodigoUsuario, agendamento.DataAgendamento, agendamento.HoraAgendamento, agendamento.DiaTodo], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.lastID);
+            }
+        });
+    });
+};
+
+// Função para buscar indisponibilidades
+const getIndisponibilidades = () => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT * FROM agendamentos 
+            WHERE TipoAgendamento = 'Indisponível' AND DataAgendamento > DATE('now')
+            ORDER BY DataAgendamento ASC, HoraAgendamento ASC
+        `;
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+// Função para excluir uma indisponibilidade
+const deleteIndisponibilidade = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'DELETE FROM agendamentos WHERE CodigoAgendamento = ? AND TipoAgendamento = "Indisponível"';
+        db.run(sql, [id], function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);
+            }
+        });
+    });
+};
+
 module.exports = {
     getAllAgendamentos,
     addAgendamento,
     updateAgendamento,
     getAllAgendamentosWithPlaca,
     deleteAgendamento,
-    cancelarAgendamento 
+    cancelarAgendamento,
+    registrarIndisponibilidade,
+    getIndisponibilidades,
+    deleteIndisponibilidade
 };

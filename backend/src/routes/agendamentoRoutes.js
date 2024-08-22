@@ -9,5 +9,8 @@ router.post('/agendamentos', authMiddleware, agendamentoController.adicionarAgen
 router.put('/agendamentos/:id', authMiddleware, agendamentoController.atualizarAgendamento);
 router.put('/agendamentos/cancelar/:id', authMiddleware, agendamentoController.cancelarAgendamento);
 router.delete('/agendamentos/:id', authMiddleware, agendamentoController.deletarAgendamento);
+router.post('/agendamentos/indisponibilidade', authMiddleware, agendamentoController.registrarIndisponibilidadeHorario);
+router.get('/agendamentos/indisponibilidades', authMiddleware, agendamentoController.listarIndisponibilidades);
+router.delete('/agendamentos/indisponibilidade/:id', authMiddleware, agendamentoController.deletarIndisponibilidade); 
 
 module.exports = router;
