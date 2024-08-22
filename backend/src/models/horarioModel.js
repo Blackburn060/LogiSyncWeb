@@ -14,6 +14,24 @@ const getHorarios = () => {
     });
 };
 
+// Função para atualizar um horário completo
+const updateHorario = (id, { horarioInicio, horarioFim, intervaloHorario }) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            UPDATE cadastroHorarios
+            SET horarioInicio = ?, horarioFim = ?, intervaloHorario = ?, dataAtualizacao = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `;
+        db.run(sql, [horarioInicio, horarioFim, intervaloHorario, id], function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ id, changes: this.changes });
+            }
+        });
+    });
+};
+
 // Função para gerar horários disponíveis entre horarioInicio e horarioFim com o intervalo dado
 const generateHorarios = (horarioInicio, horarioFim, intervalo) => {
     const horarios = [];
@@ -94,6 +112,7 @@ const updateIntervaloHorario = (id, intervaloHorario) => {
 
 module.exports = {
     getHorarios,
+    updateHorario,
     getHorariosDisponiveisPorData,
     updateIntervaloHorario,
 };

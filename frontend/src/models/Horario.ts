@@ -1,8 +1,8 @@
 export interface Horario {
-  id: number;
+  id?: number;
   horarioInicio: string;
   horarioFim: string;
-  intervaloHorario: number; // Supondo que intervalo é um número (em minutos)
-  dataAtualizacao: string;
-  agendado: boolean;  // Nova propriedade adicionada
+  intervaloHorario: number; 
+  dataAtualizacao?: string;
+  agendado: boolean;
 }

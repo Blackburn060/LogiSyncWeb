@@ -27,24 +27,24 @@ const getHorariosDisponiveisPorData = async (req, res) => {
     }
 };
 
-// Função para atualizar o intervalo de horário
+// Função para atualizar um horário completo
 const updateHorario = async (req, res) => {
     const { id } = req.params;
-    const { intervaloHorario } = req.body;
+    const { horarioInicio, horarioFim, intervaloHorario } = req.body;
 
-    if (intervaloHorario == null) {
-        return res.status(400).send({ message: 'O intervalo de horário é obrigatório.' });
+    if (!horarioInicio || !horarioFim || intervaloHorario == null) {
+        return res.status(400).send({ message: 'Todos os campos são obrigatórios.' });
     }
 
     try {
-        const result = await HorarioModel.updateIntervaloHorario(id, intervaloHorario);
+        const result = await HorarioModel.updateHorario(id, { horarioInicio, horarioFim, intervaloHorario });
         if (result.changes === 0) {
             return res.status(404).send({ message: 'Horário não encontrado.' });
         }
-        res.send({ message: 'Intervalo de horário atualizado com sucesso.', details: result });
+        res.send({ message: 'Horário atualizado com sucesso.', details: result });
     } catch (err) {
-        console.error('Erro ao atualizar intervalo de horário:', err);
-        res.status(500).send({ message: 'Erro ao atualizar intervalo de horário.' });
+        console.error('Erro ao atualizar horário:', err);
+        res.status(500).send({ message: 'Erro ao atualizar horário.' });
     }
 };
 
