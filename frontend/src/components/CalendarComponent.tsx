@@ -63,20 +63,20 @@ const CalendarComponent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white flex justify-center items-start p-6">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-6xl flex">
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
         {/* Calendário */}
-        <div className="p-6 bg-gray-900 text-white rounded-l-lg flex justify-center items-center" style={{ width: '50%', height: '700px' }}>
+        <div className="p-4 bg-gray-900 text-white rounded-t-lg md:rounded-l-lg md:rounded-t-none flex justify-center items-center md:w-1/2 w-full" style={{ height: '550px' }}>
           <Calendar 
             onChange={handleDateChange} 
             value={selectedDate} 
-            className="text-xl bg-gray-800 p-6 rounded-lg shadow w-full h-full"
-            tileClassName="text-white text-2xl h-20" 
+            className="text-lg bg-gray-800 p-4 rounded-lg shadow w-full h-full"
+            tileClassName="text-white text-xl h-16 flex items-center justify-center" 
           />
         </div>
 
         {/* Seção de Horários e Status */}
-        <div className="p-6 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow" style={{ height: '700px' }}>
-          <h2 className="text-lg font-semibold mb-4">
+        <div className="p-4 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow md:w-1/2 w-full" style={{ height: '550px' }}>
+          <h2 className="text-md font-semibold mb-4">
             {selectedDate
               ? `${selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
               : 'Escolha um dia no calendário!'}
@@ -88,7 +88,7 @@ const CalendarComponent: React.FC = () => {
             <span className="font-bold">Status</span>
           </div>
 
-          <div className="overflow-y-auto h-full w-full border-l border-gray-500">
+          <div className="overflow-y-auto w-full border-l border-gray-500 flex-grow">
             {horariosDisponiveis.length > 0 ? (
               <ul className="space-y-2">
                 {horariosDisponiveis.map((horario) => (
