@@ -29,8 +29,8 @@ const getAllSafras = (filters = {}) => {
 const addSafra = (safra) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        const sql = `INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao) VALUES (?, ?, ?)`;
-        db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao], function(err) {
+        const sql = `INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao, CodigoUsuario) VALUES (?, ?, ?, ?)`;
+        db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao, safra.CodigoUsuario], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -40,7 +40,6 @@ const addSafra = (safra) => {
     });
 };
 
-// Atualizar uma safra
 const updateSafra = (safra, id) => {
     return new Promise((resolve, reject) => {
         const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');

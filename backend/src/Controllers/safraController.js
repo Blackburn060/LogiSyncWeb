@@ -12,7 +12,9 @@ const listarSafras = async (req, res) => {
 
 const adicionarSafra = async (req, res) => {
     try {
-        const id = await safraModel.addSafra(req.body);
+        const safra = req.body;
+        safra.CodigoUsuario = req.body.CodigoUsuario;
+        const id = await safraModel.addSafra(safra);
         res.status(201).send({ id: id, message: "Safra adicionada com sucesso" });
     } catch (error) {
         res.status(500).send({ message: "Erro ao adicionar safra: " + error.message });
@@ -24,6 +26,7 @@ const atualizarSafra = async (req, res) => {
     const changes = req.body;
 
     try {
+        changes.CodigoUsuario = req.body.CodigoUsuario;
         const updated = await safraModel.updateSafra(changes, safraId);
         if (updated) {
             res.send({ message: "Safra atualizada com sucesso." });

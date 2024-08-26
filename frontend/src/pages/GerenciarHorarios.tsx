@@ -233,19 +233,23 @@ const GerenciarHorarios: React.FC = () => {
             </div>
           ) : (
             <div>
-              <ul className="space-y-2">
-                {horarios.map((horario) => (
-                  <li key={horario.id} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
-                    {horario.horarioInicio} - {horario.horarioFim} (Intervalo: {horario.intervaloHorario} minutos)
-                    <button
-                      onClick={() => handleEditClick(horario)}
-                      className="ml-4 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
-                    >
-                      Editar
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {horarios.length > 0 ? (
+                <ul className="space-y-2">
+                  {horarios.map((horario) => (
+                    <li key={horario.id} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
+                      {horario.horarioInicio} - {horario.horarioFim} (Intervalo: {horario.intervaloHorario} minutos)
+                      <button
+                        onClick={() => handleEditClick(horario)}
+                        className="ml-4 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
+                      >
+                        Editar
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-gray-500">Não há registros de horários no momento.</p>
+              )}
 
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Registrar Horário Indisponível</h2>
               <div className="space-y-4">
@@ -304,19 +308,23 @@ const GerenciarHorarios: React.FC = () => {
               </div>
 
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Indisponibilidades Registradas</h2>
-              <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
-                {indisponibilidades.map((ind) => (
-                  <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
-                    {ind.DataAgendamento} - {ind.HoraAgendamento}
-                    <button
-                      onClick={() => openModal(ind.CodigoAgendamento!)}
-                      className="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                    >
-                      Excluir
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {indisponibilidades.length > 0 ? (
+                <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
+                  {indisponibilidades.map((ind) => (
+                    <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
+                      {ind.DataAgendamento} - {ind.HoraAgendamento}
+                      <button
+                        onClick={() => openModal(ind.CodigoAgendamento!)}
+                        className="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                      >
+                        Excluir
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-gray-500">Não há registros de indisponibilidades no momento.</p>
+              )}
             </div>
           )}
         </div>
