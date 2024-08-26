@@ -14,6 +14,7 @@ import DadosPessoais from './pages/DadosPessoais';
 import CalendarioAgendamentos from './pages/CalendarioAgendamentos'; 
 import DadosTransportadora from './pages/Transportadora';
 import GerenciarSafras from './pages/GerenciarSafras';
+import HomePageInterno from './pages/HomePageInterno';
 
 const App: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const App: React.FC = () => {
           <Route path="/conta" element={<DadosPessoais />} /> 
           <Route path="/transportadora" element={<DadosTransportadora />} /> 
           <Route path="/calendario" element={<CalendarioAgendamentos />} />
+          <Route path="/gestao/home" element={<HomePageInterno />} />
           <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
           <Route path="/gestao/agendamentos" element={<GerenciarHorarios />} />
           <Route path="/gestao/safra" element={<GerenciarSafras />} />
