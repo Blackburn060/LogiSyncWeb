@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import UserMenu from './UserMenu';
 import logo from '../assets/images/Logo-LogiSync-02-SF.webp';
 import iconeMenu from '../assets/icons/Icone-barra-de-menu.webp';
-import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog } from 'react-icons/fa';
+import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog, FaHome } from 'react-icons/fa';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -55,6 +55,7 @@ const Navbar: React.FC = () => {
     } else {
       return (
         <>
+          <Link to="/gestao/home" className="hover:text-gray-300 flex items-center"><FaHome className="mr-2" /> Início</Link>
           <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
           <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
           <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
@@ -88,6 +89,7 @@ const Navbar: React.FC = () => {
     } else {
       return (
         <>
+          <Link to="/gestao/home" className="hover:text-gray-300 flex items-center"><FaHome className="mr-2" /> Início</Link>
           <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
           <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
           <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
@@ -115,24 +117,26 @@ const Navbar: React.FC = () => {
           <img
             src={iconeMenu}
             alt="Menu Icon"
-            className="w-11 cursor-pointer min-[1400px]:hidden object-contain"
+            className="w-11 cursor-pointer min-[1410px]:hidden object-contain"
             onClick={toggleMenu}
           />
-          <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
+          <Link to="/gestao/home">
+            <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
+          </Link>
           <span className="text-white font-bold text-xl ml-2">LogiSync</span>
         </div>
-        <div className="hidden min-[1400px]:flex items-center space-x-6 text-white font-bold text-xl">
+        <div className="hidden min-[1410px]:flex items-center space-x-6 text-white font-bold text-xl">
           {renderNavLinks()}
         </div>
         <div className='flex items-center'>
-          <div className="hidden min-[1400px]:flex items-center">
+          <div className="hidden min-[1410px]:flex items-center">
             <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomeCompleto}` : 'Usuário'}</span>
           </div>
           <UserMenu logout={logout} user={user} />
         </div>
       </div>
       <div
-        className={`fixed inset-0 bg-gray-800 bg-opacity-50 z-20 min-[1400px]:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-gray-800 bg-opacity-50 z-20 min-[1410px]:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       />
       <div
         ref={menuRef}
