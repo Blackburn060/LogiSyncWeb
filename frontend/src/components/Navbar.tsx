@@ -120,7 +120,7 @@ const Navbar: React.FC = () => {
             className="w-11 cursor-pointer min-[1410px]:hidden object-contain"
             onClick={toggleMenu}
           />
-          <Link to="/gestao/home">
+          <Link to={user?.tipoUsuario === 'motorista' ? "/calendario" : "/gestao/home"}>
             <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
           </Link>
           <span className="text-white font-bold text-xl ml-2">LogiSync</span>

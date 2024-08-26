@@ -7,6 +7,14 @@ import { FaSpinner } from 'react-icons/fa';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.webp';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.webp';
 import api from '../services/axiosConfig';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
+
+interface ExtendedJwtPayload extends JwtPayload {
+  id: string;
+  nomeCompleto: string;
+  tipoUsuario: string;
+  CodigoTransportadora?: number;
+}
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,8 +30,16 @@ const Login: React.FC = () => {
     try {
       const response = await api.post('/login', { email, senha: password });
       if (response.data && response.data.accessToken && response.data.refreshToken) {
+
+        const decodedUser = jwtDecode<ExtendedJwtPayload>(response.data.accessToken);
+
         login(response.data.accessToken, response.data.refreshToken);
-        navigate('/agendamentos');
+
+        if (decodedUser?.tipoUsuario === 'motorista') {
+          navigate('/calendario');
+        } else {
+          navigate('/gestao/home');
+        }
       } else {
         toast.error('Credenciais inválidas. Por favor, tente novamente.');
       }
