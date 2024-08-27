@@ -33,13 +33,16 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       if (accessToken && user) {
         try {
           const usuarioData = await getUsuario(accessToken, Number(user.id));
+          console.log('Dados do usuário:', usuarioData);
           setUsuario(usuarioData);
 
           const veiculosData = await getVeiculos(accessToken);
+          console.log('Veículos disponíveis:', veiculosData);
           setVeiculos(veiculosData.filter(veiculo => veiculo.SituacaoVeiculo === 1));
 
           if (usuarioData.CodigoTransportadora) {
             const transportadoraData = await getTransportadora(accessToken, usuarioData.CodigoTransportadora);
+            console.log('Dados da transportadora:', transportadoraData);
             setTransportadora(transportadoraData);
           }
         } catch (error) {
@@ -56,25 +59,25 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       return alert('Preencha todos os campos obrigatórios!');
     }
 
-    const horarioId = horarioSelecionado.id ?? `${horarioSelecionado.horarioInicio}-${horarioSelecionado.horarioFim}`;
+    const novoAgendamento = {
+      CodigoUsuario: usuario.CodigoUsuario,
+      CodigoVeiculo: Number(veiculoSelecionado),
+      CodigoProduto: produto ? Number(produto) : null,
+      CodigoTransportadora: transportadora?.CodigoTransportadora || null,
+      DataAgendamento: selectedDate.toISOString().split('T')[0],
+      HoraAgendamento: `${horarioSelecionado.horarioInicio} - ${horarioSelecionado.horarioFim}`,
+      Observacao: observacao,
+      QuantidadeAgendamento: quantidade ? Number(quantidade) : null,
+      ArquivoAnexado: arquivo ? arquivo.name : '',
+      TipoAgendamento: tipoCarga,
+      SituacaoAgendamento: 'Pendente',
+    };
+
+    console.log('Dados do Agendamento:', novoAgendamento);
 
     try {
-      const novoAgendamento = {
-        CodigoUsuario: usuario.CodigoUsuario,
-        CodigoVeiculo: Number(veiculoSelecionado),
-        CodigoProduto: produto ? Number(produto) : null,
-        CodigoTransportadora: transportadora?.CodigoTransportadora || null,
-        CodigoHorario: horarioId, 
-        DataAgendamento: selectedDate.toISOString().split('T')[0],
-        HoraAgendamento: `${horarioSelecionado.horarioInicio} - ${horarioSelecionado.horarioFim}`,
-        Observacao: observacao,
-        QuantidadeAgendamento: quantidade ? Number(quantidade) : null,
-        ArquivoAnexado: arquivo ? arquivo.name : '',
-        TipoAgendamento: tipoCarga,
-        SituacaoAgendamento: 'Pendente',
-      };
-
-      await addAgendamento(accessToken!, novoAgendamento);
+      const response = await addAgendamento(accessToken!, novoAgendamento);
+      console.log('Resposta do servidor após adicionar agendamento:', response);
       alert('Agendamento realizado com sucesso!');
       onClose();
     } catch (error) {

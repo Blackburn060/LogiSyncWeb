@@ -63,17 +63,21 @@ const cancelarAgendamento = (id) => {
 // Adicionar um novo agendamento
 const addAgendamento = (agendamento) => {
     return new Promise((resolve, reject) => {
-        const sql = `INSERT INTO agendamentos (CodigoUsuario, CodigoVeiculo, CodigoProduto, CodigoTransportadora, CodigoSafra, CodigoHorario, ArquivoAnexado, Observacao, DataAgendamento, HoraAgendamento, UsuarioAprovacao, MotivoRecusa, QuantidadeAgendamento, SituacaoAgendamento, TipoAgendamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        console.log('Recebendo novo agendamento:', agendamento);
+
+        const sql = `INSERT INTO agendamentos (CodigoUsuario, CodigoVeiculo, CodigoProduto, CodigoTransportadora, CodigoSafra, ArquivoAnexado, Observacao, DataAgendamento, HoraAgendamento, UsuarioAprovacao, MotivoRecusa, QuantidadeAgendamento, SituacaoAgendamento, TipoAgendamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, [
             agendamento.CodigoUsuario, agendamento.CodigoVeiculo, agendamento.CodigoProduto, 
-            agendamento.CodigoTransportadora, agendamento.CodigoSafra, agendamento.CodigoHorario, 
+            agendamento.CodigoTransportadora, agendamento.CodigoSafra, 
             agendamento.ArquivoAnexado, agendamento.Observacao, agendamento.DataAgendamento, 
             agendamento.HoraAgendamento, agendamento.UsuarioAprovacao, agendamento.MotivoRecusa, 
             agendamento.QuantidadeAgendamento, agendamento.SituacaoAgendamento, agendamento.TipoAgendamento
         ], function(err) {
             if (err) {
+                console.error('Erro ao inserir agendamento no banco de dados:', err);
                 reject(err);
             } else {
+                console.log('Agendamento inserido com sucesso. ID:', this.lastID);
                 resolve(this.lastID);
             }
         });
