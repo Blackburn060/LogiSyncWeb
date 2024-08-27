@@ -36,7 +36,7 @@ const Login: React.FC = () => {
         login(response.data.accessToken, response.data.refreshToken);
 
         if (decodedUser?.tipoUsuario === 'motorista') {
-          navigate('/calendario');
+          navigate('/processo');
         } else {
           navigate('/gestao/home');
         }

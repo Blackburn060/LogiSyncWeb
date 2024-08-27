@@ -6,7 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { registrarIndisponibilidade, getIndisponibilidades, deleteIndisponibilidade } from '../services/agendamentoService';
 import { useAuth } from '../context/AuthContext';
 import { Agendamento } from '../models/Agendamento';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 const GerenciarHorarios: React.FC = () => {
   const { user, accessToken } = useAuth();
@@ -15,6 +15,7 @@ const GerenciarHorarios: React.FC = () => {
   const [dataIndisponivel, setDataIndisponivel] = useState<string>('');
   const [horaIndisponivel, setHoraIndisponivel] = useState<string>('');
   const [diaTodo, setDiaTodo] = useState<boolean>(false);
+  const [TipoAgendamento, setTipoAgendamento] = useState<string>('carga');
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
   const [indisponibilidades, setIndisponibilidades] = useState<Agendamento[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -25,7 +26,7 @@ const GerenciarHorarios: React.FC = () => {
       try {
         const data = await getHorarios();
         setHorarios(data);
-        gerarHorariosDisponiveis(data[0]);
+        gerarHorariosDisponiveis(data[0], TipoAgendamento);
       } catch (error) {
         console.error('Erro ao carregar horários', error);
       }
@@ -38,7 +39,7 @@ const GerenciarHorarios: React.FC = () => {
           ...ind,
           HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
           DiaTodo: !ind.HoraAgendamento,
-          DataAgendamento: format(new Date(ind.DataAgendamento), 'dd/MM/yyyy'),
+          DataAgendamento: format(parseISO(ind.DataAgendamento), 'dd/MM/yyyy'),
         }));
         setIndisponibilidades(indisponibilidadesAtualizadas);
       } catch (error) {
@@ -48,15 +49,21 @@ const GerenciarHorarios: React.FC = () => {
 
     fetchHorarios();
     fetchIndisponibilidades();
-  }, [accessToken]);
+  }, [accessToken, TipoAgendamento]);
 
-  const gerarHorariosDisponiveis = (horario: Horario) => {
+  const gerarHorariosDisponiveis = (horario: Horario | null, TipoAgendamento: string) => {
+    if (!horario) {
+      setHorariosDisponiveis([]);
+      return;
+    }
+
+    const intervalo = TipoAgendamento === 'carga' ? horario.intervaloCarga : horario.intervaloDescarga;
     const horariosGerados: string[] = [];
     let current = new Date(`1970-01-01T${horario.horarioInicio}:00`);
     const end = new Date(`1970-01-01T${horario.horarioFim}:00`);
 
     while (current < end) {
-      const next = new Date(current.getTime() + horario.intervaloHorario * 60000);
+      const next = new Date(current.getTime() + intervalo * 60000);
       if (next > end) break;
       const horaFormatada = `${current.toTimeString().substring(0, 5)} - ${next.toTimeString().substring(0, 5)}`;
       horariosGerados.push(horaFormatada);
@@ -66,6 +73,15 @@ const GerenciarHorarios: React.FC = () => {
     setHorariosDisponiveis(horariosGerados);
   };
 
+  const handleTipoAgendamentoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTipoAgendamento = e.target.value;
+    setTipoAgendamento(selectedTipoAgendamento);
+
+    if (editingHorario) {
+      gerarHorariosDisponiveis(editingHorario, selectedTipoAgendamento);
+    }
+  };
+
   const handleEditClick = (horario: Horario) => {
     setEditingHorario(horario);
   };
@@ -73,7 +89,7 @@ const GerenciarHorarios: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (editingHorario) {
       const { name, value } = e.target;
-      setEditingHorario({ ...editingHorario, [name]: name === 'intervaloHorario' ? Number(value) : value });
+      setEditingHorario({ ...editingHorario, [name]: Number(value) });
     }
   };
 
@@ -114,8 +130,9 @@ const GerenciarHorarios: React.FC = () => {
         DataAgendamento: dataIndisponivel,
         HoraAgendamento: diaTodo ? '' : horaIndisponivel,
         DiaTodo: diaTodo ? 1 : 0,
+        TipoAgendamento: TipoAgendamento,
       });
-      toast.success('Horário registrado como indisponível.');
+      toast.success('Indisponibilidade registrada com sucesso.');
       setDataIndisponivel('');
       setHoraIndisponivel('');
       setDiaTodo(false);
@@ -125,7 +142,7 @@ const GerenciarHorarios: React.FC = () => {
         ...ind,
         HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
         DiaTodo: !ind.HoraAgendamento,
-        DataAgendamento: format(new Date(ind.DataAgendamento), 'dd/MM/yyyy'),
+        DataAgendamento: format(parseISO(ind.DataAgendamento), 'dd/MM/yyyy'),
       }));
       setIndisponibilidades(indisponibilidadesAtualizadas);
     } catch (error) {
@@ -146,7 +163,7 @@ const GerenciarHorarios: React.FC = () => {
         ...ind,
         HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
         DiaTodo: !ind.HoraAgendamento,
-        DataAgendamento: format(new Date(ind.DataAgendamento), 'dd/MM/yyyy'),
+        DataAgendamento: format(parseISO(ind.DataAgendamento), 'dd/MM/yyyy'),
       }));
       setIndisponibilidades(indisponibilidadesAtualizadas);
       setModalVisible(false);
@@ -204,14 +221,27 @@ const GerenciarHorarios: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="intervaloHorario" className="block text-sm font-medium text-gray-700">
-                  Intervalo de Tempo (em minutos)
+                <label htmlFor="intervaloCarga" className="block text-sm font-medium text-gray-700">
+                  Intervalo de Carga (em minutos)
                 </label>
                 <input
                   type="number"
-                  id="intervaloHorario"
-                  name="intervaloHorario"
-                  value={editingHorario.intervaloHorario}
+                  id="intervaloCarga"
+                  name="intervaloCarga"
+                  value={editingHorario.intervaloCarga}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="intervaloDescarga" className="block text-sm font-medium text-gray-700">
+                  Intervalo de Descarga (em minutos)
+                </label>
+                <input
+                  type="number"
+                  id="intervaloDescarga"
+                  name="intervaloDescarga"
+                  value={editingHorario.intervaloDescarga}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -237,7 +267,7 @@ const GerenciarHorarios: React.FC = () => {
                 <ul className="space-y-2">
                   {horarios.map((horario) => (
                     <li key={horario.id} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
-                      {horario.horarioInicio} - {horario.horarioFim} (Intervalo: {horario.intervaloHorario} minutos)
+                      {horario.horarioInicio} - {horario.horarioFim} (Intervalo de Carga: {horario.intervaloCarga} minutos, Intervalo de Descarga: {horario.intervaloDescarga} minutos)
                       <button
                         onClick={() => handleEditClick(horario)}
                         className="ml-4 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
@@ -253,6 +283,21 @@ const GerenciarHorarios: React.FC = () => {
 
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Registrar Horário Indisponível</h2>
               <div className="space-y-4">
+                <div>
+                  <label htmlFor="TipoAgendamento" className="block text-sm font-medium text-gray-700">
+                    Tipo de Agendamento
+                  </label>
+                  <select
+                    id="TipoAgendamento"
+                    name="TipoAgendamento"
+                    value={TipoAgendamento}
+                    onChange={handleTipoAgendamentoChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  >
+                    <option value="carga">Carga</option>
+                    <option value="descarga">Descarga</option>
+                  </select>
+                </div>
                 <div>
                   <label htmlFor="dataIndisponivel" className="block text-sm font-medium text-gray-700">
                     Data

@@ -2,7 +2,8 @@ export interface Horario {
   id?: number;
   horarioInicio: string;
   horarioFim: string;
-  intervaloHorario: number; 
+  intervaloCarga: number;
+  intervaloDescarga: number;
   dataAtualizacao?: string;
   agendado: boolean;
 }

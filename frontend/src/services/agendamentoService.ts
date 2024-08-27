@@ -76,7 +76,7 @@ export const updateAgendamento = async (accessToken: string, agendamento: Agenda
 // Registrar indisponibilidade
 export const registrarIndisponibilidade = async (
   accessToken: string,
-  agendamento: { CodigoUsuario: number; DataAgendamento: string; HoraAgendamento: string; DiaTodo: number }
+  agendamento: { CodigoUsuario: number; DataAgendamento: string; HoraAgendamento: string; DiaTodo: number; TipoAgendamento: string }
 ): Promise<void> => {
   try {
     console.log('Registrando indisponibilidade:', agendamento);

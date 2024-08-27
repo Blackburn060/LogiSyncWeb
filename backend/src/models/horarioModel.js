@@ -71,7 +71,7 @@ const isHorarioAgendado = (horarioIntervalo, data) => {
 };
 
 // Função para buscar horários disponíveis em uma data específica, com base no tipo de agendamento
-const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
+const getHorariosDisponiveisPorData = (data, TipoAgendamento) => {
     return new Promise(async (resolve, reject) => {
         const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
         db.get(sql, [], async (err, row) => {
@@ -80,7 +80,7 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
             } else {
                 if (row) {
                     // Seleciona o intervalo baseado no tipo de agendamento
-                    const intervalo = tipoAgendamento === 'carga' ? row.intervaloCarga : row.intervaloDescarga;
+                    const intervalo = TipoAgendamento === 'carga' ? row.intervaloCarga : row.intervaloDescarga;
                     const horarios = generateHorarios(row.horarioInicio, row.horarioFim, intervalo);
 
                     for (let horario of horarios) {
@@ -98,7 +98,7 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
     });
 };
 
-// Função para atualizar o intervalo de um horário
+// Função para atualizar o intervalo de um horário (caso seja necessário)
 const updateIntervaloHorario = (id, intervaloCarga, intervaloDescarga) => {
     return new Promise((resolve, reject) => {
         const sql = `UPDATE cadastroHorarios SET intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = CURRENT_TIMESTAMP WHERE id = ?`;

@@ -11,15 +11,16 @@ const getHorarios = async (req, res) => {
     }
 };
 
-// Função para buscar horários disponíveis em uma data específica
+// Função para buscar horários disponíveis em uma data específica e tipo de agendamento
 const getHorariosDisponiveisPorData = async (req, res) => {
-    const { data } = req.query;
-    if (!data) {
-        return res.status(400).send({ message: 'A data é obrigatória.' });
+    const { data, TipoAgendamento } = req.query;
+
+    if (!data || !TipoAgendamento) {
+        return res.status(400).send({ message: 'Data e tipo de agendamento são obrigatórios.' });
     }
 
     try {
-        const horariosDisponiveis = await HorarioModel.getHorariosDisponiveisPorData(data);
+        const horariosDisponiveis = await HorarioModel.getHorariosDisponiveisPorData(data, TipoAgendamento);
         res.json(horariosDisponiveis);
     } catch (err) {
         console.error('Erro ao buscar horários disponíveis:', err);
@@ -30,14 +31,14 @@ const getHorariosDisponiveisPorData = async (req, res) => {
 // Função para atualizar um horário completo
 const updateHorario = async (req, res) => {
     const { id } = req.params;
-    const { horarioInicio, horarioFim, intervaloHorario } = req.body;
+    const { horarioInicio, horarioFim, intervaloCarga, intervaloDescarga } = req.body;
 
-    if (!horarioInicio || !horarioFim || intervaloHorario == null) {
+    if (!horarioInicio || !horarioFim || intervaloCarga == null || intervaloDescarga == null) {
         return res.status(400).send({ message: 'Todos os campos são obrigatórios.' });
     }
 
     try {
-        const result = await HorarioModel.updateHorario(id, { horarioInicio, horarioFim, intervaloHorario });
+        const result = await HorarioModel.updateHorario(id, { horarioInicio, horarioFim, intervaloCarga, intervaloDescarga });
         if (result.changes === 0) {
             return res.status(404).send({ message: 'Horário não encontrado.' });
         }

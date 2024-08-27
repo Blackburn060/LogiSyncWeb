@@ -11,7 +11,7 @@ const listarAgendamentos = async (req, res) => {
     }
 };
 
-// Método para listar agendamentos com placa do veículo
+// Listar agendamentos com placa do veículo
 const listarAgendamentosComPlaca = async (req, res) => {
     try {
         const filters = req.query;
@@ -87,11 +87,10 @@ const registrarIndisponibilidadeHorario = async (req, res) => {
     }
 };
 
-// Listar indisponibilidades registradas por usuário
+// Listar indisponibilidades registradas
 const listarIndisponibilidades = async (req, res) => {
     try {
-        const CodigoUsuario = req.query.CodigoUsuario;
-        const indisponibilidades = await agendamentoModel.getIndisponibilidades(CodigoUsuario);
+        const indisponibilidades = await agendamentoModel.getIndisponibilidades();
         res.json(indisponibilidades);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar indisponibilidades: ' + error.message });
