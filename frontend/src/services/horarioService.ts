@@ -22,11 +22,11 @@ export const updateHorario = async (id: number, horario: Partial<Horario>): Prom
   }
 };
 
-// Outras funções existentes
-export const getHorariosDisponiveis = async (data: string): Promise<Horario[]> => {
+// Função para buscar horários disponíveis com base na data e no tipo de agendamento
+export const getHorariosDisponiveis = async (data: string, tipoAgendamento: string): Promise<Horario[]> => {
   try {
     const response = await axios.get(`${apiUrl}/horarios-disponiveis`, {
-      params: { data },
+      params: { data, tipoAgendamento }, // Adicionando tipoAgendamento aqui
     });
     return response.data;
   } catch (error) {

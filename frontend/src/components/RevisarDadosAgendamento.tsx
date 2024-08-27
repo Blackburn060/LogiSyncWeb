@@ -23,7 +23,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
   const [transportadora, setTransportadora] = useState<Transportadora | null>(null);
   const [veiculoSelecionado, setVeiculoSelecionado] = useState<string>('');
   const [produto, setProduto] = useState<string>('');
-  const [tipoCarga, setTipoCarga] = useState<string>('');
   const [quantidade, setQuantidade] = useState<string>('');
   const [observacao, setObservacao] = useState<string>('');
   const [arquivo, setArquivo] = useState<File | null>(null);
@@ -59,6 +58,9 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       return alert('Preencha todos os campos obrigatórios!');
     }
 
+    // Obtenha o tipo de agendamento do localStorage
+    const tipoAgendamento = localStorage.getItem('TipoAgendamento') || 'carga';
+
     const novoAgendamento = {
       CodigoUsuario: usuario.CodigoUsuario,
       CodigoVeiculo: Number(veiculoSelecionado),
@@ -69,7 +71,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       Observacao: observacao,
       QuantidadeAgendamento: quantidade ? Number(quantidade) : null,
       ArquivoAnexado: arquivo ? arquivo.name : '',
-      TipoAgendamento: tipoCarga,
+      TipoAgendamento: tipoAgendamento,
       SituacaoAgendamento: 'Pendente',
     };
 
@@ -141,14 +143,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
               <option value="">Selecione</option>
               <option value="1">Produto 1</option>
               <option value="2">Produto 2</option>
-            </select>
-          </div>
-          <div>
-            <label><strong>Tipo da carga (Opcional):</strong></label>
-            <select className="border rounded p-2 w-full" value={tipoCarga} onChange={(e) => setTipoCarga(e.target.value)}>
-              <option value="">Selecione</option>
-              <option value="Tipo1">Tipo 1</option>
-              <option value="Tipo2">Tipo 2</option>
             </select>
           </div>
           <div>

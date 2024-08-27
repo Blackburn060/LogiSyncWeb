@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Calendar, { CalendarProps } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { Horario } from '../models/Horario';
-import { getHorariosDisponiveis } from '../services/horarioService';
+import { getHorariosDisponiveis } from '../services/horarioService';  // Corrigido aqui
 import RevisarDadosAgendamento from './RevisarDadosAgendamento';
 import Modal from 'react-modal';
 
@@ -19,7 +19,8 @@ const CalendarComponent: React.FC = () => {
 
       try {
         const formattedDate = selectedDate.toISOString().split('T')[0];
-        const horarios = await getHorariosDisponiveis(formattedDate);
+        const tipoAgendamento = localStorage.getItem('TipoAgendamento') || 'carga';
+        const horarios = await getHorariosDisponiveis(formattedDate, tipoAgendamento);
         setHorariosDisponiveis(horarios);
         setHorarioSelecionado(null);
       } catch (error) {
@@ -66,25 +67,21 @@ const CalendarComponent: React.FC = () => {
   };
 
   return (
-    <div className="bg-white flex justify-center items-start p-6">
-      <div className="shadow-lg rounded-lg overflow-hidden w-full max-w-4xl flex flex-col md:flex-row mx-auto">
+    <div className="min-h-screen bg-white flex justify-center items-start p-6">
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
         {/* Calendário */}
-        <div className="p-2 bg-gray-900 text-white rounded-t-lg md:rounded-l-lg md:rounded-t-none flex justify-center items-center md:w-1/2 w-full" style={{ height: '550px' }}>
+        <div className="p-4 bg-gray-900 text-white rounded-t-lg md:rounded-l-lg md:rounded-t-none flex justify-center items-center md:w-1/2 w-full" style={{ height: '550px' }}>
           <Calendar 
             onChange={handleDateChange} 
             value={selectedDate} 
-            className="text-lg bg-gray-800 p-2 rounded-lg shadow w-full h-full"
-            tileClassName={({ date, view }) =>
-              view === 'month' && disablePastDates({ date })
-                ? 'text-gray-400 bg-transparent'  // Cor do texto ajustada para cinza mais claro
-                : 'text-white'
-            }
-            tileDisabled={disablePastDates} // Desabilitar datas anteriores ao dia atual
+            className="text-lg bg-gray-800 p-4 rounded-lg shadow w-full h-full"
+            tileClassName="text-white text-xl h-16 flex items-center justify-center" 
+            tileDisabled={disablePastDates}  // Desativa datas passadas
           />
         </div>
 
         {/* Seção de Horários e Status */}
-        <div className="p-2 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow md:w-1/2 w-full overflow-y-auto" style={{ height: '550px' }}>
+        <div className="p-4 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow md:w-1/2 w-full" style={{ height: '550px' }}>
           <h2 className="text-md font-semibold mb-4">
             {selectedDate
               ? `${selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`

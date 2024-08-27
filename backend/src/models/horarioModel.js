@@ -15,14 +15,14 @@ const getHorarios = () => {
 };
 
 // Função para atualizar um horário completo
-const updateHorario = (id, { horarioInicio, horarioFim, intervaloHorario }) => {
+const updateHorario = (id, { horarioInicio, horarioFim, intervaloCarga, intervaloDescarga }) => {
     return new Promise((resolve, reject) => {
         const sql = `
             UPDATE cadastroHorarios
-            SET horarioInicio = ?, horarioFim = ?, intervaloHorario = ?, dataAtualizacao = CURRENT_TIMESTAMP
+            SET horarioInicio = ?, horarioFim = ?, intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = CURRENT_TIMESTAMP
             WHERE id = ?
         `;
-        db.run(sql, [horarioInicio, horarioFim, intervaloHorario, id], function (err) {
+        db.run(sql, [horarioInicio, horarioFim, intervaloCarga, intervaloDescarga, id], function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -70,8 +70,8 @@ const isHorarioAgendado = (horarioIntervalo, data) => {
     });
 };
 
-// Função para buscar horários disponíveis em uma data específica
-const getHorariosDisponiveisPorData = (data) => {
+// Função para buscar horários disponíveis em uma data específica, com base no tipo de agendamento
+const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
     return new Promise(async (resolve, reject) => {
         const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
         db.get(sql, [], async (err, row) => {
@@ -79,8 +79,10 @@ const getHorariosDisponiveisPorData = (data) => {
                 reject(err);
             } else {
                 if (row) {
-                    const horarios = generateHorarios(row.horarioInicio, row.horarioFim, row.intervaloHorario);
-                    
+                    // Seleciona o intervalo baseado no tipo de agendamento
+                    const intervalo = tipoAgendamento === 'carga' ? row.intervaloCarga : row.intervaloDescarga;
+                    const horarios = generateHorarios(row.horarioInicio, row.horarioFim, intervalo);
+
                     for (let horario of horarios) {
                         const horarioIntervalo = `${horario.horarioInicio} - ${horario.horarioFim}`;
                         const agendado = await isHorarioAgendado(horarioIntervalo, data);
@@ -97,10 +99,10 @@ const getHorariosDisponiveisPorData = (data) => {
 };
 
 // Função para atualizar o intervalo de um horário
-const updateIntervaloHorario = (id, intervaloHorario) => {
+const updateIntervaloHorario = (id, intervaloCarga, intervaloDescarga) => {
     return new Promise((resolve, reject) => {
-        const sql = `UPDATE cadastroHorarios SET intervaloHorario = ?, dataAtualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
-        db.run(sql, [intervaloHorario, id], function (err) {
+        const sql = `UPDATE cadastroHorarios SET intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
+        db.run(sql, [intervaloCarga, intervaloDescarga, id], function (err) {
             if (err) {
                 reject(err);
             } else {
