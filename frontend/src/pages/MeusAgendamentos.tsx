@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import Modal from "react-modal";
+import formatDate from "../../utils/formatDate";
 
 Modal.setAppElement("#root");
 
@@ -15,8 +16,7 @@ const MeusAgendamentos: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [selectedAgendamento, setSelectedAgendamento] =
-    useState<Agendamento | null>(null);
+  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
 
   useEffect(() => {
     const checkAuthAndFetchAgendamentos = async () => {
@@ -25,9 +25,7 @@ const MeusAgendamentos: React.FC = () => {
           try {
             await refreshAccessToken();
           } catch (err) {
-            toast.error(
-              "Erro ao renovar autenticação. Redirecionando para login."
-            );
+            toast.error("Erro ao renovar autenticação. Redirecionando para login.");
             setAuthChecked(true);
             return;
           }
@@ -40,17 +38,13 @@ const MeusAgendamentos: React.FC = () => {
       setAuthChecked(true);
 
       try {
-        const response = await api.get(
-          `/agendamentos-com-placa?CodigoUsuario=${user?.id}`
-        );
+        const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
         setAgendamentos(response.data);
       } catch (err: unknown) {
         if (isAxiosError(err) && err.response?.status === 401 && refreshToken) {
           try {
             await refreshAccessToken();
-            const response = await api.get(
-              `/agendamentos-com-placa?CodigoUsuario=${user?.id}`
-            );
+            const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
             setAgendamentos(response.data);
           } catch (refreshError) {
             toast.error("Erro ao carregar agendamentos.");
@@ -75,20 +69,14 @@ const MeusAgendamentos: React.FC = () => {
     if (!selectedAgendamento) return;
 
     try {
-      await api.put(
-        `/agendamentos/cancelar/${selectedAgendamento.CodigoAgendamento}`,
-        null,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      await api.put(`/agendamentos/cancelar/${selectedAgendamento.CodigoAgendamento}`, null, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       toast.success("Agendamento cancelado com sucesso!");
       setAgendamentos((prev) =>
-        prev.filter(
-          (a) => a.CodigoAgendamento !== selectedAgendamento.CodigoAgendamento
-        )
+        prev.filter((a) => a.CodigoAgendamento !== selectedAgendamento.CodigoAgendamento)
       );
     } catch (error) {
       toast.error("Erro ao cancelar agendamento.");
@@ -98,9 +86,7 @@ const MeusAgendamentos: React.FC = () => {
   };
 
   const handleInactiveCancelClick = () => {
-    toast.error(
-      "Somente é possível cancelar o agendamento com o status pendente"
-    );
+    toast.error("Somente é possível cancelar o agendamento com o status pendente");
   };
 
   if (!authChecked) {
@@ -129,87 +115,89 @@ const MeusAgendamentos: React.FC = () => {
         </div>
       ) : (
         <div className="container mx-auto pt-10 flex-grow">
-          <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">
-            Meus agendamentos
-          </h1>
-          <div className="border border-black rounded-md px-4 pb-4 max-w-3xl mx-auto">
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse">
-                <thead>
-                  <tr className="text-lg text-center font-extrabold">
-                    <th className="p-1">Data</th>
-                    <th className="p-1">Horário</th>
-                    <th className="p-1">Placa</th>
-                    <th className="p-1">Status</th>
-                    <th className="p-1">Cancelar</th>
+          <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">Meus agendamentos</h1>
+          
+          {/* Table view for larger screens */}
+          <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-3xl mx-auto hidden sm:block">
+            <table className="w-full text-sm text-left text-white dark:text-white">
+              <thead className="text-md text-white font-extrabold uppercase bg-logisync-color-blue-300 dark:bg-logisync-color-blue-300 dark:text-white dark:font-extrabold border-b dark:border-gray-500">
+                <tr>
+                  <th scope="col" className="px-6 py-3">Data</th>
+                  <th scope="col" className="px-6 py-3">Horário</th>
+                  <th scope="col" className="px-6 py-3">Placa</th>
+                  <th scope="col" className="px-6 py-3">Status</th>
+                  <th scope="col" className="px-6 py-3">Cancelar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agendamentos.map((agendamento, index) => (
+                  <tr key={index} className="odd:bg-white even:bg-logisync-color-blue-50 dark:odd:bg-gray-800 dark:even:bg-gray-700 border-b dark:border-gray-500">
+                    <th scope="row" className="px-6 py-4 font-medium whitespace-nowrap">
+                      {formatDate(agendamento.DataAgendamento)}
+                    </th>
+                    <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.HoraAgendamento}</td>
+                    <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.Placa}</td>
+                    <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.SituacaoAgendamento}</td>
+                    <td className="px-6 py-4">
+                      {agendamento.SituacaoAgendamento === "Pendente" ? (
+                        <button
+                          className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                          onClick={() => handleCancelClick(agendamento)}
+                        >
+                          Cancelar
+                        </button>
+                      ) : (
+                        <button
+                          className="font-medium text-gray-400 cursor-not-allowed"
+                          onClick={handleInactiveCancelClick}
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {agendamentos.map((agendamento, index) => (
-                    <tr
-                      key={index}
-                      className="bg-logisync-color-blue-100 text-white"
-                    >
-                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
-                        {agendamento.DataAgendamento}
-                      </td>
-                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
-                        {agendamento.HoraAgendamento}
-                      </td>
-                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
-                        {agendamento.Placa}
-                      </td>
-                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
-                        {agendamento.SituacaoAgendamento}
-                      </td>
-                      <td className="border-b border-black p-1 text-center w-1/5 text-sm">
-                        {agendamento.SituacaoAgendamento === "Pendente" ? (
-                          <button
-                            className="text-red-600 hover:text-red-800 p-1"
-                            onClick={() => handleCancelClick(agendamento)}
-                          >
-                            <svg
-                              className="w-4 h-4 inline"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12"
-                              ></path>
-                            </svg>
-                          </button>
-                        ) : (
-                          <button
-                            className="text-gray-400 cursor-not-allowed p-1"
-                            onClick={handleInactiveCancelClick}
-                          >
-                            <svg
-                              className="w-4 h-4 inline"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12"
-                              ></path>
-                            </svg>
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* List view for smaller screens */}
+          <div className="block sm:hidden max-w-3xl mx-auto">
+            {agendamentos.map((agendamento, index) => (
+              <div key={index} className="bg-logisync-color-blue-50 dark:bg-gray-700 mb-4 rounded-lg shadow-md p-4">
+                <div className="bg-logisync-color-blue-100 text-white px-4 py-2 rounded-t-lg">
+                  <div className="font-bold text-lg">Data: {formatDate(agendamento.DataAgendamento)}</div>
+                </div>
+                <div className="p-4 bg-white dark:bg-gray-100 rounded-b-lg">
+                  <div className="mb-2">
+                    <span className="font-extrabold">Horário:</span> {agendamento.HoraAgendamento}
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-extrabold">Placa:</span> {agendamento.Placa}
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-extrabold">Status:</span> {agendamento.SituacaoAgendamento}
+                  </div>
+                  <div>
+                    {agendamento.SituacaoAgendamento === "Pendente" ? (
+                      <button
+                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                        onClick={() => handleCancelClick(agendamento)}
+                      >
+                        Cancelar
+                      </button>
+                    ) : (
+                      <button
+                        className="font-medium text-gray-400 cursor-not-allowed"
+                        onClick={handleInactiveCancelClick}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -221,11 +209,10 @@ const MeusAgendamentos: React.FC = () => {
         className="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-50"
         overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
-        <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+        <div className="flex flex-col items-center bg-white rounded-lg shadow-lg max-w-md w-full p-6">
           <h2 className="text-xl font-bold mb-4">Confirmar Cancelamento</h2>
           <p className="mb-4">
-            Tem certeza que deseja cancelar o agendamento de{" "}
-            {selectedAgendamento?.DataAgendamento} às{" "}
+            Tem certeza que deseja cancelar o agendamento de {selectedAgendamento?.DataAgendamento} às{" "}
             {selectedAgendamento?.HoraAgendamento}?
           </p>
           <div className="flex justify-end">
