@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../assets/images/Logo-LogiSync-Horizontal-02-SF.webp';
 import { FaDollyFlatbed, FaTruckLoading, FaTruckPickup } from 'react-icons/fa';
 
-const SelectProcess: React.FC = () => {
+const SelecionarProcesso: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSelection = (tipo: string) => {
@@ -38,4 +38,4 @@ const SelectProcess: React.FC = () => {
   );
 };
 
-export default SelectProcess;
+export default SelecionarProcesso;

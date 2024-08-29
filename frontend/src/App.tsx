@@ -15,7 +15,7 @@ import CalendarioAgendamentos from './pages/CalendarioAgendamentos';
 import DadosTransportadora from './pages/Transportadora';
 import GerenciarSafras from './pages/GerenciarSafras';
 import HomePageInterno from './pages/HomePageInterno';
-import SelectProcess from './pages/SelecionarProcesso';
+import SelecionarProcesso from './pages/SelecionarProcesso';
 
 const App: React.FC = () => {
   return (
@@ -24,7 +24,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/processo" element={<SelectProcess />} />
+          <Route path="/processo" element={<SelecionarProcesso />} />
           <Route path="/registro/veiculo" element={<RegistroVeiculo />} />
           <Route path="/registro/usuario" element={<RegistroUsuario />} />
           <Route path="/registro/transportadora" element={<RegistroTransportadora />} />

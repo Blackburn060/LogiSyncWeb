@@ -1,18 +1,22 @@
 // src/pages/NotFound.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const NotFound: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const getHomeLink = () => {
-    if (user?.tipoUsuario === 'motorista') {
-      return '/home/motorista';
-    } else if (user?.tipoUsuario === 'administrador') {
-      return '/home/administrador';
+  const handleHomeLinkClick = () => {
+    if (user) {
+      if (user.tipoUsuario === 'motorista') {
+        navigate('/calendario');
+      } else {
+        navigate('/gestao/home');
+      }
+    } else {
+      navigate('/login');
     }
-    return '/';
   };
 
   return (
@@ -22,9 +26,12 @@ const NotFound: React.FC = () => {
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">Página não encontrada</h1>
         <p className="mt-6 text-base leading-7 text-gray-600">Desculpe, não conseguimos encontrar a página que você está procurando.</p>
         <div className="mt-10 flex items-center justify-center gap-x-6">
-          <Link to={getHomeLink()} className="rounded-md bg-logisync-color-blue-50 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-logisync-color-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-logisync-color-blue-400">
+          <button
+            onClick={handleHomeLinkClick}
+            className="rounded-md bg-logisync-color-blue-50 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-logisync-color-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-logisync-color-blue-400"
+          >
             Voltar para a página inicial
-          </Link>
+          </button>
           <Link to="/contact" className="text-sm font-semibold text-gray-900">
             Contatar suporte <span aria-hidden="true">&rarr;</span>
           </Link>

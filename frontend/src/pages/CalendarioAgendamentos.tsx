@@ -31,6 +31,11 @@ const AgendamentosPage: React.FC = () => {
     checkAuth();
   }, [user, accessToken, refreshToken, refreshAccessToken]);
 
+  const tipoAgendamento = localStorage.getItem('TipoAgendamento');
+  if (!tipoAgendamento) {
+    return <Navigate to="/processo" />;
+  }
+
   if (!authChecked) {
     return (
       <div className="min-h-screen flex flex-col bg-white">
