@@ -128,7 +128,7 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
     });
 };
 
-// Função para atualizar o intervalo de um horário (caso seja necessário)
+// Função para atualizar o intervalo de um horário
 const updateIntervaloHorario = (id, intervaloCarga, intervaloDescarga) => {
     return new Promise((resolve, reject) => {
         const sql = `UPDATE cadastroHorarios SET intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
