@@ -67,7 +67,7 @@ const CalendarComponent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex justify-center items-start p-6">
+    <div className="bg-white flex justify-center items-start p-6">
       <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
         {/* Calendário */}
         <div className="p-4 bg-gray-900 text-white rounded-t-lg md:rounded-l-lg md:rounded-t-none flex justify-center items-center md:w-1/2 w-full" style={{ height: '550px' }}>
