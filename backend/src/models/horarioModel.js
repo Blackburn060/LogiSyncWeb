@@ -52,15 +52,35 @@ const generateHorarios = (horarioInicio, horarioFim, intervalo) => {
     return horarios;
 };
 
-// Função para verificar se um horário específico está agendado em uma data específica
-const isHorarioAgendado = (horarioIntervalo, data) => {
+// Função para verificar se um dia está indisponível para todo o dia
+const isDiaTodoIndisponivel = (data, tipoAgendamento) => {
     return new Promise((resolve, reject) => {
         const sql = `
             SELECT COUNT(*) as count
             FROM agendamentos
-            WHERE DataAgendamento = ? AND HoraAgendamento = ?
+            WHERE DataAgendamento = ? AND DiaTodo = 1 AND TipoAgendamento = ?
         `;
-        db.get(sql, [data, horarioIntervalo], (err, row) => {
+        db.get(sql, [data, tipoAgendamento], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row.count > 0);
+            }
+        });
+    });
+};
+
+// Função para verificar se um horário específico está agendado em uma data específica
+const isHorarioAgendado = (horarioIntervalo, data, tipoAgendamento) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT COUNT(*) as count
+            FROM agendamentos
+            WHERE DataAgendamento = ?
+            AND (HoraAgendamento = ? OR DiaTodo = 1)
+            AND TipoAgendamento = ?
+        `;
+        db.get(sql, [data, horarioIntervalo, tipoAgendamento], (err, row) => {
             if (err) {
                 reject(err);
             } else {
@@ -71,30 +91,40 @@ const isHorarioAgendado = (horarioIntervalo, data) => {
 };
 
 // Função para buscar horários disponíveis em uma data específica, com base no tipo de agendamento
-const getHorariosDisponiveisPorData = (data, TipoAgendamento) => {
+const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
     return new Promise(async (resolve, reject) => {
-        const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
-        db.get(sql, [], async (err, row) => {
-            if (err) {
-                reject(err);
-            } else {
-                if (row) {
-                    // Seleciona o intervalo baseado no tipo de agendamento
-                    const intervalo = TipoAgendamento === 'carga' ? row.intervaloCarga : row.intervaloDescarga;
-                    const horarios = generateHorarios(row.horarioInicio, row.horarioFim, intervalo);
-
-                    for (let horario of horarios) {
-                        const horarioIntervalo = `${horario.horarioInicio} - ${horario.horarioFim}`;
-                        const agendado = await isHorarioAgendado(horarioIntervalo, data);
-                        horario.agendado = agendado;
-                    }
-
-                    resolve(horarios);
-                } else {
-                    resolve([]);
-                }
+        try {
+            // Verificar se o dia todo está indisponível
+            const diaTodoIndisponivel = await isDiaTodoIndisponivel(data, tipoAgendamento);
+            if (diaTodoIndisponivel) {
+                return resolve([]); // Se o dia todo está indisponível, retornar lista vazia
             }
-        });
+
+            const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
+            db.get(sql, [], async (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (row) {
+                        // Seleciona o intervalo baseado no tipo de agendamento
+                        const intervalo = tipoAgendamento === 'carga' ? row.intervaloCarga : row.intervaloDescarga;
+                        const horarios = generateHorarios(row.horarioInicio, row.horarioFim, intervalo);
+
+                        for (let horario of horarios) {
+                            const horarioIntervalo = `${horario.horarioInicio} - ${horario.horarioFim}`;
+                            const agendado = await isHorarioAgendado(horarioIntervalo, data, tipoAgendamento);
+                            horario.agendado = agendado;
+                        }
+
+                        resolve(horarios);
+                    } else {
+                        resolve([]);
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
     });
 };
 

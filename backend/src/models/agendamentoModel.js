@@ -66,8 +66,8 @@ const addAgendamento = (agendamento) => {
     return new Promise((resolve, reject) => {
         const sql = `
             INSERT INTO agendamentos 
-            (CodigoUsuario, CodigoVeiculo, CodigoProduto, CodigoTransportadora, CodigoSafra, ArquivoAnexado, Observacao, DataAgendamento, HoraAgendamento, UsuarioAprovacao, MotivoRecusa, QuantidadeAgendamento, SituacaoAgendamento, TipoAgendamento) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (CodigoUsuario, CodigoVeiculo, CodigoProduto, CodigoTransportadora, CodigoSafra, ArquivoAnexado, Observacao, DataAgendamento, HoraAgendamento, UsuarioAprovacao, MotivoRecusa, QuantidadeAgendamento, SituacaoAgendamento, TipoAgendamento, DiaTodo) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         db.run(sql, [
             agendamento.CodigoUsuario, 
@@ -83,7 +83,8 @@ const addAgendamento = (agendamento) => {
             agendamento.MotivoRecusa, 
             agendamento.QuantidadeAgendamento, 
             agendamento.SituacaoAgendamento, 
-            agendamento.TipoAgendamento
+            agendamento.TipoAgendamento,
+            agendamento.DiaTodo  // Adicionando DiaTodo ao agendamento
         ], function(err) {
             if (err) {
                 reject(err);
@@ -99,7 +100,7 @@ const updateAgendamento = (agendamento, id) => {
     return new Promise((resolve, reject) => {
         const sql = `
             UPDATE agendamentos 
-            SET Observacao = ?, UsuarioAprovacao = ?, MotivoRecusa = ?, SituacaoAgendamento = ?, TipoAgendamento = ? 
+            SET Observacao = ?, UsuarioAprovacao = ?, MotivoRecusa = ?, SituacaoAgendamento = ?, TipoAgendamento = ?, DiaTodo = ? 
             WHERE CodigoAgendamento = ?
         `;
         db.run(sql, [
@@ -108,6 +109,7 @@ const updateAgendamento = (agendamento, id) => {
             agendamento.MotivoRecusa, 
             agendamento.SituacaoAgendamento, 
             agendamento.TipoAgendamento, 
+            agendamento.DiaTodo,  // Atualizando DiaTodo
             id
         ], function(err) {
             if (err) {
@@ -146,7 +148,7 @@ const registrarIndisponibilidade = (agendamento) => {
             agendamento.DataAgendamento, 
             agendamento.HoraAgendamento, 
             agendamento.TipoAgendamento, 
-            agendamento.DiaTodo
+            agendamento.DiaTodo  // Registrando DiaTodo na indisponibilidade
         ], function(err) {
             if (err) {
                 reject(err);
