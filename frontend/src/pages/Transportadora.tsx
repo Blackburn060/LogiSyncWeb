@@ -3,8 +3,7 @@ import Navbar from '../components/Navbar';
 import { getTransportadora, updateTransportadora, deleteTransportadora, addTransportadora, updateUserTransportadora } from '../services/transportadoraService';
 import { useAuth } from '../context/AuthContext';
 import { Transportadora } from '../models/Transportadora';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 import { cnpj } from 'cpf-cnpj-validator';
 
 const RegistroTransportadora: React.FC = () => {
@@ -20,16 +19,20 @@ const RegistroTransportadora: React.FC = () => {
       setIsLoading(true);
       if (accessToken && user?.CodigoTransportadora) {
         try {
-          console.log('Fetching transportadora for CodigoTransportadora:', user.CodigoTransportadora);
           const transportadoraData = await getTransportadora(accessToken, user.CodigoTransportadora);
-          console.log('Fetched transportadora:', transportadoraData);
-          setTransportadora(transportadoraData);
-          setFormData(transportadoraData);
+          if (transportadoraData) {
+            setTransportadora(transportadoraData);
+            setFormData(transportadoraData);
+          } else {
+            setTransportadora(null);
+          }
         } catch (error) {
           console.error('Erro ao buscar detalhes da transportadora', error);
+          toast.error('Erro ao buscar detalhes da transportadora.');
         }
       } else {
         console.log('accessToken or CodigoTransportadora is missing');
+        setTransportadora(null);
       }
       setIsLoading(false);
     };
@@ -71,8 +74,11 @@ const RegistroTransportadora: React.FC = () => {
       try {
         await deleteTransportadora(accessToken as string, transportadora.CodigoTransportadora);
         toast.success('Transportadora inativada com sucesso!', {
-          onClose: () => window.location.reload(),
+          icon: '🗑️',
         });
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } catch (error) {
         console.error('Erro ao inativar transportadora', error);
         toast.error('Erro ao inativar transportadora.');
@@ -94,9 +100,10 @@ const RegistroTransportadora: React.FC = () => {
     try {
       const newTransportadora = await addTransportadora(accessToken as string, formData as Transportadora);
       await updateUserTransportadora(accessToken as string, Number(user.id), newTransportadora.CodigoTransportadora);
-      toast.success('Transportadora adicionada com sucesso!', {
-        onClose: () => window.location.reload(),
-      });
+      toast.success('Transportadora adicionada com sucesso!');
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
       setShowAddForm(false);
     } catch (error) {
       console.error('Erro ao adicionar transportadora', error);
@@ -107,8 +114,8 @@ const RegistroTransportadora: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <ToastContainer />
-      <div className="flex-grow flex justify-center items-center p-4">
+      <Toaster position="top-right" reverseOrder={false} />
+      <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-lg bg-blue-700 p-6 rounded-lg">
           <h1 className="text-2xl font-bold mb-4 text-center text-white">Dados da Transportadora</h1>
           {isLoading ? (
@@ -227,7 +234,8 @@ const RegistroTransportadora: React.FC = () => {
                       </div>
                     </form>
                   ) : (
-                    <div className="flex justify-center items-center h-full">
+                    <div className="flex flex-col justify-center items-center h-full">
+                      <p className="text-white text-center mb-4">Nenhuma transportadora vinculada a sua conta</p>
                       <button
                         className="px-4 py-2 bg-blue-500 text-white rounded"
                         onClick={() => setShowAddForm(true)}

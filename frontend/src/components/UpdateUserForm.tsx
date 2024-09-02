@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Usuario } from '../models/Usuario';
 import { updateUsuario, inactivateUsuario, checkEmailExists } from '../services/usuarioService';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface UpdateUserFormProps {
   userData: Usuario;
@@ -55,7 +54,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
   };
 
   const handleDisabledClick = () => {
-    toast.info('Clique no botão "Editar" para atualizar os dados.');
+    toast('Clique no botão "Editar" para atualizar os dados.', { icon: 'ℹ️' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,14 +82,10 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
         await updateUsuario(accessToken, formData.CodigoUsuario, updatedData);
         onUpdate();
         setIsEditing(false);
-        toast.success('Dados atualizados com sucesso!', {
-          onClose: () => window.location.reload()
-        });
+        toast.success('Dados atualizados com sucesso!');
       } catch (error) {
         console.error('Erro ao atualizar usuário', error);
-        toast.error('Erro ao atualizar usuário.', {
-          onClose: () => window.location.reload()
-        });
+        toast.error('Erro ao atualizar usuário.');
       }
     } else {
       setIsEditing(true);
@@ -102,13 +97,14 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
       await inactivateUsuario(accessToken, formData.CodigoUsuario);
       setShowModal(false);
       toast.success('Usuário inativado com sucesso!', {
-        onClose: () => window.location.reload()
+        icon: '✔️',
       });
+      setTimeout(() => {
+        window.location.reload(); // Recarrega a página após um breve atraso
+      }, 2000);
     } catch (error) {
       console.error('Erro ao inativar usuário', error);
-      toast.error('Erro ao inativar usuário.', {
-        onClose: () => window.location.reload()
-      });
+      toast.error('Erro ao inativar usuário.');
     }
   };
 
@@ -119,7 +115,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-right" reverseOrder={false} />
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-white mb-2" htmlFor="NomeCompleto">Nome Completo</label>

@@ -116,7 +116,7 @@ const MeusAgendamentos: React.FC = () => {
       ) : (
         <div className="container mx-auto pt-10 flex-grow">
           <h1 className="text-2xl font-extrabold mb-2 max-w-3xl mx-auto">Meus agendamentos</h1>
-          
+
           {/* Table view for larger screens */}
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-3xl mx-auto hidden sm:block">
             <table className="w-full text-sm text-left text-white dark:text-white">
@@ -130,15 +130,68 @@ const MeusAgendamentos: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {agendamentos.map((agendamento, index) => (
-                  <tr key={index} className="odd:bg-white even:bg-logisync-color-blue-50 dark:odd:bg-gray-800 dark:even:bg-gray-700 border-b dark:border-gray-500">
-                    <th scope="row" className="px-6 py-4 font-medium whitespace-nowrap">
-                      {formatDate(agendamento.DataAgendamento)}
-                    </th>
-                    <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.HoraAgendamento}</td>
-                    <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.Placa}</td>
-                    <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.SituacaoAgendamento}</td>
-                    <td className="px-6 py-4">
+                {agendamentos.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-4 text-gray-700 dark:text-gray-300">
+                      Nenhum agendamento encontrado.
+                    </td>
+                  </tr>
+                ) : (
+                  agendamentos.map((agendamento, index) => (
+                    <tr key={index} className="odd:bg-white even:bg-logisync-color-blue-50 dark:odd:bg-gray-800 dark:even:bg-gray-700 border-b dark:border-gray-500">
+                      <th scope="row" className="px-6 py-4 font-medium whitespace-nowrap">
+                        {formatDate(agendamento.DataAgendamento)}
+                      </th>
+                      <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.HoraAgendamento}</td>
+                      <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.Placa}</td>
+                      <td scope="row" className="px-6 py-4 font-medium whitespace-nowrap">{agendamento.SituacaoAgendamento}</td>
+                      <td className="px-6 py-4">
+                        {agendamento.SituacaoAgendamento === "Pendente" ? (
+                          <button
+                            className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                            onClick={() => handleCancelClick(agendamento)}
+                          >
+                            Cancelar
+                          </button>
+                        ) : (
+                          <button
+                            className="font-medium text-gray-400 cursor-not-allowed"
+                            onClick={handleInactiveCancelClick}
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* List view for smaller screens */}
+          <div className="block sm:hidden max-w-3xl mx-auto">
+            {agendamentos.length === 0 ? (
+              <div className="text-center py-4 text-gray-700 dark:text-gray-300">
+                Nenhum agendamento encontrado.
+              </div>
+            ) : (
+              agendamentos.map((agendamento, index) => (
+                <div key={index} className="bg-logisync-color-blue-50 dark:bg-gray-700 mb-4 rounded-lg shadow-md p-4">
+                  <div className="bg-logisync-color-blue-100 text-white px-4 py-2 rounded-t-lg">
+                    <div className="font-bold text-lg">Data: {formatDate(agendamento.DataAgendamento)}</div>
+                  </div>
+                  <div className="p-4 bg-white dark:bg-gray-100 rounded-b-lg">
+                    <div className="mb-2">
+                      <span className="font-extrabold">Horário:</span> {agendamento.HoraAgendamento}
+                    </div>
+                    <div className="mb-2">
+                      <span className="font-extrabold">Placa:</span> {agendamento.Placa}
+                    </div>
+                    <div className="mb-2">
+                      <span className="font-extrabold">Status:</span> {agendamento.SituacaoAgendamento}
+                    </div>
+                    <div>
                       {agendamento.SituacaoAgendamento === "Pendente" ? (
                         <button
                           className="font-medium text-red-600 dark:text-red-500 hover:underline"
@@ -154,50 +207,11 @@ const MeusAgendamentos: React.FC = () => {
                           Cancelar
                         </button>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* List view for smaller screens */}
-          <div className="block sm:hidden max-w-3xl mx-auto">
-            {agendamentos.map((agendamento, index) => (
-              <div key={index} className="bg-logisync-color-blue-50 dark:bg-gray-700 mb-4 rounded-lg shadow-md p-4">
-                <div className="bg-logisync-color-blue-100 text-white px-4 py-2 rounded-t-lg">
-                  <div className="font-bold text-lg">Data: {formatDate(agendamento.DataAgendamento)}</div>
-                </div>
-                <div className="p-4 bg-white dark:bg-gray-100 rounded-b-lg">
-                  <div className="mb-2">
-                    <span className="font-extrabold">Horário:</span> {agendamento.HoraAgendamento}
-                  </div>
-                  <div className="mb-2">
-                    <span className="font-extrabold">Placa:</span> {agendamento.Placa}
-                  </div>
-                  <div className="mb-2">
-                    <span className="font-extrabold">Status:</span> {agendamento.SituacaoAgendamento}
-                  </div>
-                  <div>
-                    {agendamento.SituacaoAgendamento === "Pendente" ? (
-                      <button
-                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                        onClick={() => handleCancelClick(agendamento)}
-                      >
-                        Cancelar
-                      </button>
-                    ) : (
-                      <button
-                        className="font-medium text-gray-400 cursor-not-allowed"
-                        onClick={handleInactiveCancelClick}
-                      >
-                        Cancelar
-                      </button>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}

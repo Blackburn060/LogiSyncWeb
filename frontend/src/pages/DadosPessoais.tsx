@@ -31,7 +31,7 @@ const DadosPessoais: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <div className="flex-grow flex justify-center items-center p-4">
+      <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-lg bg-blue-700 p-6 rounded-lg relative">
           <h1 className="text-2xl font-bold mb-4 text-center text-white">
             <span className="bg-blue-900 px-2 py-1 rounded">Dados Pessoais</span>

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Transportadora } from '../models/Transportadora';
 import { updateTransportadora } from '../services/transportadoraService';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface UpdateTransportadoraFormProps {
   transportadoraData: Transportadora;
@@ -42,7 +41,7 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
 
   return (
     <>
-      <ToastContainer />
+      <Toaster position="top-right" reverseOrder={false} />
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-white mb-2" htmlFor="Nome">Nome da Empresa</label>
@@ -112,6 +111,9 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
               <button
                 onClick={() => {
                   setShowModal(false);
+                  toast('Transportadora inativada com sucesso!', {
+                    icon: '🗑️',
+                  });
                 }}
                 className="px-4 py-2 bg-red-500 text-white rounded"
               >

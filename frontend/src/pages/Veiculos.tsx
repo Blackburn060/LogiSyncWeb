@@ -5,8 +5,7 @@ import { Veiculo } from '../models/Veiculo';
 import Navbar from '../components/Navbar';
 import VeiculoForm from '../components/VeiculoForm';
 import { useAuth } from '../context/AuthContext';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 Modal.setAppElement('#root');
 
@@ -102,12 +101,16 @@ const Veiculos: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <div className="flex-grow flex justify-center items-center p-4">
+      <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-md bg-blue-700 p-6 rounded-lg relative">
           <h1 className="text-2xl font-bold mb-4 text-center text-white bg-blue-800 p-2 rounded">Veículos</h1>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
               <l-helix size="45" speed="2.5" color="white"></l-helix>
+            </div>
+          ) : veiculos.length === 0 ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-lg text-white">Nenhum veículo encontrado.</p>
             </div>
           ) : (
             <>
@@ -184,7 +187,7 @@ const Veiculos: React.FC = () => {
           </button>
         </div>
       </Modal>
-      <ToastContainer />
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
