@@ -1,4 +1,5 @@
 const transportadoraModel = require('../models/transportadoraModel');
+const { generateAccessToken } = require('../auth'); 
 
 const listarTransportadoras = async (req, res) => {
     try {
@@ -12,10 +13,32 @@ const listarTransportadoras = async (req, res) => {
 
 const adicionarTransportadora = async (req, res) => {
     try {
-        const id = await transportadoraModel.addTransportadora(req.body);
-        res.status(201).send({ id: id, message: "Transportadora adicionada com sucesso" });
+
+        if (!req.body.Nome || !req.body.NomeFantasia || !req.body.CNPJ) {
+            return res.status(400).send({ message: "Campos obrigatórios ausentes" });
+        }
+
+        const userId = req.user.id;  
+        
+
+        const novaTransportadora = await transportadoraModel.addTransportadora(req.body, userId);
+
+        const updatedUser = {
+            ...req.user,  
+            CodigoTransportadora: novaTransportadora.CodigoTransportadora 
+        };
+
+
+        const newAccessToken = generateAccessToken(updatedUser);  
+
+        return res.status(201).send({ 
+            message: "Transportadora adicionada e usuário atualizado com sucesso", 
+            token: newAccessToken,  
+            transportadora: novaTransportadora
+        });
     } catch (error) {
-        res.status(500).send({ message: "Erro ao adicionar transportadora: " + error.message });
+        console.error('Erro ao adicionar transportadora:', error);
+        return res.status(500).send({ message: "Erro ao adicionar transportadora: " + error.message });
     }
 };
 
@@ -49,14 +72,18 @@ const getTransportadoraById = async (req, res) => {
     try {
         const transportadora = await transportadoraModel.getTransportadoraById(req.params.id);
         if (transportadora) {
+            if (transportadora.SituacaoTransportadora === 0) {
+                return res.status(200).json({ message: "Transportadora está inativa." });
+            }
             res.json(transportadora);
         } else {
-            res.status(404).send({ message: "Transportadora não encontrada" });
+            res.status(200).json({ message: "Nenhuma transportadora encontrada." });
         }
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar transportadora: " + error.message });
     }
 };
+
 
 module.exports = {
     listarTransportadoras,

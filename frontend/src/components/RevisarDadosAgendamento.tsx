@@ -35,20 +35,16 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       if (accessToken && user) {
         try {
           const usuarioData = await getUsuario(accessToken, Number(user.id));
-          console.log('Dados do usuário:', usuarioData);
           setUsuario(usuarioData);
 
           const veiculosData = await getVeiculos(accessToken);
-          console.log('Veículos disponíveis:', veiculosData);
           setVeiculos(veiculosData.filter(veiculo => veiculo.SituacaoVeiculo === 1));
 
           const produtosData = await getProdutos(accessToken);
-          console.log('Produtos disponíveis:', produtosData);
-          setProdutos(produtosData);  // Carregando os produtos no estado
+          setProdutos(produtosData);  
 
           if (usuarioData.CodigoTransportadora) {
             const transportadoraData = await getTransportadora(accessToken, usuarioData.CodigoTransportadora);
-            console.log('Dados da transportadora:', transportadoraData);
             setTransportadora(transportadoraData);
           }
         } catch (error) {
@@ -81,7 +77,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       SituacaoAgendamento: 'Pendente',
     };
 
-    console.log('Dados do Agendamento:', novoAgendamento);
 
     try {
       const response = await addAgendamento(accessToken!, novoAgendamento);

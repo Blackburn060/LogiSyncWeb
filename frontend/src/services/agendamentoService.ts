@@ -11,7 +11,6 @@ export const getAgendamentosComPlaca = async (accessToken: string, userId: numbe
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    console.log('Resposta da API - Agendamentos com Placa:', response.data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {

@@ -31,7 +31,6 @@ const RegistroTransportadora: React.FC = () => {
           toast.error('Erro ao buscar detalhes da transportadora.');
         }
       } else {
-        console.log('accessToken or CodigoTransportadora is missing');
         setTransportadora(null);
       }
       setIsLoading(false);
@@ -40,11 +39,26 @@ const RegistroTransportadora: React.FC = () => {
     fetchTransportadora();
   }, [accessToken, user]);
 
-  const handleUpdate = async () => {
-    if (!formData.CNPJ || !cnpj.isValid(formData.CNPJ)) {
-      toast.error('CNPJ inválido!');
-      return;
+  // Função para validar o formulário de transporte
+  const isValidForm = () => {
+    const { Nome, NomeFantasia, CNPJ } = formData;
+    if (!Nome || !Nome.trim()) {
+      toast.error('O campo Nome da Empresa é obrigatório.');
+      return false;
     }
+    if (!NomeFantasia || !NomeFantasia.trim()) {
+      toast.error('O campo Nome Fantasia é obrigatório.');
+      return false;
+    }
+    if (!CNPJ || !cnpj.isValid(CNPJ)) {
+      toast.error('CNPJ inválido ou ausente.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleUpdate = async () => {
+    if (!isValidForm()) return;
 
     if (isEditing && formData && transportadora) {
       try {
@@ -87,10 +101,7 @@ const RegistroTransportadora: React.FC = () => {
   };
 
   const handleAddTransportadora = async () => {
-    if (!formData.CNPJ || !cnpj.isValid(formData.CNPJ)) {
-      toast.error('CNPJ inválido!');
-      return;
-    }
+    if (!isValidForm()) return;
 
     if (!user) {
       toast.error('Usuário não está autenticado');
@@ -98,9 +109,16 @@ const RegistroTransportadora: React.FC = () => {
     }
 
     try {
-      const newTransportadora = await addTransportadora(accessToken as string, formData as Transportadora);
+      const response = await addTransportadora(accessToken as string, formData as Transportadora);
+      const newTransportadora = response.transportadora;
       await updateUserTransportadora(accessToken as string, Number(user.id), newTransportadora.CodigoTransportadora);
       toast.success('Transportadora adicionada com sucesso!');
+
+      const novoToken = response.token;
+      if (novoToken) {
+        localStorage.setItem('accessToken', novoToken);
+      }
+
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -152,15 +170,21 @@ const RegistroTransportadora: React.FC = () => {
                   </div>
                   <div className="mb-4">
                     <label className="block text-white mb-2" htmlFor="CNPJ">CNPJ</label>
-                    <input
-                      type="text"
-                      id="CNPJ"
-                      name="CNPJ"
-                      value={formData.CNPJ || ''}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className={`w-full p-2 border border-gray-300 rounded ${!isEditing ? 'bg-gray-200' : ''}`}
-                    />
+                    {/* Envolvendo o campo CNPJ com uma div para capturar o clique */}
+                    <div
+                      onClick={() => toast.error('Não é possível alterar o CNPJ.')}
+                      className="cursor-pointer"
+                    >
+                      <input
+                        type="text"
+                        id="CNPJ"
+                        name="CNPJ"
+                        value={formData.CNPJ || ''}
+                        onChange={handleChange}
+                        disabled={!!formData.CNPJ || !!transportadora} // Desabilita o campo CNPJ
+                        className={`w-full p-2 border ${!!formData.CNPJ || !!transportadora ? 'border-gray-400 bg-gray-200' : 'border-gray-300'} rounded`}
+                      />
+                    </div>
                   </div>
                   <div className="flex justify-between">
                     <button

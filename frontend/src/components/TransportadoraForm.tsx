@@ -1,18 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Transportadora } from '../models/Transportadora';
-import { updateTransportadora } from '../services/transportadoraService';
+import { updateTransportadora, getTransportadora, addTransportadora } from '../services/transportadoraService';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface UpdateTransportadoraFormProps {
-  transportadoraData: Transportadora;
+  transportadoraData?: Transportadora;
   accessToken: string;
   onUpdate: () => void;
 }
 
 const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ transportadoraData, accessToken, onUpdate }) => {
-  const [formData, setFormData] = useState<Transportadora>(transportadoraData);
-  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<Partial<Transportadora>>(transportadoraData || {});
+  const [isEditing, setIsEditing] = useState(!!transportadoraData);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (transportadoraData) {
+      const fetchTransportadora = async () => {
+        const transportadora = await getTransportadora(accessToken, transportadoraData.CodigoTransportadora);
+        if (!transportadora || transportadora.SituacaoTransportadora === 0) {
+          toast.error('Transportadora inativa ou não encontrada.');
+        } else {
+          setFormData(transportadora);
+        }
+      };
+      fetchTransportadora();
+    }
+  }, [accessToken, transportadoraData]);
+
+  // Função para validar o formulário
+  const isValidForm = () => {
+    const { Nome, NomeFantasia, CNPJ } = formData;
+    if (!Nome || !Nome.trim()) {
+      toast.error('O campo Nome é obrigatório.');
+      return false;
+    }
+    if (!NomeFantasia || !NomeFantasia.trim()) {
+      toast.error('O campo Nome Fantasia é obrigatório.');
+      return false;
+    }
+    if (!CNPJ || !CNPJ.trim()) {
+      toast.error('O campo CNPJ é obrigatório.');
+      return false;
+    }
+    return true;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -24,19 +56,43 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing) {
-      try {
-        await updateTransportadora(accessToken, formData.CodigoTransportadora, formData);
-        onUpdate();
-        setIsEditing(false);
-        toast.success('Dados atualizados com sucesso!');
-      } catch (error) {
-        console.error('Erro ao atualizar transportadora', error);
-        toast.error('Erro ao atualizar transportadora.');
+    
+    // Valida o formulário antes de submeter
+    if (!isValidForm()) return;
+
+    try {
+      if (transportadoraData) {
+        // Atualizando uma transportadora existente
+        await updateTransportadora(accessToken, transportadoraData.CodigoTransportadora, formData);
+        toast.success('Transportadora atualizada com sucesso!');
+      } else {
+        // Adicionando uma nova transportadora
+        const response = await addTransportadora(accessToken, formData);
+
+        const novoToken = response.token; // Acessa o token retornado
+
+        // Atualiza o token no localStorage, se for retornado
+        if (novoToken) {
+          localStorage.setItem('accessToken', novoToken); // Atualiza o token no armazenamento local
+        }
+
+        toast.success('Transportadora adicionada com sucesso!');
       }
-    } else {
-      setIsEditing(true);
+
+      onUpdate(); // Atualiza a tela após adicionar ou atualizar
+      setIsEditing(false);
+    } catch (error) {
+      toast.error('Erro ao salvar transportadora.');
     }
+  };
+
+  // Função que é chamada quando o botão Editar é clicado
+  const handleEdit = () => {
+    toast('Não é possível alterar o CNPJ.', {
+      icon: '⚠️',
+      duration: 3000, // O tempo que o toast ficará visível
+    });
+    setIsEditing(true);
   };
 
   return (
@@ -49,10 +105,11 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
             type="text"
             id="Nome"
             name="Nome"
-            value={formData.NomeEmpresa}
+            value={formData.Nome || ''}
             onChange={handleChange}
-            disabled={!isEditing}
-            className={`w-full p-2 border ${isEditing ? 'border-gray-300' : 'border-gray-400 bg-gray-200'} rounded`}
+            disabled={!isEditing && !!transportadoraData}
+            className={`w-full p-2 border ${isEditing || !transportadoraData ? 'border-gray-300' : 'border-gray-400 bg-gray-200'} rounded`}
+            required
           />
         </div>
         <div className="mb-4">
@@ -61,10 +118,11 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
             type="text"
             id="NomeFantasia"
             name="NomeFantasia"
-            value={formData.NomeFantasia}
+            value={formData.NomeFantasia || ''}
             onChange={handleChange}
-            disabled={!isEditing}
-            className={`w-full p-2 border ${isEditing ? 'border-gray-300' : 'border-gray-400 bg-gray-200'} rounded`}
+            disabled={!isEditing && !!transportadoraData}
+            className={`w-full p-2 border ${isEditing || !transportadoraData ? 'border-gray-300' : 'border-gray-400 bg-gray-200'} rounded`}
+            required
           />
         </div>
         <div className="mb-4">
@@ -73,30 +131,34 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
             type="text"
             id="CNPJ"
             name="CNPJ"
-            value={formData.CNPJ}
+            value={formData.CNPJ || ''}
             onChange={handleChange}
-            disabled={!isEditing}
-            className={`w-full p-2 border ${isEditing ? 'border-gray-300' : 'border-gray-400 bg-gray-200'} rounded`}
+            disabled={!!transportadoraData} // Desabilita a edição do CNPJ se a transportadora já estiver cadastrada
+            className={`w-full p-2 border ${transportadoraData ? 'border-gray-400 bg-gray-200' : 'border-gray-300'} rounded`}
+            required
           />
         </div>
         <div className="flex justify-between">
           <button
-            type="submit"
+            type="button"
+            onClick={handleEdit}  // Chama handleEdit ao clicar no botão Editar
             className="px-4 py-2 bg-green-500 text-white rounded"
           >
-            {isEditing ? 'Salvar' : 'Editar'}
+            {transportadoraData ? (isEditing ? 'Salvar' : 'Editar') : 'Adicionar Transportadora'}
           </button>
-          <button
-            type="button"
-            onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-red-500 text-white rounded"
-          >
-            {isEditing ? 'Cancelar' : 'Excluir Transportadora'}
-          </button>
+          {transportadoraData && (
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="px-4 py-2 bg-red-500 text-white rounded"
+            >
+              {isEditing ? 'Cancelar' : 'Excluir Transportadora'}
+            </button>
+          )}
         </div>
       </form>
 
-      {showModal && (
+      {showModal && transportadoraData && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h2 className="text-lg font-bold mb-4">Confirmação</h2>

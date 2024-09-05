@@ -39,20 +39,48 @@ const getTransportadoraById = (id) => {
     });
 };
 
+
 // Adicionar uma nova transportadora
-const addTransportadora = (transportadora) => {
+const addTransportadora = (transportadora, userId) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        const sql = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
-        db.run(sql, [transportadora.Nome, transportadora.NomeFantasia, transportadora.CNPJ, transportadora.SituacaoTransportadora, dataGeracao], function(err) {
+        const sqlInsert = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
+
+        db.run(sqlInsert, [transportadora.Nome, transportadora.NomeFantasia, transportadora.CNPJ, 1, dataGeracao], function(err) {
             if (err) {
                 reject(err);
             } else {
-                resolve(this.lastID);
+                const newCodigoTransportadora = this.lastID; 
+                if (!newCodigoTransportadora) {
+                    reject(new Error('Falha ao obter o CodigoTransportadora após a inserção'));
+                } else {
+                    
+                    const sqlUpdateUser = 'UPDATE cadastrousuarios SET CodigoTransportadora = ?, DataAlteracao = ? WHERE CodigoUsuario = ?';
+                    const dataAlteracao = dataGeracao;
+
+                    db.run(sqlUpdateUser, [newCodigoTransportadora, dataAlteracao, userId], function(err) {
+                        if (err) {
+                            reject(err);
+                        } else {
+
+                            resolve({
+                                CodigoTransportadora: newCodigoTransportadora,
+                                Nome: transportadora.Nome,
+                                NomeFantasia: transportadora.NomeFantasia,
+                                CNPJ: transportadora.CNPJ,
+                                SituacaoTransportadora: 1,
+                                DataGeracao: dataGeracao
+                            });
+                        }
+                    });
+                }
             }
         });
     });
 };
+
+  
+
 
 // Atualizar uma transportadora
 const updateTransportadora = (transportadora, id) => {

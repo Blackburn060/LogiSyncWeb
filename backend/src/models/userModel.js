@@ -64,6 +64,7 @@ const addUser = (user) => {
 // Função para atualizar um usuário com DataAlteracao formatada
 const updateUser = (user, id) => {
     return new Promise(async (resolve, reject) => {
+
         const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
         let sql = 'UPDATE cadastrousuarios SET ';
         let params = [];
@@ -79,7 +80,9 @@ const updateUser = (user, id) => {
             }
         }
 
+
         Object.keys(user).forEach(key => {
+            // Verifica se a chave tem um valor definido e não é 'DataGeracao' ou 'DataAlteracao'
             if (user[key] !== undefined && key !== 'DataGeracao' && key !== 'DataAlteracao') {
                 updates.push(`${key} = ?`);
                 params.push(user[key]);
@@ -87,22 +90,27 @@ const updateUser = (user, id) => {
         });
 
         if (updates.length === 0) {
-            reject(new Error("No fields to update"));
-            return;
+            console.error('Erro: No fields to update'); 
+            return reject(new Error("No fields to update"));
         }
 
+        // Adiciona a DataAlteracao ao SQL e aos parâmetros
         updates.push('DataAlteracao = ?');
         params.push(dataAlteracao);
 
         sql += updates.join(', ') + ' WHERE CodigoUsuario = ?';
         params.push(id);
 
+        // Executa o SQL
         db.run(sql, params, function(err) {
-            if (err) reject(err);
-            else resolve(this.changes);
+            if (err) {
+                return reject(err);
+            }
+            resolve(this.changes);
         });
     });
 };
+
 
 // Função para encontrar um usuário pelo email
 const findUserByEmail = (email) => {

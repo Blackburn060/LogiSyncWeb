@@ -52,31 +52,27 @@ const adicionarUsuario = async (req, res) => {
 
 // Atualizar um usuário
 const atualizarUsuario = async (req, res) => {
-    const userId = req.params.id;
-    const changes = req.body;
+    const user = req.body;
 
-    // Verifique se a senha está sendo atualizada e hashe-a se necessário
-    if (changes.senha) {
-        try {
-            changes.Senha = await hashPassword(changes.senha);
-            delete changes.senha; // Remova a chave `senha` para evitar duplicação
-        } catch (error) {
-            return res.status(500).send({ message: "Erro ao hashear senha: " + error.message });
-        }
+    // Verifique se há campos para atualizar
+    if (Object.keys(user).length === 0) {
+        return res.status(400).send({ message: 'Nenhum dado para atualizar' });
     }
 
     try {
-        const updated = await userModel.updateUser(changes, userId);
-        if (updated) {
-            res.send({ message: "Usuário atualizado com sucesso." });
+        const changes = await userModel.updateUser(user, req.params.id);
+        if (changes > 0) {
+            res.send({ message: "Usuário atualizado com sucesso" });
         } else {
-            res.status(404).send({ message: "Usuário não encontrado." });
+            res.status(400).send({ message: "Nenhuma alteração foi realizada" });
         }
     } catch (error) {
-        console.error("Erro na atualização:", error);
+        console.error('Erro ao atualizar usuário:', error);
         res.status(500).send({ message: "Erro ao atualizar usuário: " + error.message });
     }
 };
+
+
 
 // Verificar se o e-mail já existe
 const verificarEmailExistente = async (req, res) => {
