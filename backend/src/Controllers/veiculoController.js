@@ -9,7 +9,19 @@ const listarVeiculos = async (req, res) => {
         res.status(500).send({ message: "Erro ao buscar veículos: " + error.message });
     }
 };
-
+const obterVeiculoPorId = async (req, res) => {
+    const veiculoId = req.params.id; // Pega o ID do veículo da URL
+    try {
+        const veiculos = await veiculoModel.getAllVeiculos({ CodigoVeiculo: veiculoId });
+        if (veiculos.length > 0) {
+            res.status(200).json(veiculos[0]); // Retorna o primeiro veículo encontrado
+        } else {
+            res.status(404).json({ message: "Veículo não encontrado" });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao buscar veículo: " + error.message });
+    }
+};
 
 const adicionarVeiculo = async (req, res) => {
     try {
@@ -52,6 +64,7 @@ const deletarVeiculo = async (req, res) => {
 module.exports = {
     listarVeiculos,
     adicionarVeiculo,
+    obterVeiculoPorId,
     atualizarVeiculo,
     deletarVeiculo
 };

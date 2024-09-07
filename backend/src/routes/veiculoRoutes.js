@@ -7,5 +7,6 @@ router.get('/veiculos',authMiddleware, veiculoController.listarVeiculos);
 router.post('/veiculos',authMiddleware, veiculoController.adicionarVeiculo);
 router.put('/veiculos/:id',authMiddleware, veiculoController.atualizarVeiculo);
 router.delete('/veiculos/:id',authMiddleware, veiculoController.deletarVeiculo);
+router.get('/veiculos/:id',authMiddleware, veiculoController.obterVeiculoPorId);
 
 module.exports = router;

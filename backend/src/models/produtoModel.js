@@ -37,6 +37,18 @@ const addProduto = (produto) => {
         });
     });
 };
+const getProdutoById = (codigoProduto) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastroprodutos WHERE CodigoProduto = ?';
+        db.get(sql, [codigoProduto], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);  // Retorna a linha correspondente ao produto
+            }
+        });
+    });
+};
 
 // Atualizar um produto
 const updateProduto = (produto, id) => {
@@ -90,6 +102,7 @@ const deleteProduto = (id) => {
 module.exports = {
     getAllProdutos,
     addProduto,
+    getProdutoById,
     updateProduto,
     deleteProduto
 };

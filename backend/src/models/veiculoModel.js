@@ -22,7 +22,18 @@ const getAllVeiculos = (filters = {}) => {
         });
     });
 };
-
+const getVeiculoById = (codigoVeiculo) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastroveiculo WHERE CodigoVeiculo = ?';
+        db.get(sql, [codigoVeiculo], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row); // Retorna o veículo específico
+            }
+        });
+    });
+};
 // Adicionar um novo veículo
 const addVeiculo = (veiculo) => {
     return new Promise((resolve, reject) => {
@@ -90,6 +101,7 @@ const deleteVeiculo = (id) => {
 module.exports = {
     getAllVeiculos,
     addVeiculo,
+    getVeiculoById, 
     updateVeiculo,
     deleteVeiculo
 };

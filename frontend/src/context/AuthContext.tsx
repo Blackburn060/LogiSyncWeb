@@ -41,18 +41,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
   const navigate = useNavigate();
 
+  // Função para buscar detalhes do usuário
   const fetchUserDetails = useCallback(async () => {
     if (user?.id) {
+      console.log("Chamando fetchUserDetails para usuário:", user?.id);
       try {
         const response = await api.get(`/usuarios/${user.id}`);
-        setUser({ ...user, numeroCelular: response.data.numeroCelular });
+
+        const userDetails = response.data;
+
+        // Verifica se há alterações nos dados antes de chamar setUser para evitar loops
+        if (userDetails.CPF !== user?.CPF || userDetails.NumeroCelular !== user?.numeroCelular) {
+          setUser((prevUser) =>
+            prevUser
+              ? {
+                  ...prevUser,
+                  CPF: userDetails.CPF || prevUser.CPF,
+                  numeroCelular: userDetails.NumeroCelular || prevUser.numeroCelular,
+                }
+              : null
+          );
+        }
       } catch (error) {
         console.error('Erro ao buscar detalhes do usuário:', error);
       }
     }
   }, [user]);
 
+  // Função de login
   const login = useCallback((accessToken: string, refreshToken: string) => {
+    console.log("Logando usuário");
     setAccessToken(accessToken);
     setRefreshToken(refreshToken);
     localStorage.setItem('accessToken', accessToken);
@@ -61,7 +79,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(decodedUser as UsuarioDetalhado);
   }, []);
 
+  // Função de logout
   const logout = useCallback(() => {
+    console.log("Fazendo logout");
     setAccessToken(null);
     setRefreshToken(null);
     localStorage.removeItem('accessToken');
@@ -71,8 +91,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/login');
   }, [navigate]);
 
+  // Função para renovar o access token
   const refreshAccessToken = useCallback(async () => {
     if (refreshToken) {
+      console.log("Tentando renovar o token de acesso");
       try {
         const response = await api.post('/refresh-token', { refreshToken });
         if (response.data && response.data.accessToken) {
@@ -86,8 +108,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [refreshToken, login, logout]);
 
-  // Primeiro useEffect: Token Handling
+  // Primeira verificação do token: Executa apenas uma vez no carregamento inicial
   useEffect(() => {
+    console.log("Verificando accessToken no primeiro useEffect");
     if (accessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
       setUser(decodedUser as UsuarioDetalhado);
@@ -103,14 +126,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [accessToken, refreshToken, refreshAccessToken]);
 
-  // Segundo useEffect: Fetch User Details separadamente para evitar loop
+  // Verifica detalhes do usuário uma vez, depois que o `user` é definido pela primeira vez
   useEffect(() => {
-    if (user && accessToken) {
+    console.log("Verificando user e accessToken no segundo useEffect");
+    if (user?.id && accessToken) {
       fetchUserDetails();
     }
-  }, [user, accessToken, fetchUserDetails]);
+  }, [user?.id, accessToken, fetchUserDetails]);
 
+  // Verifica se existe um token no localStorage ao carregar o componente
   useEffect(() => {
+    console.log("Verificando localStorage para tokens");
     const storedAccessToken = localStorage.getItem('accessToken');
     if (storedAccessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(storedAccessToken);
