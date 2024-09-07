@@ -5,13 +5,19 @@ import api from '../services/axiosConfig';
 
 interface ExtendedJwtPayload extends JwtPayload {
   id: string;
+  CPF: string;
   nomeCompleto: string;
   tipoUsuario: string;
   CodigoTransportadora: number;
+  numeroCelular?: string;
+}
+
+interface UsuarioDetalhado extends ExtendedJwtPayload {
+  numeroCelular: string;
 }
 
 interface AuthContextType {
-  user: ExtendedJwtPayload | null;
+  user: UsuarioDetalhado | null;
   accessToken: string | null;
   refreshToken: string | null;
   login: (accessToken: string, refreshToken: string) => void;
@@ -30,10 +36,21 @@ export const useAuth = (): AuthContextType => {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<ExtendedJwtPayload | null>(null);
+  const [user, setUser] = useState<UsuarioDetalhado | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
   const navigate = useNavigate();
+
+  const fetchUserDetails = useCallback(async () => {
+    if (user?.id) {
+      try {
+        const response = await api.get(`/usuarios/${user.id}`);
+        setUser({ ...user, numeroCelular: response.data.numeroCelular });
+      } catch (error) {
+        console.error('Erro ao buscar detalhes do usuário:', error);
+      }
+    }
+  }, [user]);
 
   const login = useCallback((accessToken: string, refreshToken: string) => {
     setAccessToken(accessToken);
@@ -41,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
-    setUser(decodedUser);
+    setUser(decodedUser as UsuarioDetalhado);
   }, []);
 
   const logout = useCallback(() => {
@@ -69,10 +86,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [refreshToken, login, logout]);
 
+  // Primeiro useEffect: Token Handling
   useEffect(() => {
     if (accessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
-      setUser(decodedUser);
+      setUser(decodedUser as UsuarioDetalhado);
 
       const currentTime = Date.now() / 1000;
       const timeUntilExpiry = (decodedUser.exp || 0) - currentTime;
@@ -85,11 +103,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [accessToken, refreshToken, refreshAccessToken]);
 
+  // Segundo useEffect: Fetch User Details separadamente para evitar loop
+  useEffect(() => {
+    if (user && accessToken) {
+      fetchUserDetails();
+    }
+  }, [user, accessToken, fetchUserDetails]);
+
   useEffect(() => {
     const storedAccessToken = localStorage.getItem('accessToken');
     if (storedAccessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(storedAccessToken);
-      setUser(decodedUser);
+      setUser(decodedUser as UsuarioDetalhado);
       setAccessToken(storedAccessToken);
     }
   }, []);
