@@ -13,7 +13,18 @@ const getAllPortarias = () => {
         });
     });
 };
-
+const getPortariaByCodigoAgendamento = (CodigoAgendamento) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM dadosportaria WHERE CodigoAgendamento = ?';
+        db.get(sql, [CodigoAgendamento], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+};
 // Adicionar novos dados de portaria
 const addPortaria = (portaria) => {
     return new Promise((resolve, reject) => {
@@ -59,6 +70,7 @@ const deletePortaria = (id) => {
 module.exports = {
     getAllPortarias,
     addPortaria,
+    getPortariaByCodigoAgendamento,
     updatePortaria,
     deletePortaria
 };

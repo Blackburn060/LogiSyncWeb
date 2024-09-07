@@ -3,7 +3,7 @@ import React from "react";
 interface DadosAgendamentoProps {
   dataAgendamento: string;
   horaAgendamento: string;
-  produto: string;  // Agora espera apenas string (nome do produto)
+  produto: string;
   quantidade: number | null;
   observacao: string | null;
 }
@@ -16,14 +16,53 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
   observacao,
 }) => {
   return (
-    <div className="border p-4 rounded-lg">
+    <div className="border p-4 rounded-lg mb-4">
       <h2 className="text-xl font-bold">DADOS DO AGENDAMENTO</h2>
-      <div className="mt-4">
-        <p><strong>Data:</strong> {dataAgendamento}</p>
-        <p><strong>Horário:</strong> {horaAgendamento}</p>
-        <p><strong>Produto:</strong> {produto}</p> {/* Agora sempre mostra o nome do produto */}
-        <p><strong>Quantidade:</strong> {quantidade}</p>
-        <p><strong>Observação:</strong> {observacao}</p>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block font-semibold">Data</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={dataAgendamento}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Horário</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={horaAgendamento}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Produto</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={produto}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Quantidade</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={quantidade !== null ? String(quantidade) : "N/A"}
+            readOnly
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block font-semibold">Observação</label>
+          <textarea
+            className="border w-full px-2 py-1 rounded-md"
+            value={observacao || "N/A"}
+            readOnly
+          ></textarea>
+        </div>
       </div>
     </div>
   );

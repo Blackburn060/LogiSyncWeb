@@ -72,9 +72,11 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       HoraAgendamento: `${horarioSelecionado.horarioInicio} - ${horarioSelecionado.horarioFim}`,
       Observacao: observacao,
       QuantidadeAgendamento: quantidade ? Number(quantidade) : null,
-      ArquivoAnexado: arquivo ? arquivo.name : '',
+      ArquivoAnexado: arquivo || null,  // Aqui, você envia o arquivo como Blob ou null se não existir
       TipoAgendamento: tipoAgendamento,
       SituacaoAgendamento: 'Pendente',
+      DiaTodo: false,
+
     };
 
 
@@ -88,7 +90,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       alert('Erro ao realizar agendamento.');
     }
   };
-
   return (
     <Modal
   isOpen={true}

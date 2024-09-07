@@ -8,7 +8,18 @@ const listarPortarias = async (req, res) => {
         res.status(500).send({ message: "Erro ao buscar dados da portaria: " + error.message });
     }
 };
-
+const buscarPortariaPorAgendamento = async (req, res) => {
+    try {
+        const portaria = await portariaModel.getPortariaByCodigoAgendamento(req.params.CodigoAgendamento);
+        if (portaria) {
+            res.json(portaria);
+        } else {
+            res.status(404).send({ message: "Dados da portaria não encontrados" });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao buscar dados da portaria: " + error.message });
+    }
+};
 const adicionarPortaria = async (req, res) => {
     try {
         const id = await portariaModel.addPortaria(req.body);
@@ -45,6 +56,7 @@ const deletarPortaria = async (req, res) => {
 };
 
 module.exports = {
+    buscarPortariaPorAgendamento,
     listarPortarias,
     adicionarPortaria,
     atualizarPortaria,

@@ -38,15 +38,64 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
   }, [codigoVeiculo]);
 
   return (
-    <div className="border p-4 rounded-lg">
+    <div className="border p-4 rounded-lg mb-4">
       <h2 className="text-xl font-bold">DADOS VEICULARES</h2>
-      <div className="mt-4">
-        <p><strong>Placa:</strong> {veiculo.placa}</p>
-        <p><strong>Marca:</strong> {veiculo.marca}</p>
-        <p><strong>Modelo:</strong> {veiculo.modelo}</p>
-        <p><strong>Ano:</strong> {veiculo.ano}</p>
-        <p><strong>Cor:</strong> {veiculo.cor}</p>
-        <p><strong>Capacidade de Carga:</strong> {veiculo.capacidadeCarga}</p>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block font-semibold">Placa</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={veiculo.placa}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Marca</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={veiculo.marca}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Modelo/Tipo</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={veiculo.modelo}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Ano de Fabricação</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={veiculo.ano}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Cor</label>
+
+            <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={veiculo.cor}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Capacidade de Carga</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={veiculo.capacidadeCarga}
+            readOnly
+          />
+        </div>
       </div>
     </div>
   );

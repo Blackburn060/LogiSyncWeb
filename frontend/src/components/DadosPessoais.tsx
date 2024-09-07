@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../services/axiosConfig";
 
 interface DadosPessoaisProps {
-  usuarioId: number;  // O ID do usuário será passado via props
+  usuarioId: number;
 }
 
 const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
@@ -16,11 +16,10 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
     const fetchDadosPessoais = async () => {
       try {
         const response = await api.get(`/usuarios/${usuarioId}`);
-        console.log("Response data:", response.data); // Para depuração
         setDadosPessoais({
-          nome: response.data.NomeCompleto || "N/A",  // Corrigido para NomeCompleto
+          nome: response.data.NomeCompleto || "N/A",
           cpf: response.data.CPF || "N/A",
-          telefone: response.data.NumeroCelular || "N/A",  // Corrigido para NumeroCelular
+          telefone: response.data.NumeroCelular || "N/A",
         });
       } catch (error) {
         console.error("Erro ao buscar dados pessoais:", error);
@@ -33,12 +32,39 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
   }, [usuarioId]);
 
   return (
-    <div className="border p-4 rounded-lg">
-      <h2 className="text-xl font-bold">DADOS PESSOAIS</h2>
-      <div className="mt-4">
-        <p><strong>Nome:</strong> {dadosPessoais.nome}</p>
-        <p><strong>CPF:</strong> {dadosPessoais.cpf}</p>
-        <p><strong>Telefone:</strong> {dadosPessoais.telefone}</p>
+    <div className="border p-4 rounded-lg mb-4">
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-xl font-bold">DADOS PESSOAIS</h2>
+        {/* Status */}
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block font-semibold">Nome</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={dadosPessoais.nome}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">CPF</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={dadosPessoais.cpf}
+            readOnly
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block font-semibold">Telefone</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={dadosPessoais.telefone}
+            readOnly
+          />
+        </div>
       </div>
     </div>
   );
