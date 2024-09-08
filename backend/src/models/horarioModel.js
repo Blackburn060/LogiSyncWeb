@@ -1,4 +1,5 @@
 const db = require('../Config/database');
+const moment = require('moment-timezone');
 
 // Função para buscar todos os horários
 const getHorarios = () => {
@@ -17,12 +18,13 @@ const getHorarios = () => {
 // Função para atualizar um horário completo
 const updateHorario = (id, { horarioInicio, horarioFim, intervaloCarga, intervaloDescarga }) => {
     return new Promise((resolve, reject) => {
+        const dataAtualizacao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = `
             UPDATE cadastroHorarios
-            SET horarioInicio = ?, horarioFim = ?, intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = CURRENT_TIMESTAMP
+            SET horarioInicio = ?, horarioFim = ?, intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = ?
             WHERE id = ?
         `;
-        db.run(sql, [horarioInicio, horarioFim, intervaloCarga, intervaloDescarga, id], function (err) {
+        db.run(sql, [horarioInicio, horarioFim, intervaloCarga, intervaloDescarga, dataAtualizacao, id], function (err) {
             if (err) {
                 reject(err);
             } else {
@@ -94,10 +96,9 @@ const isHorarioAgendado = (horarioIntervalo, data, tipoAgendamento) => {
 const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // Verificar se o dia todo está indisponível
             const diaTodoIndisponivel = await isDiaTodoIndisponivel(data, tipoAgendamento);
             if (diaTodoIndisponivel) {
-                return resolve([]); // Se o dia todo está indisponível, retornar lista vazia
+                return resolve([]);
             }
 
             const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
@@ -106,7 +107,6 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
                     reject(err);
                 } else {
                     if (row) {
-                        // Seleciona o intervalo baseado no tipo de agendamento
                         const intervalo = tipoAgendamento === 'carga' ? row.intervaloCarga : row.intervaloDescarga;
                         const horarios = generateHorarios(row.horarioInicio, row.horarioFim, intervalo);
 
@@ -131,8 +131,9 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
 // Função para atualizar o intervalo de um horário
 const updateIntervaloHorario = (id, intervaloCarga, intervaloDescarga) => {
     return new Promise((resolve, reject) => {
-        const sql = `UPDATE cadastroHorarios SET intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = CURRENT_TIMESTAMP WHERE id = ?`;
-        db.run(sql, [intervaloCarga, intervaloDescarga, id], function (err) {
+        const dataAtualizacao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
+        const sql = `UPDATE cadastroHorarios SET intervaloCarga = ?, intervaloDescarga = ?, dataAtualizacao = ? WHERE id = ?`;
+        db.run(sql, [intervaloCarga, intervaloDescarga, dataAtualizacao, id], function (err) {
             if (err) {
                 reject(err);
             } else {

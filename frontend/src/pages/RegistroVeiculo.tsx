@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 const RegistroVeiculo: React.FC = () => {
-  const { user, accessToken, refreshAccessToken } = useAuth();
+  const { user, token, refreshAccessToken } = useAuth();
   const [formData, setFormData] = useState({
     nomeVeiculo: '',
     placa: '',
@@ -33,13 +33,13 @@ const RegistroVeiculo: React.FC = () => {
     setLoading(true);
 
     try {
-      if (!user || !accessToken) {
+      if (!user || !token) {
         throw new Error('Usuário não autenticado.');
       }
 
       const response = await axios.post(`${backendUrl}/veiculos`, { ...formData, codigoUsuario: user.id }, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 

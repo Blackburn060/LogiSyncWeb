@@ -7,13 +7,13 @@ import { FaSpinner } from 'react-icons/fa';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.webp';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.webp';
 import api from '../services/axiosConfig';
-import { jwtDecode, JwtPayload } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 
-interface ExtendedJwtPayload extends JwtPayload {
+interface ExtendedJwtPayload {
   id: string;
-  nomeCompleto: string;
-  tipoUsuario: string;
-  CodigoTransportadora?: number;
+  nomecompleto: string;
+  tipousuario: string;
+  codigotransportadora?: number;
 }
 
 const Login: React.FC = () => {
@@ -29,13 +29,11 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.post('/login', { email, senha: password });
-      if (response.data && response.data.accessToken && response.data.refreshToken) {
+      if (response.data && response.data.token && response.data.refreshToken) {
+        const decodedUser = jwtDecode<ExtendedJwtPayload>(response.data.token);
+        login(response.data.token, response.data.refreshToken);
 
-        const decodedUser = jwtDecode<ExtendedJwtPayload>(response.data.accessToken);
-
-        login(response.data.accessToken, response.data.refreshToken);
-
-        if (decodedUser?.tipoUsuario === 'motorista') {
+        if (decodedUser?.tipousuario === 'motorista') {
           navigate('/processo');
         } else {
           navigate('/gestao/home');

@@ -4,7 +4,7 @@ import { FaUserAlt, FaCog, FaSignOutAlt } from 'react-icons/fa';
 import iconeUsuario from '../assets/icons/Icon-user-white.webp';
 
 interface User {
-    nomeCompleto: string;
+    nomecompleto: string;
 }
 
 interface UserMenuProps {
@@ -44,7 +44,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ logout, user }) => {
                 <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
                     {user && (
                         <div className="px-4 py-2 text-gray-800">
-                            {user.nomeCompleto}
+                            {user.nomecompleto}
                         </div>
                     )}
                     <Link to="/conta"

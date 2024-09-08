@@ -3,12 +3,12 @@ import { Agendamento } from '../models/Agendamento';
 import { AxiosError } from 'axios';
 
 // Buscar agendamentos por usuário com a placa associada
-export const getAgendamentosComPlaca = async (accessToken: string, userId: number): Promise<Agendamento[]> => {
+export const getAgendamentosComPlaca = async (token: string, userId: number): Promise<Agendamento[]> => {
   try {
     console.log('Buscando agendamentos com placa para usuário:', userId);
     const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${userId}`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;
@@ -26,12 +26,12 @@ export const getAgendamentosComPlaca = async (accessToken: string, userId: numbe
 };
 
 // Adicionar um novo agendamento
-export const addAgendamento = async (accessToken: string, agendamento: Agendamento): Promise<Agendamento> => {
+export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
   try {
     console.log('Enviando novo agendamento para API:', agendamento);
     const response = await api.post('/agendamentos', agendamento, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log('Resposta da API - Agendamento adicionado:', response.data);
@@ -50,12 +50,12 @@ export const addAgendamento = async (accessToken: string, agendamento: Agendamen
 };
 
 // Atualizar um agendamento existente
-export const updateAgendamento = async (accessToken: string, agendamento: Agendamento): Promise<void> => {
+export const updateAgendamento = async (token: string, agendamento: Agendamento): Promise<void> => {
   try {
     console.log('Atualizando agendamento:', agendamento);
     await api.put(`/agendamentos/${agendamento.CodigoAgendamento}`, agendamento, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log('Agendamento atualizado com sucesso');
@@ -74,14 +74,14 @@ export const updateAgendamento = async (accessToken: string, agendamento: Agenda
 
 // Registrar indisponibilidade
 export const registrarIndisponibilidade = async (
-  accessToken: string,
+  token: string,
   agendamento: { CodigoUsuario: number; DataAgendamento: string; HoraAgendamento: string; DiaTodo: number; TipoAgendamento: string }
 ): Promise<void> => {
   try {
     console.log('Registrando indisponibilidade:', agendamento);
     await api.post('/agendamentos/indisponibilidade', agendamento, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log('Indisponibilidade registrada com sucesso');
@@ -99,12 +99,12 @@ export const registrarIndisponibilidade = async (
 };
 
 // Buscar todas as indisponibilidades (independente do usuário)
-export const getIndisponibilidades = async (accessToken: string): Promise<Agendamento[]> => {
+export const getIndisponibilidades = async (token: string): Promise<Agendamento[]> => {
   try {
     console.log('Buscando indisponibilidades');
     const response = await api.get('/agendamentos/indisponibilidades', {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log('Resposta da API - Indisponibilidades:', response.data);
@@ -123,12 +123,12 @@ export const getIndisponibilidades = async (accessToken: string): Promise<Agenda
 };
 
 // Excluir uma indisponibilidade
-export const deleteIndisponibilidade = async (accessToken: string, id: number): Promise<void> => {
+export const deleteIndisponibilidade = async (token: string, id: number): Promise<void> => {
   try {
     console.log('Excluindo indisponibilidade com ID:', id);
     await api.delete(`/agendamentos/indisponibilidade/${id}`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log('Indisponibilidade excluída com sucesso');

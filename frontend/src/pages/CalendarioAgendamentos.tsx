@@ -6,12 +6,12 @@ import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 const AgendamentosPage: React.FC = () => {
-  const { user, accessToken, refreshToken, refreshAccessToken } = useAuth();
+  const { user, token, refreshToken, refreshAccessToken } = useAuth();
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (!user || !accessToken) {
+      if (!user || !token) {
         if (refreshToken) {
           try {
             await refreshAccessToken();
@@ -29,7 +29,7 @@ const AgendamentosPage: React.FC = () => {
     };
 
     checkAuth();
-  }, [user, accessToken, refreshToken, refreshAccessToken]);
+  }, [user, token, refreshToken, refreshAccessToken]);
 
   const tipoAgendamento = localStorage.getItem('TipoAgendamento');
   if (!tipoAgendamento) {
@@ -48,7 +48,7 @@ const AgendamentosPage: React.FC = () => {
     );
   }
 
-  if (!user || !accessToken) {
+  if (!user || !token) {
     return <Navigate to="/unauthorized" />;
   }
 
@@ -57,8 +57,6 @@ const AgendamentosPage: React.FC = () => {
       <Navbar />
       <Toaster position="top-right" />
       <div className="container mx-auto pt-10 flex-grow">
-        {/* Remova ou comente a linha abaixo para remover o título duplicado */}
-        {/* <h1 className="text-2xl font-extrabold mb-6">Agendar Horário</h1> */}
         <CalendarComponent />
       </div>
     </div>

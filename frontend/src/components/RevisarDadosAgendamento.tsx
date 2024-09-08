@@ -19,7 +19,7 @@ interface RevisarDadosAgendamentoProps {
 }
 
 const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selectedDate, horarioSelecionado, onClose }) => {
-  const { accessToken, user } = useAuth();
+  const { token, user } = useAuth();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [transportadora, setTransportadora] = useState<Transportadora | null>(null);
@@ -32,19 +32,19 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
 
   useEffect(() => {
     const fetchData = async () => {
-      if (accessToken && user) {
+      if (token && user) {
         try {
-          const usuarioData = await getUsuario(accessToken, Number(user.id));
+          const usuarioData = await getUsuario(token, Number(user.id));
           setUsuario(usuarioData);
 
-          const veiculosData = await getVeiculos(accessToken);
+          const veiculosData = await getVeiculos(token);
           setVeiculos(veiculosData.filter(veiculo => veiculo.SituacaoVeiculo === 1));
 
-          const produtosData = await getProdutos(accessToken);
+          const produtosData = await getProdutos(token);
           setProdutos(produtosData);  
 
-          if (usuarioData.CodigoTransportadora) {
-            const transportadoraData = await getTransportadora(accessToken, usuarioData.CodigoTransportadora);
+          if (usuarioData.codigotransportadora) {
+            const transportadoraData = await getTransportadora(token, usuarioData.codigotransportadora);
             setTransportadora(transportadoraData);
           }
         } catch (error) {
@@ -54,7 +54,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
     };
 
     fetchData();
-  }, [accessToken, user]);
+  }, [token, user]);
 
   const handleAgendar = async () => {
     if (!usuario || !veiculoSelecionado || !selectedDate || !horarioSelecionado) {
@@ -81,7 +81,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
 
 
     try {
-      const response = await addAgendamento(accessToken!, novoAgendamento);
+      const response = await addAgendamento(token!, novoAgendamento);
       console.log('Resposta do servidor após adicionar agendamento:', response);
       alert('Agendamento realizado com sucesso!');
       onClose();

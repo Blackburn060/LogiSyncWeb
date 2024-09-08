@@ -17,14 +17,14 @@ import DadosPortaria from "../components/DadosPortaria";
 Modal.setAppElement("#root");
 
 const MeusAgendamentos: React.FC = () => {
-  const { user, accessToken, refreshToken, refreshAccessToken } = useAuth();
+  const { user, token, refreshToken, refreshAccessToken } = useAuth();
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const [selectedAgendamento, setSelectedAgendamento] =
     useState<Agendamento | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [produtoNome, setProdutoNome] = useState<string>(""); // Adicionado para armazenar o nome do produto
+  const [produtoNome, setProdutoNome] = useState<string>("");
 
   // Função para buscar o nome do produto com base no CodigoProduto
   const fetchProdutoNome = async (codigoProduto: number | null) => {
@@ -46,7 +46,7 @@ const MeusAgendamentos: React.FC = () => {
   // Função para buscar agendamentos
   useEffect(() => {
     const checkAuthAndFetchAgendamentos = async () => {
-      if (!user || !accessToken) {
+      if (!user || !token) {
         if (refreshToken) {
           try {
             await refreshAccessToken();
@@ -71,13 +71,13 @@ const MeusAgendamentos: React.FC = () => {
       } catch (err) {
         toast.error("Erro ao carregar agendamentos.");
       } finally {
-        setAuthChecked(true); // Aqui indicamos que a autenticação foi verificada
-        setLoading(false); // Carregamento finalizado
+        setAuthChecked(true);
+        setLoading(false);
       }
     };
 
     checkAuthAndFetchAgendamentos();
-  }, [accessToken, user, refreshToken, refreshAccessToken]);
+  }, [token, user, refreshToken, refreshAccessToken]);
 
   // Função para abrir o modal de detalhes e buscar o nome do produto
   const handleAgendamentoClick = (agendamento: Agendamento) => {
@@ -94,7 +94,7 @@ const MeusAgendamentos: React.FC = () => {
         null,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -123,7 +123,7 @@ const MeusAgendamentos: React.FC = () => {
     );
   }
 
-  if (!user || !accessToken) {
+  if (!user || !token) {
     return <Navigate to="/unauthorized" />;
   }
 
@@ -208,7 +208,7 @@ const MeusAgendamentos: React.FC = () => {
           </div>
 
           {/* Em telas pequenas, transforme em cartões */}
-          <div className="block sm:hidden grid grid-cols-1 gap-4 mx-auto">
+          <div className="sm:hidden grid grid-cols-1 gap-4 mx-auto">
             {agendamentos.length === 0 ? (
               <p className="text-center py-4 text-gray-700 dark:text-gray-300">
                 Nenhum agendamento encontrado.

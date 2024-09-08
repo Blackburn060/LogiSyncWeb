@@ -15,15 +15,15 @@ const Veiculos: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [veiculoToDelete, setVeiculoToDelete] = useState<Veiculo | null>(null);
-  const { accessToken, user } = useAuth();
+  const { token, user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchVeiculos = async () => {
       setIsLoading(true);
-      if (accessToken) {
+      if (token) {
         try {
-          const veiculosData = await getVeiculos(accessToken);
+          const veiculosData = await getVeiculos(token);
           setVeiculos(veiculosData.filter(v => v.CodigoUsuario === Number(user?.id) && v.SituacaoVeiculo !== 0));
         } catch (error) {
           console.error('Erro ao buscar veículos', error);
@@ -33,14 +33,14 @@ const Veiculos: React.FC = () => {
     };
 
     fetchVeiculos();
-  }, [accessToken, user]);
+  }, [token, user]);
 
   const handleAddVeiculo = async (veiculo: Omit<Veiculo, 'CodigoVeiculo'>) => {
-    if (accessToken) {
+    if (token) {
       try {
         const newVeiculo = { ...veiculo, CodigoUsuario: Number(user?.id) };
-        await addVeiculo(accessToken, newVeiculo);
-        const updatedVeiculos = await getVeiculos(accessToken);
+        await addVeiculo(token, newVeiculo);
+        const updatedVeiculos = await getVeiculos(token);
         setVeiculos(updatedVeiculos.filter(v => v.CodigoUsuario === Number(user?.id) && v.SituacaoVeiculo !== 0));
         setShowForm(false);
         toast.success('Veículo adicionado com sucesso!');
@@ -52,10 +52,10 @@ const Veiculos: React.FC = () => {
   };
 
   const handleUpdateVeiculo = async (veiculo: Veiculo) => {
-    if (accessToken && veiculo.CodigoVeiculo) {
+    if (token && veiculo.CodigoVeiculo) {
       try {
-        await updateVeiculo(accessToken, veiculo.CodigoVeiculo, veiculo);
-        const updatedVeiculos = await getVeiculos(accessToken);
+        await updateVeiculo(token, veiculo.CodigoVeiculo, veiculo);
+        const updatedVeiculos = await getVeiculos(token);
         setVeiculos(updatedVeiculos.filter(v => v.CodigoUsuario === Number(user?.id) && v.SituacaoVeiculo !== 0));
         setShowForm(false);
         toast.success('Veículo atualizado com sucesso!');
@@ -67,9 +67,9 @@ const Veiculos: React.FC = () => {
   };
 
   const handleDeleteVeiculo = async () => {
-    if (accessToken && veiculoToDelete) {
+    if (token && veiculoToDelete) {
       try {
-        await deleteVeiculo(accessToken, veiculoToDelete.CodigoVeiculo!);
+        await deleteVeiculo(token, veiculoToDelete.CodigoVeiculo!);
         setVeiculos(prevVeiculos => prevVeiculos.filter(v => v.CodigoVeiculo !== veiculoToDelete.CodigoVeiculo));
         setShowConfirmDelete(false);
         toast.success('Veículo deletado com sucesso!');

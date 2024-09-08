@@ -40,16 +40,16 @@ const getUserById = (id) => {
 // Função para adicionar um novo usuário com DataGeracao formatada
 const addUser = (user) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const saltRounds = 10;
 
         // Hash da senha antes de salvar no banco de dados
-        bcrypt.hash(user.Senha, saltRounds, (err, hashedPassword) => {
+        bcrypt.hash(user.senha, saltRounds, (err, hashedPassword) => {
             if (err) {
                 reject(err);
             } else {
                 const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, DataGeracao, CPF) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                db.run(sql, [user.NomeCompleto, user.CodigoTransportadora, user.Email, hashedPassword, user.TipoUsuario, user.SituacaoUsuario, user.NumeroCelular, dataGeracao, user.CPF], function(err) {
+                db.run(sql, [user.nomeCompleto, user.codigoTransportadora, user.email.toLowerCase(), hashedPassword, user.tipoUsuario, 1, user.numeroCelular, dataGeracao, user.cpf], function(err) {
                     if (err) {
                         reject(err);
                     } else {
@@ -65,16 +65,16 @@ const addUser = (user) => {
 const updateUser = (user, id) => {
     return new Promise(async (resolve, reject) => {
 
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastrousuarios SET ';
         let params = [];
         let updates = [];
 
         // Verifica se a senha está presente e faz o hash se necessário
-        if (user.Senha) {
+        if (user.senha) {
             try {
-                const hashedPassword = await bcrypt.hash(user.Senha, 10);
-                user.Senha = hashedPassword;
+                const hashedPassword = await bcrypt.hash(user.senha, 10);
+                user.senha = hashedPassword;
             } catch (err) {
                 return reject(err);
             }
@@ -143,7 +143,7 @@ const findUserById = (id) => {
 // Função para "deletar" (inativar) um usuário
 const deleteUser = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastrousuarios SET SituacaoUsuario = 0, DataAlteracao = ? WHERE CodigoUsuario = ?';
         db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {

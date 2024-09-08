@@ -8,7 +8,7 @@ const Unauthorized: React.FC = () => {
 
   const getHomeLink = () => {
     if (user) {
-      if (user.tipoUsuario === 'motorista') {
+      if (user.tipousuario === 'motorista') {
         navigate('/calendario');
       } else {
         navigate('/gestao/home');

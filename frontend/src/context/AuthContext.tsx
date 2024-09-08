@@ -1,26 +1,27 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode, JwtPayload } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import api from '../services/axiosConfig';
 
-interface ExtendedJwtPayload extends JwtPayload {
+interface ExtendedJwtPayload {
   id: string;
-  CPF: string;
-  nomeCompleto: string;
-  tipoUsuario: string;
-  CodigoTransportadora: number;
-  numeroCelular?: string;
+  cpf: string;
+  nomecompleto: string;
+  tipousuario: string;
+  codigotransportadora: number;
+  numerocelular?: string;
+  exp?: number;
 }
 
 interface UsuarioDetalhado extends ExtendedJwtPayload {
-  numeroCelular: string;
+  numerocelular: string;
 }
 
 interface AuthContextType {
   user: UsuarioDetalhado | null;
-  accessToken: string | null;
+  token: string | null;
   refreshToken: string | null;
-  login: (accessToken: string, refreshToken: string) => void;
+  login: (token: string, refreshToken: string) => void;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
 }
@@ -37,27 +38,24 @@ export const useAuth = (): AuthContextType => {
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UsuarioDetalhado | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
+  const [token, setAccessToken] = useState<string | null>(localStorage.getItem('token'));
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
   const navigate = useNavigate();
 
   // Função para buscar detalhes do usuário
   const fetchUserDetails = useCallback(async () => {
     if (user?.id) {
-      console.log("Chamando fetchUserDetails para usuário:", user?.id);
       try {
         const response = await api.get(`/usuarios/${user.id}`);
-
         const userDetails = response.data;
 
-        // Verifica se há alterações nos dados antes de chamar setUser para evitar loops
-        if (userDetails.CPF !== user?.CPF || userDetails.NumeroCelular !== user?.numeroCelular) {
+        if (userDetails.cpf !== user.cpf || userDetails.NumeroCelular !== user.numerocelular) {
           setUser((prevUser) =>
             prevUser
               ? {
                   ...prevUser,
-                  CPF: userDetails.CPF || prevUser.CPF,
-                  numeroCelular: userDetails.NumeroCelular || prevUser.numeroCelular,
+                  cpf: userDetails.cpf || prevUser.cpf,
+                  numerocelular: userDetails.NumeroCelular || prevUser.numerocelular,
                 }
               : null
           );
@@ -69,22 +67,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user]);
 
   // Função de login
-  const login = useCallback((accessToken: string, refreshToken: string) => {
-    console.log("Logando usuário");
-    setAccessToken(accessToken);
+  const login = useCallback((token: string, refreshToken: string) => {
+    setAccessToken(token);
     setRefreshToken(refreshToken);
-    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('token', token);
     localStorage.setItem('refreshToken', refreshToken);
-    const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
+    const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
     setUser(decodedUser as UsuarioDetalhado);
   }, []);
 
   // Função de logout
   const logout = useCallback(() => {
-    console.log("Fazendo logout");
     setAccessToken(null);
     setRefreshToken(null);
-    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('TipoAgendamento');
     setUser(null);
@@ -94,11 +90,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Função para renovar o access token
   const refreshAccessToken = useCallback(async () => {
     if (refreshToken) {
-      console.log("Tentando renovar o token de acesso");
       try {
         const response = await api.post('/refresh-token', { refreshToken });
-        if (response.data && response.data.accessToken) {
-          login(response.data.accessToken, refreshToken);
+        if (response.data && response.data.token) {
+          login(response.data.token, refreshToken);
         } else {
           logout();
         }
@@ -110,9 +105,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Primeira verificação do token: Executa apenas uma vez no carregamento inicial
   useEffect(() => {
-    console.log("Verificando accessToken no primeiro useEffect");
-    if (accessToken) {
-      const decodedUser = jwtDecode<ExtendedJwtPayload>(accessToken);
+    if (token) {
+      const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
       setUser(decodedUser as UsuarioDetalhado);
 
       const currentTime = Date.now() / 1000;
@@ -124,20 +118,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else if (refreshToken) {
       refreshAccessToken();
     }
-  }, [accessToken, refreshToken, refreshAccessToken]);
+  }, [token, refreshToken, refreshAccessToken]);
 
   // Verifica detalhes do usuário uma vez, depois que o `user` é definido pela primeira vez
   useEffect(() => {
-    console.log("Verificando user e accessToken no segundo useEffect");
-    if (user?.id && accessToken) {
+    if (user?.id && token) {
       fetchUserDetails();
     }
-  }, [user?.id, accessToken, fetchUserDetails]);
+  }, [user?.id, token, fetchUserDetails]);
 
   // Verifica se existe um token no localStorage ao carregar o componente
   useEffect(() => {
-    console.log("Verificando localStorage para tokens");
-    const storedAccessToken = localStorage.getItem('accessToken');
+    const storedAccessToken = localStorage.getItem('token');
     if (storedAccessToken) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(storedAccessToken);
       setUser(decodedUser as UsuarioDetalhado);
@@ -146,7 +138,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, refreshAccessToken }}>
+    <AuthContext.Provider value={{ user, token, refreshToken, login, logout, refreshAccessToken }}>
       {children}
     </AuthContext.Provider>
   );

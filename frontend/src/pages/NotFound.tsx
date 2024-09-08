@@ -1,4 +1,3 @@
-// src/pages/NotFound.tsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +8,7 @@ const NotFound: React.FC = () => {
 
   const handleHomeLinkClick = () => {
     if (user) {
-      if (user.tipoUsuario === 'motorista') {
+      if (user.tipousuario === 'motorista') {
         navigate('/calendario');
       } else {
         navigate('/gestao/home');

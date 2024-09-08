@@ -26,7 +26,7 @@ const getAllProdutos = (filters = {}) => {
 // Adicionar um novo produto
 const addProduto = (produto) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = `INSERT INTO cadastroprodutos (DescricaoProduto, Categoria, SituacaoProduto, DataGeracao) VALUES (?, ?, ?, ?)`;
         db.run(sql, [produto.DescricaoProduto, produto.Categoria, produto.SituacaoProduto, dataGeracao], function(err) {
             if (err) {
@@ -53,7 +53,7 @@ const getProdutoById = (codigoProduto) => {
 // Atualizar um produto
 const updateProduto = (produto, id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastroprodutos SET ';
         let params = [];
         let updates = [];
@@ -87,7 +87,7 @@ const updateProduto = (produto, id) => {
 // Deletar um produto
 const deleteProduto = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastroprodutos SET SituacaoProduto = 0, DataAlteracao = ? WHERE CodigoProduto = ?';
         db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {

@@ -1,5 +1,5 @@
 const transportadoraModel = require('../models/transportadoraModel');
-const { generateAccessToken } = require('../auth'); 
+const { generateAccessToken } = require('../services/authService'); 
 
 const listarTransportadoras = async (req, res) => {
     try {

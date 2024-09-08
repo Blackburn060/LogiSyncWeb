@@ -7,16 +7,20 @@ import { registrarIndisponibilidade, getIndisponibilidades, deleteIndisponibilid
 import { useAuth } from '../context/AuthContext';
 import { Agendamento } from '../models/Agendamento';
 import { format, parseISO } from 'date-fns';
+import Select from 'react-select';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { ptBR } from 'date-fns/locale';
 
 const GerenciarHorarios: React.FC = () => {
-  const { user, accessToken } = useAuth();
+  const { user, token } = useAuth();
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [editingHorario, setEditingHorario] = useState<Horario | null>(null);
-  const [dataIndisponivel, setDataIndisponivel] = useState<string>('');
+  const [dataIndisponivel, setDataIndisponivel] = useState<Date | null>(null);
   const [horaIndisponivel, setHoraIndisponivel] = useState<string>('');
   const [diaTodo, setDiaTodo] = useState<boolean>(false);
   const [TipoAgendamento, setTipoAgendamento] = useState<string>('carga');
-  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<{ value: string; label: string }[]>([]);
   const [indisponibilidades, setIndisponibilidades] = useState<Agendamento[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
@@ -34,7 +38,7 @@ const GerenciarHorarios: React.FC = () => {
 
     const fetchIndisponibilidades = async () => {
       try {
-        const data = await getIndisponibilidades(accessToken!);
+        const data = await getIndisponibilidades(token!);
         const indisponibilidadesAtualizadas = data.map((ind) => ({
           ...ind,
           HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
@@ -49,24 +53,28 @@ const GerenciarHorarios: React.FC = () => {
 
     fetchHorarios();
     fetchIndisponibilidades();
-  }, [accessToken, TipoAgendamento]);
+  }, [token, TipoAgendamento]);
 
-  const gerarHorariosDisponiveis = (horario: Horario | null, TipoAgendamento: string) => {
+  // Gera horários disponíveis apenas com intervalos para indisponibilidade
+  const gerarHorariosDisponiveis = (horario: Horario | null, tipoAgendamento: string) => {
     if (!horario) {
       setHorariosDisponiveis([]);
       return;
     }
 
-    const intervalo = TipoAgendamento === 'carga' ? horario.intervaloCarga : horario.intervaloDescarga;
-    const horariosGerados: string[] = [];
+    const intervalo = tipoAgendamento === 'carga' ? horario.intervaloCarga : horario.intervaloDescarga;
+    const horariosGerados: { value: string; label: string }[] = [];
     let current = new Date(`1970-01-01T${horario.horarioInicio}:00`);
     const end = new Date(`1970-01-01T${horario.horarioFim}:00`);
 
+    // Gera horários com intervalo
     while (current < end) {
       const next = new Date(current.getTime() + intervalo * 60000);
       if (next > end) break;
+
       const horaFormatada = `${current.toTimeString().substring(0, 5)} - ${next.toTimeString().substring(0, 5)}`;
-      horariosGerados.push(horaFormatada);
+      horariosGerados.push({ value: horaFormatada, label: horaFormatada });
+
       current = next;
     }
 
@@ -86,10 +94,9 @@ const GerenciarHorarios: React.FC = () => {
     setEditingHorario(horario);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (name: string, value: string) => {
     if (editingHorario) {
-      const { name, value } = e.target;
-      setEditingHorario({ ...editingHorario, [name]: Number(value) });
+      setEditingHorario({ ...editingHorario, [name]: value });
     }
   };
 
@@ -109,7 +116,7 @@ const GerenciarHorarios: React.FC = () => {
   };
 
   const handleRegistrarIndisponibilidade = async () => {
-    if (!user || !accessToken) {
+    if (!user || !token) {
       toast.error('Você precisa estar logado para registrar uma indisponibilidade.');
       return;
     }
@@ -125,19 +132,19 @@ const GerenciarHorarios: React.FC = () => {
     }
 
     try {
-      await registrarIndisponibilidade(accessToken, {
+      await registrarIndisponibilidade(token, {
         CodigoUsuario: Number(user.id),
-        DataAgendamento: dataIndisponivel,
+        DataAgendamento: format(dataIndisponivel!, 'yyyy-MM-dd'),
         HoraAgendamento: diaTodo ? '' : horaIndisponivel,
         DiaTodo: diaTodo ? 1 : 0,
         TipoAgendamento: TipoAgendamento,
       });
       toast.success('Indisponibilidade registrada com sucesso.');
-      setDataIndisponivel('');
+      setDataIndisponivel(null);
       setHoraIndisponivel('');
       setDiaTodo(false);
 
-      const updatedIndisponibilidades = await getIndisponibilidades(accessToken);
+      const updatedIndisponibilidades = await getIndisponibilidades(token);
       const indisponibilidadesAtualizadas = updatedIndisponibilidades.map((ind) => ({
         ...ind,
         HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
@@ -155,10 +162,10 @@ const GerenciarHorarios: React.FC = () => {
     if (idToDelete === null) return;
 
     try {
-      await deleteIndisponibilidade(accessToken!, idToDelete);
+      await deleteIndisponibilidade(token!, idToDelete);
       toast.success('Indisponibilidade excluída com sucesso.');
 
-      const updatedIndisponibilidades = await getIndisponibilidades(accessToken!);
+      const updatedIndisponibilidades = await getIndisponibilidades(token!);
       const indisponibilidadesAtualizadas = updatedIndisponibilidades.map((ind) => ({
         ...ind,
         HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
@@ -198,26 +205,28 @@ const GerenciarHorarios: React.FC = () => {
                 <label htmlFor="horarioInicio" className="block text-sm font-medium text-gray-700">
                   Horário de Início
                 </label>
-                <input
-                  type="time"
+                <Select
                   id="horarioInicio"
                   name="horarioInicio"
-                  value={editingHorario.horarioInicio}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={{ label: editingHorario.horarioInicio, value: editingHorario.horarioInicio }}
+                  options={horariosDisponiveis}
+                  onChange={(option) => handleInputChange('horarioInicio', option?.value || '')}
+                  isClearable
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
               <div>
                 <label htmlFor="horarioFim" className="block text-sm font-medium text-gray-700">
                   Horário de Fim
                 </label>
-                <input
-                  type="time"
+                <Select
                   id="horarioFim"
                   name="horarioFim"
-                  value={editingHorario.horarioFim}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={{ label: editingHorario.horarioFim, value: editingHorario.horarioFim }}
+                  options={horariosDisponiveis}
+                  onChange={(option) => handleInputChange('horarioFim', option?.value || '')}
+                  isClearable
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
               <div>
@@ -229,7 +238,7 @@ const GerenciarHorarios: React.FC = () => {
                   id="intervaloCarga"
                   name="intervaloCarga"
                   value={editingHorario.intervaloCarga}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange('intervaloCarga', e.target.value)}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -242,7 +251,7 @@ const GerenciarHorarios: React.FC = () => {
                   id="intervaloDescarga"
                   name="intervaloDescarga"
                   value={editingHorario.intervaloDescarga}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange('intervaloDescarga', e.target.value)}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -302,12 +311,12 @@ const GerenciarHorarios: React.FC = () => {
                   <label htmlFor="dataIndisponivel" className="block text-sm font-medium text-gray-700">
                     Data
                   </label>
-                  <input
-                    type="date"
-                    id="dataIndisponivel"
-                    name="dataIndisponivel"
-                    value={dataIndisponivel}
-                    onChange={(e) => setDataIndisponivel(e.target.value)}
+                  <DatePicker
+                    selected={dataIndisponivel}
+                    onChange={(date) => setDataIndisponivel(date as Date)}
+                    dateFormat="dd/MM/yyyy"
+                    locale={ptBR}
+                    placeholderText="Selecione uma data"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
@@ -315,21 +324,16 @@ const GerenciarHorarios: React.FC = () => {
                   <label htmlFor="horaIndisponivel" className="block text-sm font-medium text-gray-700">
                     Horário
                   </label>
-                  <select
+                  <Select
                     id="horaIndisponivel"
                     name="horaIndisponivel"
-                    value={horaIndisponivel}
-                    onChange={(e) => setHoraIndisponivel(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    disabled={diaTodo}
-                  >
-                    <option value="">Selecione um horário</option>
-                    {horariosDisponiveis.map((horario, index) => (
-                      <option key={index} value={horario}>
-                        {horario}
-                      </option>
-                    ))}
-                  </select>
+                    value={{ label: horaIndisponivel, value: horaIndisponivel }}
+                    options={horariosDisponiveis}
+                    onChange={(option) => setHoraIndisponivel(option?.value || '')}
+                    isClearable
+                    isDisabled={diaTodo}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
                 </div>
                 <div>
                   <label htmlFor="diaTodo" className="block text-sm font-medium text-gray-700">

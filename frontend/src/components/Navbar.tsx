@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
   }, [isOpen]);
 
   const renderNavLinks = () => {
-    if (user?.tipoUsuario === 'motorista') {
+    if (user?.tipousuario === 'motorista') {
       return (
         <>
           <Link to="/calendario" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Calendário</Link>
@@ -77,7 +77,7 @@ const Navbar: React.FC = () => {
   };
 
   const renderSidebarLinks = () => {
-    if (user?.tipoUsuario === 'motorista') {
+    if (user?.tipousuario === 'motorista') {
       return (
         <>
           <Link to="/calendario" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Calendário</Link>
@@ -120,7 +120,7 @@ const Navbar: React.FC = () => {
             className="w-11 cursor-pointer min-[1410px]:hidden object-contain"
             onClick={toggleMenu}
           />
-          <Link to={user?.tipoUsuario === 'motorista' ? "/calendario" : "/gestao/home"}>
+          <Link to={user?.tipousuario === 'motorista' ? "/calendario" : "/gestao/home"}>
             <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
           </Link>
           <span className="text-white font-bold text-xl ml-2">LogiSync</span>
@@ -130,7 +130,7 @@ const Navbar: React.FC = () => {
         </div>
         <div className='flex items-center'>
           <div className="hidden min-[1410px]:flex items-center">
-            <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomeCompleto}` : 'Usuário'}</span>
+            <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomecompleto}` : 'Usuário'}</span>
           </div>
           <UserMenu logout={logout} user={user} />
         </div>

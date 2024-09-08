@@ -5,11 +5,11 @@ import toast, { Toaster } from 'react-hot-toast';
 
 interface UpdateTransportadoraFormProps {
   transportadoraData?: Transportadora;
-  accessToken: string;
+  token: string;
   onUpdate: () => void;
 }
 
-const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ transportadoraData, accessToken, onUpdate }) => {
+const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ transportadoraData, token, onUpdate }) => {
   const [formData, setFormData] = useState<Partial<Transportadora>>(transportadoraData || {});
   const [isEditing, setIsEditing] = useState(!!transportadoraData);
   const [showModal, setShowModal] = useState(false);
@@ -17,7 +17,7 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
   useEffect(() => {
     if (transportadoraData) {
       const fetchTransportadora = async () => {
-        const transportadora = await getTransportadora(accessToken, transportadoraData.CodigoTransportadora);
+        const transportadora = await getTransportadora(token, transportadoraData.CodigoTransportadora);
         if (!transportadora || transportadora.SituacaoTransportadora === 0) {
           toast.error('Transportadora inativa ou não encontrada.');
         } else {
@@ -26,7 +26,7 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
       };
       fetchTransportadora();
     }
-  }, [accessToken, transportadoraData]);
+  }, [token, transportadoraData]);
 
   // Função para validar o formulário
   const isValidForm = () => {
@@ -63,17 +63,17 @@ const UpdateTransportadoraForm: React.FC<UpdateTransportadoraFormProps> = ({ tra
     try {
       if (transportadoraData) {
         // Atualizando uma transportadora existente
-        await updateTransportadora(accessToken, transportadoraData.CodigoTransportadora, formData);
+        await updateTransportadora(token, transportadoraData.CodigoTransportadora, formData);
         toast.success('Transportadora atualizada com sucesso!');
       } else {
         // Adicionando uma nova transportadora
-        const response = await addTransportadora(accessToken, formData);
+        const response = await addTransportadora(token, formData);
 
         const novoToken = response.token; // Acessa o token retornado
 
         // Atualiza o token no localStorage, se for retornado
         if (novoToken) {
-          localStorage.setItem('accessToken', novoToken); // Atualiza o token no armazenamento local
+          localStorage.setItem('token', novoToken); // Atualiza o token no armazenamento local
         }
 
         toast.success('Transportadora adicionada com sucesso!');

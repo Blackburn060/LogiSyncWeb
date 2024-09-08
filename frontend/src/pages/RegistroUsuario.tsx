@@ -7,7 +7,7 @@ import { FaAsterisk } from 'react-icons/fa';
 
 const RegistroUsuario: React.FC = () => {
   const [formData, setFormData] = useState({
-    nomeCompleto: '',
+    nomecompleto: '',
     email: '',
     senha: '',
     cpf: '',
@@ -47,16 +47,16 @@ const RegistroUsuario: React.FC = () => {
             <h1 className="bg-logisync-color-blue-50 text-white text-2xl font-extrabold py-2 w-full rounded flex items-center justify-center">Insira seus dados</h1>
           </div>
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomeCompleto">
+            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomecompleto">
               Nome Completo
               <FaAsterisk size={13} color='red' className='ml-2' /></label>
             <input
               type="text"
-              id="nomeCompleto"
-              name="nomeCompleto"
+              id="nomecompleto"
+              name="nomecompleto"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="Digite o seu nome completo"
-              value={formData.nomeCompleto}
+              value={formData.nomecompleto}
               onChange={handleChange}
               required
             />

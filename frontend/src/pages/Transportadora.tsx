@@ -8,7 +8,7 @@ import { cnpj } from 'cpf-cnpj-validator';
 
 const RegistroTransportadora: React.FC = () => {
   const [transportadora, setTransportadora] = useState<Transportadora | null>(null);
-  const { accessToken, user } = useAuth();
+  const { token, user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Transportadora>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -17,9 +17,9 @@ const RegistroTransportadora: React.FC = () => {
   useEffect(() => {
     const fetchTransportadora = async () => {
       setIsLoading(true);
-      if (accessToken && user?.CodigoTransportadora) {
+      if (token && user?.codigotransportadora) {
         try {
-          const transportadoraData = await getTransportadora(accessToken, user.CodigoTransportadora);
+          const transportadoraData = await getTransportadora(token, user.codigotransportadora);
           if (transportadoraData) {
             setTransportadora(transportadoraData);
             setFormData(transportadoraData);
@@ -37,7 +37,7 @@ const RegistroTransportadora: React.FC = () => {
     };
 
     fetchTransportadora();
-  }, [accessToken, user]);
+  }, [token, user]);
 
   // Função para validar o formulário de transporte
   const isValidForm = () => {
@@ -62,7 +62,7 @@ const RegistroTransportadora: React.FC = () => {
 
     if (isEditing && formData && transportadora) {
       try {
-        await updateTransportadora(accessToken as string, transportadora.CodigoTransportadora, formData);
+        await updateTransportadora(token as string, transportadora.CodigoTransportadora, formData);
         setIsEditing(false);
         setTransportadora(formData as Transportadora);
         toast.success('Transportadora atualizada com sucesso!');
@@ -84,9 +84,9 @@ const RegistroTransportadora: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (accessToken && transportadora) {
+    if (token && transportadora) {
       try {
-        await deleteTransportadora(accessToken as string, transportadora.CodigoTransportadora);
+        await deleteTransportadora(token as string, transportadora.CodigoTransportadora);
         toast.success('Transportadora inativada com sucesso!', {
           icon: '🗑️',
         });
@@ -109,14 +109,14 @@ const RegistroTransportadora: React.FC = () => {
     }
 
     try {
-      const response = await addTransportadora(accessToken as string, formData as Transportadora);
+      const response = await addTransportadora(token as string, formData as Transportadora);
       const newTransportadora = response.transportadora;
-      await updateUserTransportadora(accessToken as string, Number(user.id), newTransportadora.CodigoTransportadora);
+      await updateUserTransportadora(token as string, Number(user.id), newTransportadora.CodigoTransportadora);
       toast.success('Transportadora adicionada com sucesso!');
 
       const novoToken = response.token;
       if (novoToken) {
-        localStorage.setItem('accessToken', novoToken);
+        localStorage.setItem('token', novoToken);
       }
 
       setTimeout(() => {

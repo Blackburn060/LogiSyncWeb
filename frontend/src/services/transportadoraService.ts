@@ -13,13 +13,13 @@ export const getTransportadora = async (token: string, id: number): Promise<Tran
     });
 
     if (response.data.message) {
-      return null; // Ou alguma outra lógica dependendo da mensagem
+      return null;
     }
 
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar transportadora:', error);
-    return null; // ou lançar um erro personalizado
+    return null;
   }
 };
 
@@ -33,7 +33,7 @@ export const updateTransportadora = async (token: string, id: number, transporta
     });
   } catch (error) {
     console.error('Erro ao atualizar transportadora:', error);
-    throw error; // ou alguma lógica personalizada
+    throw error;
   }
 };
 
@@ -93,7 +93,7 @@ export const updateUserTransportadora = async (token: string, userId: number, tr
     });
 
     console.log('Usuário atualizado com sucesso:', response.data);
-  } catch (error: unknown) { // Usando 'unknown' em vez de 'any'
+  } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Erro ao atualizar usuário com transportadora:', error.message);
       throw new Error(`Erro ao atualizar usuário com transportadora: ${error.message}`);

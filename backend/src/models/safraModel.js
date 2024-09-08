@@ -28,7 +28,7 @@ const getAllSafras = (filters = {}) => {
 // Adicionar uma nova safra
 const addSafra = (safra) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = `INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao, CodigoUsuario) VALUES (?, ?, ?, ?)`;
         db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao, safra.CodigoUsuario], function(err) {
             if (err) {
@@ -42,7 +42,7 @@ const addSafra = (safra) => {
 
 const updateSafra = (safra, id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastrosafra SET ';
         let params = [];
         let updates = [];
@@ -75,7 +75,7 @@ const updateSafra = (safra, id) => {
 // Deletar uma safra
 const deleteSafra = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastrosafra SET SituacaoSafra = 0, DataAlteracao = ? WHERE CodigoSafra = ?';
         db.run(sql,[dataAlteracao, id], function(err) {
             if (err) {

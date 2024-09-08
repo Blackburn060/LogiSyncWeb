@@ -5,11 +5,11 @@ import toast, { Toaster } from 'react-hot-toast';
 
 interface UpdateUserFormProps {
   userData: Usuario;
-  accessToken: string;
+  token: string;
   onUpdate: () => void;
 }
 
-const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, onUpdate }) => {
+const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, token, onUpdate }) => {
   const formatCPF = (cpf: string) => {
     cpf = cpf.replace(/[^\d]/g, '');
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
@@ -66,7 +66,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
       }
 
       if (formData.Email !== userData.Email) {
-        const emailExists = await checkEmailExists(formData.Email, accessToken);
+        const emailExists = await checkEmailExists(formData.Email, token);
         if (emailExists) {
           toast.error('O email já está em uso!');
           return;
@@ -79,7 +79,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
       }
 
       try {
-        await updateUsuario(accessToken, formData.CodigoUsuario, updatedData);
+        await updateUsuario(token, formData.CodigoUsuario, updatedData);
         onUpdate();
         setIsEditing(false);
         toast.success('Dados atualizados com sucesso!');
@@ -94,7 +94,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ userData, accessToken, 
 
   const handleInactivate = async () => {
     try {
-      await inactivateUsuario(accessToken, formData.CodigoUsuario);
+      await inactivateUsuario(token, formData.CodigoUsuario);
       setShowModal(false);
       toast.success('Usuário inativado com sucesso!', {
         icon: '✔️',

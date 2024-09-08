@@ -6,5 +6,4 @@ export interface Usuario {
   NumeroCelular: string; 
   Senha?: string; 
   CodigoTransportadora?: number; 
-
 }

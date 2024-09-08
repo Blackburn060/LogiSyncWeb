@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/images/Logo-LogiSync-Horizontal-02-SF.webp';
-import { FaDollyFlatbed, FaTruckLoading, FaTruckPickup } from 'react-icons/fa';
+import { FaDollyFlatbed, FaTruckLoading } from 'react-icons/fa';
 
 const SelecionarProcesso: React.FC = () => {
   const navigate = useNavigate();

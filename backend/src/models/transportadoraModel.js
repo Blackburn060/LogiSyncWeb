@@ -43,7 +43,7 @@ const getTransportadoraById = (id) => {
 // Adicionar uma nova transportadora
 const addTransportadora = (transportadora, userId) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sqlInsert = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
 
         db.run(sqlInsert, [transportadora.Nome, transportadora.NomeFantasia, transportadora.CNPJ, 1, dataGeracao], function(err) {
@@ -85,7 +85,7 @@ const addTransportadora = (transportadora, userId) => {
 // Atualizar uma transportadora
 const updateTransportadora = (transportadora, id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastrotransportadora SET ';
         let params = [];
         let updates = [];
@@ -123,7 +123,7 @@ const updateTransportadora = (transportadora, id) => {
 // Deletar uma transportadora
 const deleteTransportadora = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastrotransportadora SET SituacaoTransportadora = 0, DataAlteracao = ? WHERE CodigoTransportadora = ?';
         db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {

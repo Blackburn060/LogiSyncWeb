@@ -52,7 +52,7 @@ const addVeiculo = (veiculo) => {
 // Atualizar um veículo
 const updateVeiculo = (veiculo, id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastroveiculo SET ';
         let params = [];
         let updates = [];
@@ -86,7 +86,7 @@ const updateVeiculo = (veiculo, id) => {
 // Inativar um veículo (atualizar SituacaoVeiculo para 0)
 const deleteVeiculo = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastroveiculo SET SituacaoVeiculo = 0, DataAlteracao = ? WHERE CodigoVeiculo = ?';
         db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {
