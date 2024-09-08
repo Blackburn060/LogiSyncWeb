@@ -43,8 +43,8 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
           const produtosData = await getProdutos(token);
           setProdutos(produtosData);  
 
-          if (usuarioData.codigotransportadora) {
-            const transportadoraData = await getTransportadora(token, usuarioData.codigotransportadora);
+          if (usuarioData.CodigoTransportadora) {
+            const transportadoraData = await getTransportadora(token, usuarioData.CodigoTransportadora);
             setTransportadora(transportadoraData);
           }
         } catch (error) {
