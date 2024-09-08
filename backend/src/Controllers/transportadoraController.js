@@ -1,5 +1,5 @@
 const transportadoraModel = require('../models/transportadoraModel');
-const { generateAccessToken } = require('../services/authService'); 
+const AuthService = require('../services/authService');
 
 const listarTransportadoras = async (req, res) => {
     try {
@@ -29,7 +29,7 @@ const adicionarTransportadora = async (req, res) => {
         };
 
 
-        const newAccessToken = generateAccessToken(updatedUser);  
+        const newAccessToken = AuthService.generateToken(updatedUser);  
 
         return res.status(201).send({ 
             message: "Transportadora adicionada e usuário atualizado com sucesso", 

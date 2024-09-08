@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/login');
   }, [navigate]);
 
-  // Função para renovar o access token
+  // Função para renovar o token
   const refreshAccessToken = useCallback(async () => {
     if (refreshToken) {
       try {
@@ -119,13 +119,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       refreshAccessToken();
     }
   }, [token, refreshToken, refreshAccessToken]);
-
-  // Verifica detalhes do usuário uma vez, depois que o `user` é definido pela primeira vez
-  useEffect(() => {
-    if (user?.id && token) {
-      fetchUserDetails();
-    }
-  }, [user?.id, token, fetchUserDetails]);
 
   // Verifica se existe um token no localStorage ao carregar o componente
   useEffect(() => {
