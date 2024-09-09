@@ -71,10 +71,10 @@ const updateUser = (user, id) => {
         let updates = [];
 
         // Verifica se a senha está presente e faz o hash se necessário
-        if (user.senha) {
+        if (user.Senha) {
             try {
-                const hashedPassword = await bcrypt.hash(user.senha, 10);
-                user.senha = hashedPassword;
+                const hashedPassword = await bcrypt.hash(user.Senha, 10);
+                user.Senha = hashedPassword;
             } catch (err) {
                 return reject(err);
             }
