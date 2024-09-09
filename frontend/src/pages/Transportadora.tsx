@@ -13,6 +13,7 @@ const RegistroTransportadora: React.FC = () => {
   const [formData, setFormData] = useState<Partial<Transportadora>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchTransportadora = async () => {
@@ -134,8 +135,8 @@ const RegistroTransportadora: React.FC = () => {
       <Navbar />
       <Toaster position="top-right" reverseOrder={false} />
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
-        <div className="w-full max-w-lg bg-blue-700 p-6 rounded-lg">
-          <h1 className="text-2xl font-bold mb-4 text-center text-white">Dados da Transportadora</h1>
+        <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg">
+          <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">Dados da Transportadora</h1>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
               <l-helix size="45" speed="2.5" color="white"></l-helix>
@@ -170,7 +171,6 @@ const RegistroTransportadora: React.FC = () => {
                   </div>
                   <div className="mb-4">
                     <label className="block text-white mb-2" htmlFor="CNPJ">CNPJ</label>
-                    {/* Envolvendo o campo CNPJ com uma div para capturar o clique */}
                     <div
                       onClick={() => toast.error('Não é possível alterar o CNPJ.')}
                       className="cursor-pointer"
@@ -181,7 +181,7 @@ const RegistroTransportadora: React.FC = () => {
                         name="CNPJ"
                         value={formData.CNPJ || ''}
                         onChange={handleChange}
-                        disabled={!!formData.CNPJ || !!transportadora} // Desabilita o campo CNPJ
+                        disabled={!!formData.CNPJ || !!transportadora}
                         className={`w-full p-2 border ${!!formData.CNPJ || !!transportadora ? 'border-gray-400 bg-gray-200' : 'border-gray-300'} rounded`}
                       />
                     </div>
@@ -189,15 +189,15 @@ const RegistroTransportadora: React.FC = () => {
                   <div className="flex justify-between">
                     <button
                       type="button"
-                      className="px-4 py-2 bg-green-500 text-white rounded"
+                      className="px-4 py-2 bg-green-600 text-white rounded"
                       onClick={handleUpdate}
                     >
                       {isEditing ? 'Salvar' : 'Editar'}
                     </button>
                     <button
                       type="button"
-                      className="px-4 py-2 bg-red-500 text-white rounded"
-                      onClick={isEditing ? () => setIsEditing(false) : handleDelete}
+                      className="px-4 py-2 bg-red-600 text-white rounded"
+                      onClick={isEditing ? () => setIsEditing(false) : () => setShowModal(true)}
                     >
                       {isEditing ? 'Cancelar' : 'Excluir Transportadora'}
                     </button>
@@ -243,14 +243,14 @@ const RegistroTransportadora: React.FC = () => {
                       <div className="flex justify-between">
                         <button
                           type="button"
-                          className="px-4 py-2 bg-green-500 text-white rounded"
+                          className="px-4 py-2 shadow-md bg-green-600 text-white rounded"
                           onClick={handleAddTransportadora}
                         >
                           Salvar
                         </button>
                         <button
                           type="button"
-                          className="px-4 py-2 bg-red-500 text-white rounded"
+                          className="px-4 py-2 shadow-md bg-red-600 text-white rounded"
                           onClick={() => setShowAddForm(false)}
                         >
                           Cancelar
@@ -274,6 +274,23 @@ const RegistroTransportadora: React.FC = () => {
           )}
         </div>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Confirmação</h2>
+            <p className="mb-4">Você tem certeza que deseja excluir a transportadora?</p>
+            <div className="flex justify-end">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 text-black rounded mr-2">
+                Cancelar
+              </button>
+              <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

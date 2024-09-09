@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import VeiculoForm from '../components/VeiculoForm';
 import { useAuth } from '../context/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 Modal.setAppElement('#root');
 
@@ -102,8 +103,8 @@ const Veiculos: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
-        <div className="w-full max-w-md bg-blue-700 p-6 rounded-lg relative">
-          <h1 className="text-2xl font-bold mb-4 text-center text-white bg-blue-800 p-2 rounded">Veículos</h1>
+        <div className="w-full max-w-md bg-logisync-color-blue-400 p-6 rounded-lg relative">
+          <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">Veículos</h1>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
               <l-helix size="45" speed="2.5" color="white"></l-helix>
@@ -120,19 +121,19 @@ const Veiculos: React.FC = () => {
                     <span className="flex-grow mr-2 truncate">{veiculo.NomeVeiculo}</span>
                     <div className="flex-shrink-0">
                       <button
-                        className="text-yellow-500 mr-2"
+                        className="text-blue-700 mr-2"
                         onClick={() => {
                           setSelectedVeiculo(veiculo);
                           setShowForm(true);
                         }}
                       >
-                        ✏️
+                        <FaEdit className="mr-2" />
                       </button>
                       <button
                         className="text-red-500"
                         onClick={() => openConfirmDeleteModal(veiculo)}
                       >
-                        🗑️
+                        <FaTrash className="mr-2" />
                       </button>
                     </div>
                   </li>
