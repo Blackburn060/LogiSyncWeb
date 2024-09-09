@@ -10,7 +10,21 @@ const listarAgendamentos = async (req, res) => {
         res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
     }
 };
-
+const listarAgendamentosPorData = async (req, res) => {
+    try {
+      const { DataAgendamento } = req.query;
+      if (!DataAgendamento) {
+        return res.status(400).send({ message: 'Data de agendamento é obrigatória' });
+      }
+  
+      const agendamentos = await agendamentoModel.getAgendamentosPorData(DataAgendamento);
+      res.json(agendamentos);
+    } catch (error) {
+      res.status(500).send({ message: 'Erro ao buscar agendamentos por data: ' + error.message });
+    }
+  };
+  
+  
 // Listar agendamentos com placa do veículo
 const listarAgendamentosComPlaca = async (req, res) => {
     try {
@@ -119,6 +133,7 @@ module.exports = {
     atualizarAgendamento,
     cancelarAgendamento,
     deletarAgendamento,
+    listarAgendamentosPorData,
     registrarIndisponibilidadeHorario,
     listarIndisponibilidades,
     deletarIndisponibilidade

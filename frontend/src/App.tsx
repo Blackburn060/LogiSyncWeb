@@ -9,13 +9,14 @@ import RegistroUsuario from './pages/RegistroUsuario';
 import RegistroTransportadora from './pages/RegistroTransportadora';
 import Unauthorized from './pages/Unauthorized';
 import GerenciarHorarios from './pages/GerenciarHorarios';
-import Veiculos from './pages/Veiculos';  
-import DadosPessoais from './pages/DadosPessoais'; 
-import CalendarioAgendamentos from './pages/CalendarioAgendamentos'; 
+import Veiculos from './pages/Veiculos';
+import DadosPessoais from './pages/DadosPessoais';
+import CalendarioAgendamentos from './pages/CalendarioAgendamentos';
 import DadosTransportadora from './pages/Transportadora';
 import GerenciarSafras from './pages/GerenciarSafras';
 import HomePageInterno from './pages/HomePageInterno';
 import SelecionarProcesso from './pages/SelecionarProcesso';
+import AutorizarAgendamentos from './pages/AutorizarAgendamentos'; // Nova página de Autorizar Agendamentos
 
 const App: React.FC = () => {
   return (
@@ -30,14 +31,15 @@ const App: React.FC = () => {
           <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
           <Route path="/agendamentos" element={<MeusAgendamentos />} />
           <Route path="/veiculos" element={<Veiculos />} />
-          <Route path="/conta" element={<DadosPessoais />} /> 
-          <Route path="/transportadora" element={<DadosTransportadora />} /> 
+          <Route path="/conta" element={<DadosPessoais />} />
+          <Route path="/transportadora" element={<DadosTransportadora />} />
           <Route path="/calendario" element={<CalendarioAgendamentos />} />
           <Route path="/gestao/home" element={<HomePageInterno />} />
           <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
           <Route path="/gestao/agendamentos" element={<GerenciarHorarios />} />
           <Route path="/gestao/safra" element={<GerenciarSafras />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/gestao/autorizarAgendamentos" element={<AutorizarAgendamentos />} /> {/* Nova rota adicionada */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

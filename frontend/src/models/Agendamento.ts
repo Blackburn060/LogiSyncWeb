@@ -7,7 +7,7 @@ export interface Agendamento {
   CodigoProduto?: number | null;  
   CodigoTransportadora: number | null; 
   CodigoSafra?: number | null;      
-  ArquivoAnexado?: Blob | null;    
+  ArquivoAnexado?: Blob | string | null; // Permite Blob, string ou null
   Observacao?: string | null;   
   DataAgendamento: string;        
   HoraAgendamento: string;         

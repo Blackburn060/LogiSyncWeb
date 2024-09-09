@@ -42,29 +42,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
   const navigate = useNavigate();
 
-  // Função para buscar detalhes do usuário
-  const fetchUserDetails = useCallback(async () => {
-    if (user?.id) {
-      try {
-        const response = await api.get(`/usuarios/${user.id}`);
-        const userDetails = response.data;
-
-        if (userDetails.cpf !== user.cpf || userDetails.NumeroCelular !== user.numerocelular) {
-          setUser((prevUser) =>
-            prevUser
-              ? {
-                  ...prevUser,
-                  cpf: userDetails.cpf || prevUser.cpf,
-                  numerocelular: userDetails.NumeroCelular || prevUser.numerocelular,
-                }
-              : null
-          );
-        }
-      } catch (error) {
-        console.error('Erro ao buscar detalhes do usuário:', error);
-      }
-    }
-  }, [user]);
+ 
 
   // Função de login
   const login = useCallback((token: string, refreshToken: string) => {

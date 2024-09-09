@@ -1,26 +1,47 @@
 const db = require('../Config/database');
 
-// Buscar todos os agendamentos
 const getAllAgendamentos = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        let sql = 'SELECT * FROM agendamentos WHERE 1=1';
-        let params = [];
-
-        if (filters.CodigoUsuario) {
-            sql += ' AND CodigoUsuario = ?';
-            params.push(filters.CodigoUsuario);
+      let sql = 'SELECT * FROM agendamentos WHERE 1=1';
+      let params = [];
+  
+      if (filters.CodigoUsuario) {
+        sql += ' AND CodigoUsuario = ?';
+        params.push(filters.CodigoUsuario);
+      }
+  
+      // Filtro por DataAgendamento
+      if (filters.DataAgendamento) {
+        sql += ' AND DataAgendamento = ?';
+        params.push(filters.DataAgendamento);
+      }
+  
+      db.all(sql, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
         }
-
-        db.all(sql, params, (err, rows) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(rows);
-            }
-        });
+      });
     });
-};
-
+  };
+  const getAgendamentosPorData = (dataAgendamento) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT * 
+        FROM agendamentos
+        WHERE DataAgendamento = ?
+        ORDER BY HoraAgendamento ASC
+      `;
+      db.all(sql, [dataAgendamento], (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  };
 // Função para buscar agendamentos com placa do veículo
 const getAllAgendamentosWithPlaca = (filters = {}) => {
     return new Promise((resolve, reject) => {
@@ -94,6 +115,7 @@ const addAgendamento = (agendamento) => {
         });
     });
 };
+
 
 // Atualizar um agendamento
 const updateAgendamento = (agendamento, id) => {
@@ -198,6 +220,7 @@ module.exports = {
     updateAgendamento,
     getAllAgendamentosWithPlaca,
     deleteAgendamento,
+    getAgendamentosPorData,
     cancelarAgendamento,
     registrarIndisponibilidade,
     getIndisponibilidades,

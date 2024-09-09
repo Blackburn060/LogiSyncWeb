@@ -24,6 +24,19 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
     throw error;
   }
 };
+export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
+  try {
+    const response = await api.get('/agendamentos', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar agendamentos:', error);
+    throw error;
+  }
+};
 
 // Adicionar um novo agendamento
 export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
@@ -48,7 +61,50 @@ export const addAgendamento = async (token: string, agendamento: Agendamento): P
     throw error;
   }
 };
+//buscar agendamentos por data
+export const getAgendamentosPorData = async (token: string, data: string): Promise<Agendamento[]> => {
+  try {
+    const response = await api.get(`/agendamentos-por-data?DataAgendamento=${data}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar agendamentos por data:', error);
+    throw error;
+  }
+};
 
+
+// Função para autorizar agendamentos
+export const autorizarAgendamento = async (token: string, id: number): Promise<void> => {
+  try {
+    await api.put(`/agendamentos/${id}`, { SituacaoAgendamento: 'Confirmado' }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('Agendamento autorizado com sucesso');
+  } catch (error) {
+    console.error('Erro ao autorizar agendamento:', error);
+    throw error;
+  }
+};
+// Função para recusar agendamentos
+export const recusarAgendamento = async (token: string, id: number): Promise<void> => {
+  try {
+    await api.put(`/agendamentos/${id}`, { SituacaoAgendamento: 'Recusado' }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('Agendamento recusado com sucesso');
+  } catch (error) {
+    console.error('Erro ao recusar agendamento:', error);
+    throw error;
+  }
+};
 // Atualizar um agendamento existente
 export const updateAgendamento = async (token: string, agendamento: Agendamento): Promise<void> => {
   try {
