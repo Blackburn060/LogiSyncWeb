@@ -169,23 +169,26 @@ const Veiculos: React.FC = () => {
         isOpen={showConfirmDelete}
         onRequestClose={closeConfirmDeleteModal}
         contentLabel="Confirmar Exclusão"
-        className="bg-white p-4 rounded-lg shadow-lg max-w-md mx-auto mt-20"
+        className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
-        <h2 className="text-xl font-bold mb-4">Confirmar Exclusão</h2>
-        <p>Tem certeza que deseja excluir o veículo {veiculoToDelete?.NomeVeiculo}?</p>
-        <div className="flex justify-end mt-4">
-          <button
-            className="px-4 py-2 bg-gray-300 text-black rounded mr-2"
-            onClick={closeConfirmDeleteModal}
-          >
-            Cancelar
-          </button>
-          <button
-            className="px-4 py-2 bg-red-500 text-white rounded"
-            onClick={handleDeleteVeiculo}
-          >
-            Confirmar
-          </button>
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+          <h2 className="text-lg font-bold mb-4">Confirmação</h2>
+          <p className="mb-4">Você tem certeza que deseja excluir o veículo <strong>{veiculoToDelete?.NomeVeiculo}</strong>?</p>
+          <div className="flex justify-end">
+            <button
+              className="px-4 py-2 bg-gray-300 text-black rounded mr-2"
+              onClick={closeConfirmDeleteModal}
+            >
+              Cancelar
+            </button>
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded"
+              onClick={handleDeleteVeiculo}
+            >
+              Excluir
+            </button>
+          </div>
         </div>
       </Modal>
       <Toaster position="top-right" reverseOrder={false} />

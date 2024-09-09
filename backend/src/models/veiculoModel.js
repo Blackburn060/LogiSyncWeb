@@ -37,9 +37,9 @@ const getVeiculoById = (codigoVeiculo) => {
 // Adicionar um novo veículo
 const addVeiculo = (veiculo) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY');
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = `INSERT INTO cadastroveiculo (CodigoUsuario, NomeVeiculo, Placa, Marca, ModeloTipo, AnoFabricacao, Cor, CapacidadeCarga, SituacaoVeiculo, Bloqueado, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`;
-        db.run(sql, [veiculo.CodigoUsuario, veiculo.NomeVeiculo, veiculo.Placa, veiculo.Marca, veiculo.ModeloTipo, veiculo.AnoFabricacao, veiculo.Cor, veiculo.CapacidadeCarga, veiculo.Bloqueado, dataGeracao], function(err) {
+        db.run(sql, [veiculo.CodigoUsuario, veiculo.NomeVeiculo, veiculo.Placa, veiculo.Marca, veiculo.ModeloTipo, veiculo.AnoFabricacao, veiculo.Cor, veiculo.CapacidadeCarga, 0, dataGeracao], function(err) {
             if (err) {
                 reject(err);
             } else {

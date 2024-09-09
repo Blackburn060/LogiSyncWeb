@@ -88,9 +88,7 @@ const RegistroTransportadora: React.FC = () => {
     if (token && transportadora) {
       try {
         await deleteTransportadora(token as string, transportadora.CodigoTransportadora);
-        toast.success('Transportadora inativada com sucesso!', {
-          icon: '🗑️',
-        });
+        toast.success('Transportadora excluída com sucesso!');
         setTimeout(() => {
           window.location.reload();
         }, 2000);
