@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import { useForm, Controller } from 'react-hook-form';
-import MaskedInput from 'react-text-mask';
 import { getUsuario, updateUsuario, inactivateUsuario, checkEmailExists } from '../services/usuarioService';
 import { useAuth } from '../context/AuthContext';
 import { Usuario } from '../models/Usuario';
@@ -17,6 +16,7 @@ const DadosPessoais: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
   const { control, handleSubmit, setValue } = useForm();
 
   const fetchUsuario = useCallback(async () => {
@@ -53,7 +53,7 @@ const DadosPessoais: React.FC = () => {
       if (data.Email !== usuario.Email) {
         const emailExists = await checkEmailExists(data.Email, token);
         if (emailExists) {
-          toast.error('O email já está em uso!');
+          toast.error('O e-mail informado já está registrado em outra conta! Tente outro e-mail!');
           return;
         }
       }
@@ -100,8 +100,10 @@ const DadosPessoais: React.FC = () => {
       try {
         await inactivateUsuario(token, usuario.CodigoUsuario);
         setShowModal(false);
-        toast.success('Conta excluída com sucesso!');
-        setTimeout(() => window.location.reload(), 2000);
+        setShowRedirectModal(true); // Exibe o modal de redirecionamento
+        setTimeout(() => {
+          window.location.href = '/login'; // Redireciona para a tela de login após 5 segundos
+        }, 5000);
       } catch (error) {
         toast.error('Erro ao excluir conta.');
       }
@@ -183,7 +185,7 @@ const DadosPessoais: React.FC = () => {
       {showUpdateModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity duration-300">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md transform transition-transform duration-300 scale-100">
-            <h2 className="text-xl font-bold mb-4">Atualizar Dados</h2>
+            <h2 className="text-xl font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Atualizar Dados</h2>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-4">
                 <label className="block text-black mb-2" htmlFor="NomeCompleto">Nome Completo</label>
@@ -220,11 +222,9 @@ const DadosPessoais: React.FC = () => {
                   control={control}
                   name="CPF"
                   render={({ field }) => (
-                    <MaskedInput
+                    <input
                       {...field}
-                      mask={field.value?.length <= 14
-                        ? [/\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '-', /\d/, /\d/]
-                        : [/\d/, /\d/, '.', /\d/, /\d/, /\d/, '.', /\d/, /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/]}
+                      id="CPF"
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
                   )}
@@ -245,10 +245,10 @@ const DadosPessoais: React.FC = () => {
                 />
               </div>
               <div className="flex justify-between">
-                <button type="button" onClick={() => setShowUpdateModal(false)} className="px-4 py-2 bg-gray-300 text-black rounded mr-2">
+                <button type="button" onClick={() => setShowUpdateModal(false)} className="px-4 py-2 bg-gray-300 text-black rounded shadow-md mr-2">
                   Cancelar
                 </button>
-                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-300">
+                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded shadow-md hover:bg-green-700 transition duration-300">
                   Confirmar
                 </button>
               </div>
@@ -261,7 +261,7 @@ const DadosPessoais: React.FC = () => {
       {showPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity duration-300">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md transform transition-transform duration-300 scale-100">
-            <h2 className="text-xl font-bold mb-4">Atualizar Senha</h2>
+            <h2 className="text-xl font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Atualizar Senha</h2>
             <form onSubmit={(e) => { e.preventDefault(); handlePasswordUpdate(); }}>
               <div className="mb-4">
                 <label className="block text-black mb-2" htmlFor="Senha">Nova Senha</label>
@@ -303,11 +303,11 @@ const DadosPessoais: React.FC = () => {
                     setConfirmPassword('');
                     setPasswordError('');
                   }}
-                  className="px-4 py-2 bg-gray-300 text-black rounded mr-2"
+                  className="px-4 py-2 bg-gray-300 text-black rounded shadow-md mr-2"
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded shadow-md hover:bg-blue-700 transition duration-300">
                   Atualizar Senha
                 </button>
               </div>
@@ -316,20 +316,32 @@ const DadosPessoais: React.FC = () => {
         </div>
       )}
 
-
       {/* Modal de Exclusão de Conta */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-bold mb-4">Confirmação</h2>
+            <h2 className="text-lg font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Confirmação</h2>
             <p className="mb-4">Você tem certeza que deseja excluir sua conta?</p>
             <div className="flex justify-between">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 text-black rounded mr-2">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 text-black rounded shadow-md mr-2">
                 Cancelar
               </button>
-              <button onClick={handleInactivate} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-300">
+              <button onClick={handleInactivate} className="px-4 py-2 bg-red-600 text-white rounded shadow-md hover:bg-red-700 transition duration-300">
                 Excluir
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Redirecionamento após Exclusão */}
+      {showRedirectModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-lg font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Conta Excluída</h2>
+            <p className="mb-4">Sua conta foi excluída com sucesso. Você será redirecionado para a tela de login em breve!</p>
+            <div className="flex justify-center">
+                <l-helix size="45" speed="2.5" color="black"></l-helix>
             </div>
           </div>
         </div>

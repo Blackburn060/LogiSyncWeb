@@ -22,7 +22,7 @@ export const updateUsuario = async (token: string, id: number, usuario: Partial<
 
 
 export const checkEmailExists = async (email: string, token: string): Promise<boolean> => {
-  const response = await axios.get(`/api/usuarios/check-email?email=${email}`, {
+  const response = await axios.get(`${apiUrl}/verificar-email?email=${email}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

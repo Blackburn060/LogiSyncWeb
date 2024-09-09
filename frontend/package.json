@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.2",
+    "cleave.js": "^1.6.0",
     "cpf-cnpj-validator": "^1.0.3",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
@@ -32,6 +33,7 @@
     "tailwind-scrollbar": "^3.1.0"
   },
   "devDependencies": {
+    "@types/cleave.js": "^1.4.12",
     "@types/node": "^20.14.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
