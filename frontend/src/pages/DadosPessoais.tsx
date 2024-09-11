@@ -10,6 +10,7 @@ import { cpf as cpfValidator, cnpj as cnpjValidator } from 'cpf-cnpj-validator';
 const DadosPessoais: React.FC = () => {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const { token, user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
@@ -17,19 +18,24 @@ const DadosPessoais: React.FC = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showRedirectModal, setShowRedirectModal] = useState(false);
-  const { control, handleSubmit, setValue } = useForm();
+  const { control, handleSubmit, setValue, reset } = useForm();
 
   const fetchUsuario = useCallback(async () => {
+    setIsLoading(true);
     if (token && user) {
       try {
         const usuarioData = await getUsuario(token, Number(user.id));
-        setUsuario(usuarioData);
-        setValue('NomeCompleto', usuarioData.NomeCompleto);
-        setValue('Email', usuarioData.Email);
-        setValue('CPF', usuarioData.CPF);
-        setValue('NumeroCelular', usuarioData.NumeroCelular);
+        if (usuarioData) {
+          setUsuario(usuarioData);
+          setValue('NomeCompleto', usuarioData.NomeCompleto);
+          setValue('Email', usuarioData.Email);
+          setValue('CPF', usuarioData.CPF);
+          setValue('NumeroCelular', usuarioData.NumeroCelular);
+        }
       } catch (error) {
         console.error('Erro ao buscar detalhes da conta', error);
+      } finally {
+        setIsLoading(false);
       }
     }
   }, [token, user, setValue]);
@@ -100,14 +106,51 @@ const DadosPessoais: React.FC = () => {
       try {
         await inactivateUsuario(token, usuario.CodigoUsuario);
         setShowModal(false);
-        setShowRedirectModal(true); // Exibe o modal de redirecionamento
+        setShowRedirectModal(true);
         setTimeout(() => {
-          window.location.href = '/login'; // Redireciona para a tela de login após 5 segundos
+          window.location.href = '/login';
         }, 5000);
       } catch (error) {
         toast.error('Erro ao excluir conta.');
       }
     }
+  };
+
+  const handleMaskCPF_CNPJ = (value: string) => {
+    value = value.replace(/\D/g, '');
+    if (value.length <= 11) {
+      value = value.replace(/(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+      value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    return value;
+  };
+
+  const handleMaskPhone = (value: string) => {
+    value = value.replace(/\D/g, '');
+    if (value.length > 10) {
+      value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+      value = value.replace(/(\d{5})(\d{4})$/, '$1-$2');
+    } else {
+      value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+      value = value.replace(/(\d{4})(\d{4})$/, '$1-$2');
+    }
+    return value;
+  };
+
+  const handleCancelEdit = () => {
+    reset({
+      NomeCompleto: usuario?.NomeCompleto,
+      Email: usuario?.Email,
+      CPF: usuario?.CPF,
+      NumeroCelular: usuario?.NumeroCelular,
+    });
+    setShowUpdateModal(false);
   };
 
   return (
@@ -117,7 +160,15 @@ const DadosPessoais: React.FC = () => {
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg">
           <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">Dados Pessoais</h1>
-          {usuario && (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <l-helix size="45" speed="2.5" color="white"></l-helix>
+            </div>
+          ) : !usuario ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-lg text-white">Nenhum dado encontrado.</p>
+            </div>
+          ) : (
             <>
               <form>
                 <div className="mb-4">
@@ -139,7 +190,7 @@ const DadosPessoais: React.FC = () => {
                 <div className="mb-4">
                   <label className="block text-white mb-2" htmlFor="CPF">CPF/CNPJ</label>
                   <input
-                    value={usuario.CPF}
+                    value={handleMaskCPF_CNPJ(usuario.CPF)}
                     disabled
                     className="w-full p-2 border border-gray-300 rounded bg-white text-black"
                   />
@@ -147,7 +198,7 @@ const DadosPessoais: React.FC = () => {
                 <div className="mb-4">
                   <label className="block text-white mb-2" htmlFor="NumeroCelular">Número Celular</label>
                   <input
-                    value={usuario.NumeroCelular}
+                    value={handleMaskPhone(usuario.NumeroCelular)}
                     disabled
                     className="w-full p-2 border border-gray-300 rounded bg-white text-black"
                   />
@@ -224,6 +275,8 @@ const DadosPessoais: React.FC = () => {
                   render={({ field }) => (
                     <input
                       {...field}
+                      value={handleMaskCPF_CNPJ(field.value)}
+                      onChange={(e) => field.onChange(handleMaskCPF_CNPJ(e.target.value))}
                       id="CPF"
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
@@ -238,6 +291,8 @@ const DadosPessoais: React.FC = () => {
                   render={({ field }) => (
                     <input
                       {...field}
+                      value={handleMaskPhone(field.value)}
+                      onChange={(e) => field.onChange(handleMaskPhone(e.target.value))}
                       id="NumeroCelular"
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
@@ -245,7 +300,7 @@ const DadosPessoais: React.FC = () => {
                 />
               </div>
               <div className="flex justify-between">
-                <button type="button" onClick={() => setShowUpdateModal(false)} className="px-4 py-2 bg-gray-300 text-black rounded shadow-md mr-2">
+                <button type="button" onClick={handleCancelEdit} className="px-4 py-2 bg-gray-300 text-black rounded shadow-md mr-2">
                   Cancelar
                 </button>
                 <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded shadow-md hover:bg-green-700 transition duration-300">
@@ -341,7 +396,7 @@ const DadosPessoais: React.FC = () => {
             <h2 className="text-lg font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Conta Excluída</h2>
             <p className="mb-4">Sua conta foi excluída com sucesso. Você será redirecionado para a tela de login em breve!</p>
             <div className="flex justify-center">
-                <l-helix size="45" speed="2.5" color="black"></l-helix>
+              <l-helix size="45" speed="2.5" color="black"></l-helix>
             </div>
           </div>
         </div>
