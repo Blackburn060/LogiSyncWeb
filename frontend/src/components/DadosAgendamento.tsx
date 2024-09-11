@@ -6,8 +6,8 @@ interface DadosAgendamentoProps {
   produto: string;
   quantidade: number | null;
   observacao: string | null;
-  safra: string | null;
-  arquivo: string | null; // Link ou nome do arquivo
+  safra?: string | null;
+  arquivo?: string | null;
 }
 
 const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
