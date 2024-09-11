@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { getAgendamentos, updateAgendamentoStatus } from "../services/agendamentoService";
+import {
+  getAgendamentos,
+  updateAgendamentoStatus,
+} from "../services/agendamentoService";
 import { Agendamento } from "../models/Agendamento";
 import Navbar from "../components/Navbar";
 import DadosPessoais from "../components/DadosPessoais";
@@ -22,6 +25,7 @@ const AgendamentosAdmin: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para o modal de detalhes
   const [motivoRecusa, setMotivoRecusa] = useState<string>(""); // Motivo de recusa
   const [showMotivoInput, setShowMotivoInput] = useState(false); // Mostrar input de recusa
+  const [statusFilter, setStatusFilter] = useState<string | null>(null); // Filtro de status
   const daysToShow = 7;
 
   useEffect(() => {
@@ -46,7 +50,7 @@ const AgendamentosAdmin: React.FC = () => {
 
   const formatarData = (data: string | Date) => {
     const dataObj = new Date(data);
-    return format(dataObj, "eeee, dd/MM/yyyy", { locale: ptBR });
+    return format(dataObj, "eee, dd/MM/yyyy", { locale: ptBR });
   };
 
   const getDaysRange = () => {
@@ -60,8 +64,12 @@ const AgendamentosAdmin: React.FC = () => {
 
   const getAgendamentosForDay = (day: Date) => {
     const dayString = format(day, "yyyy-MM-dd");
+
+    // Filtrar agendamentos com base no status
     return agendamentos.filter(
-      (agendamento) => agendamento.DataAgendamento === dayString
+      (agendamento) =>
+        agendamento.DataAgendamento === dayString &&
+        (!statusFilter || agendamento.SituacaoAgendamento === statusFilter) // Aplicar o filtro de status se estiver ativo
     );
   };
 
@@ -123,7 +131,6 @@ const AgendamentosAdmin: React.FC = () => {
       }
     }
   };
-  
 
   // Função para rejeitar o agendamento
   const handleRejeitar = async () => {
@@ -142,9 +149,7 @@ const AgendamentosAdmin: React.FC = () => {
     } else {
       alert("Por favor, informe o motivo da recusa.");
     }
-  };
-  
-  
+  }; 
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -152,25 +157,90 @@ const AgendamentosAdmin: React.FC = () => {
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Autorizar Agendamentos</h1>
 
+        {/* Botões de filtro */}
+        {/* Botões de filtro */}
+        <div className="flex flex-wrap justify-center gap-2 mb-4">
+          <button
+            onClick={() => setStatusFilter(null)} // Use null para o filtro "Todos"
+            className={`${
+              statusFilter === null // Verifique se o statusFilter é null
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-600"
+            } px-4 py-2 rounded-lg text-xs md:text-base`}
+          >
+            Todos
+          </button>
+          <button
+            onClick={() => setStatusFilter("Confirmado")}
+            className={`${
+              statusFilter === "Confirmado"
+                ? "bg-green-500 text-white"
+                : "bg-gray-200 text-gray-600"
+            } px-4 py-2 rounded-lg text-xs md:text-base`}
+          >
+            Confirmado
+          </button>
+          <button
+            onClick={() => setStatusFilter("Aguardando")}
+            className={`${
+              statusFilter === "Aguardando"
+                ? "bg-yellow-500 text-white"
+                : "bg-gray-200 text-gray-600"
+            } px-4 py-2 rounded-lg text-xs md:text-base`}
+          >
+            Aguardando
+          </button>
+          <button
+            onClick={() => setStatusFilter("Recusado")}
+            className={`${
+              statusFilter === "Recusado"
+                ? "bg-red-500 text-white"
+                : "bg-gray-200 text-gray-600"
+            } px-4 py-2 rounded-lg text-xs md:text-base`}
+          >
+            Recusado
+          </button>
+        </div>
+
+        {/* Controles de navegação */}
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={handlePreviousWeek}
-            className="p-2 bg-blue-500 text-white rounded-lg"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm"
           >
             &larr; Dias anteriores
           </button>
 
+          {/* Mostrar o ícone de calendário em telas menores e as datas em telas maiores */}
           <span
-            className="text-lg font-semibold cursor-pointer"
+            className="text-lg font-semibold cursor-pointer flex items-center justify-center"
             onClick={() => setIsCalendarOpen(true)}
           >
-            {format(currentStartDate, "dd/MM/yyyy")} -{" "}
-            {format(addDays(currentStartDate, daysToShow - 1), "dd/MM/yyyy")}
+            {/* Ocultar as datas em telas menores (sm) e mostrar apenas o ícone */}
+            <span className="hidden sm:block">
+              {format(currentStartDate, "dd/MM/yyyy")} -{" "}
+              {format(addDays(currentStartDate, daysToShow - 1), "dd/MM/yyyy")}
+            </span>
+            {/* Exibir o ícone de calendário em telas menores */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 block sm:hidden"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.25 3.75V6M15.75 3.75V6M3 9.75h18M4.5 4.5h15a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0119.5 22.5h-15A2.25 2.25 0 012.25 20.25V6.75A2.25 2.25 0 014.5 4.5z"
+              />
+            </svg>
           </span>
 
           <button
             onClick={handleNextWeek}
-            className="p-2 bg-blue-500 text-white rounded-lg"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm"
           >
             Próximos dias &rarr;
           </button>
@@ -292,12 +362,12 @@ const AgendamentosAdmin: React.FC = () => {
                       agendamentosForDay.map((agendamento) => (
                         <div
                           key={agendamento.CodigoAgendamento}
-                          className={`p-2 mb-2 rounded cursor-pointer ${getStatusClass(
+                          className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusClass(
                             agendamento.SituacaoAgendamento
-                          )}`}
+                          )}`} // Use flexbox para centralizar o conteúdo
                           onClick={() => handleOpenModal(agendamento)}
                         >
-                          <p className="text-sm">
+                          <p className="text-sm text-center">
                             {agendamento.TipoAgendamento}{" "}
                             <span className="text-xs">
                               | {agendamento.HoraAgendamento}
