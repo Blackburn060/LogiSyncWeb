@@ -16,7 +16,7 @@ import DadosTransportadora from './pages/Transportadora';
 import GerenciarSafras from './pages/GerenciarSafras';
 import HomePageInterno from './pages/HomePageInterno';
 import SelecionarProcesso from './pages/SelecionarProcesso';
-import AutorizarAgendamentos from './pages/AutorizarAgendamentos'; // Nova página de Autorizar Agendamentos
+import AutorizarAgendamentos from './pages/AutorizarAgendamentos';
 
 const App: React.FC = () => {
   return (
@@ -35,11 +35,10 @@ const App: React.FC = () => {
           <Route path="/transportadora" element={<DadosTransportadora />} />
           <Route path="/calendario" element={<CalendarioAgendamentos />} />
           <Route path="/gestao/home" element={<HomePageInterno />} />
+          <Route path="/gestao/autorizarAgendamentos" element={<AutorizarAgendamentos />} />
           <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
-          <Route path="/gestao/agendamentos" element={<GerenciarHorarios />} />
           <Route path="/gestao/safra" element={<GerenciarSafras />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/gestao/autorizarAgendamentos" element={<AutorizarAgendamentos />} /> {/* Nova rota adicionada */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

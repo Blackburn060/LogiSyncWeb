@@ -8,9 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { Agendamento } from '../models/Agendamento';
 import { format, parseISO } from 'date-fns';
 import Select from 'react-select';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { ptBR } from 'date-fns/locale';
+import { Datepicker } from 'flowbite-react';
+import 'flowbite/dist/flowbite.css';
 
 const GerenciarHorarios: React.FC = () => {
   const { user, token } = useAuth();
@@ -55,7 +54,6 @@ const GerenciarHorarios: React.FC = () => {
     fetchIndisponibilidades();
   }, [token, TipoAgendamento]);
 
-  // Gera horários disponíveis apenas com intervalos para indisponibilidade
   const gerarHorariosDisponiveis = (horario: Horario | null, tipoAgendamento: string) => {
     if (!horario) {
       setHorariosDisponiveis([]);
@@ -67,7 +65,6 @@ const GerenciarHorarios: React.FC = () => {
     let current = new Date(`1970-01-01T${horario.horarioInicio}:00`);
     const end = new Date(`1970-01-01T${horario.horarioFim}:00`);
 
-    // Gera horários com intervalo
     while (current < end) {
       const next = new Date(current.getTime() + intervalo * 60000);
       if (next > end) break;
@@ -97,6 +94,13 @@ const GerenciarHorarios: React.FC = () => {
   const handleInputChange = (name: string, value: string) => {
     if (editingHorario) {
       setEditingHorario({ ...editingHorario, [name]: value });
+    }
+  };
+
+  const handleTimeChange = (name: string, time: Date | null) => {
+    if (editingHorario && time) {
+      const formattedTime = format(time, 'HH:mm');
+      setEditingHorario({ ...editingHorario, [name]: formattedTime });
     }
   };
 
@@ -205,28 +209,22 @@ const GerenciarHorarios: React.FC = () => {
                 <label htmlFor="horarioInicio" className="block text-sm font-medium text-gray-700">
                   Horário de Início
                 </label>
-                <Select
-                  id="horarioInicio"
-                  name="horarioInicio"
-                  value={{ label: editingHorario.horarioInicio, value: editingHorario.horarioInicio }}
-                  options={horariosDisponiveis}
-                  onChange={(option) => handleInputChange('horarioInicio', option?.value || '')}
-                  isClearable
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                <Datepicker
+                  value={editingHorario.horarioInicio ? editingHorario.horarioInicio : ''}
+                  onSelectedDateChanged={(date) => handleTimeChange('horarioInicio', date)}
+                  placeholder="Selecione o horário de início"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
               <div>
                 <label htmlFor="horarioFim" className="block text-sm font-medium text-gray-700">
                   Horário de Fim
                 </label>
-                <Select
-                  id="horarioFim"
-                  name="horarioFim"
-                  value={{ label: editingHorario.horarioFim, value: editingHorario.horarioFim }}
-                  options={horariosDisponiveis}
-                  onChange={(option) => handleInputChange('horarioFim', option?.value || '')}
-                  isClearable
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                <Datepicker
+                  value={editingHorario.horarioFim ? editingHorario.horarioFim : ''}
+                  onSelectedDateChanged={(date) => handleTimeChange('horarioFim', date)}
+                  placeholder="Selecione o horário de fim"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
               <div>
@@ -279,7 +277,7 @@ const GerenciarHorarios: React.FC = () => {
                       {horario.horarioInicio} - {horario.horarioFim} (Intervalo de Carga: {horario.intervaloCarga} minutos, Intervalo de Descarga: {horario.intervaloDescarga} minutos)
                       <button
                         onClick={() => handleEditClick(horario)}
-                        className="ml-4 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
+                        className="ml-4 bg-logisync-color-blue-200 text-white px-4 py-2 rounded-md hover:bg-logisync-color-blue-400"
                       >
                         Editar
                       </button>
@@ -311,12 +309,10 @@ const GerenciarHorarios: React.FC = () => {
                   <label htmlFor="dataIndisponivel" className="block text-sm font-medium text-gray-700">
                     Data
                   </label>
-                  <DatePicker
-                    selected={dataIndisponivel}
-                    onChange={(date) => setDataIndisponivel(date as Date)}
-                    dateFormat="dd/MM/yyyy"
-                    locale={ptBR}
-                    placeholderText="Selecione uma data"
+                  <Datepicker
+                    value={dataIndisponivel ? format(dataIndisponivel, 'yyyy-MM-dd') : ''}
+                    onSelectedDateChanged={(date) => setDataIndisponivel(date)}
+                    placeholder="Selecione uma data"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>

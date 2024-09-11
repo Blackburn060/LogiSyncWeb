@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
       return (
         <>
           <Link to="/gestao/home" className="hover:text-gray-300 flex items-center"><FaHome className="mr-2" /> Início</Link>
-          <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
+          <Link to="/gestao/autorizarAgendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
           <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
           <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
           <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
@@ -90,7 +90,7 @@ const Navbar: React.FC = () => {
       return (
         <>
           <Link to="/gestao/home" className="hover:text-gray-300 flex items-center"><FaHome className="mr-2" /> Início</Link>
-          <Link to="/gestao/agendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
+          <Link to="/gestao/autorizarAgendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
           <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
           <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
           <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
