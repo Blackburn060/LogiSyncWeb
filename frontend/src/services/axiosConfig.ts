@@ -43,8 +43,8 @@ api.interceptors.response.use(
   }
 );
 
-export const isAxiosError = (error: any): error is AxiosError => {
-  return error.isAxiosError;
-};
+export const isAxiosError = (error: unknown): error is AxiosError => {
+  return (error as AxiosError).isAxiosError !== undefined;
+}
 
 export default api;
