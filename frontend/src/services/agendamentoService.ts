@@ -1,8 +1,16 @@
 import api from './axiosConfig';
 import { Agendamento } from '../models/Agendamento';
 import { AxiosError } from 'axios';
+import { jwtDecode } from 'jwt-decode';
+interface DecodedToken {
+  id?: number; // Adicionando a propriedade 'id'
+  userId?: number;
+  sub?: number; // Use "sub" se "userId" não estiver presente
+}
 
-// Buscar agendamentos por usuário com a placa associada
+
+
+// Função para buscar agendamentos por usuário com a placa associada
 export const getAgendamentosComPlaca = async (token: string, userId: number): Promise<Agendamento[]> => {
   try {
     console.log('Buscando agendamentos com placa para usuário:', userId);
@@ -24,6 +32,7 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
     throw error;
   }
 };
+
 export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
   try {
     const response = await api.get('/agendamentos', {
@@ -38,7 +47,7 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
   }
 };
 
-// Adicionar um novo agendamento
+// Função para adicionar um novo agendamento
 export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
   try {
     console.log('Enviando novo agendamento para API:', agendamento);
@@ -61,50 +70,109 @@ export const addAgendamento = async (token: string, agendamento: Agendamento): P
     throw error;
   }
 };
-//buscar agendamentos por data
-export const getAgendamentosPorData = async (token: string, data: string): Promise<Agendamento[]> => {
+
+// Função para buscar agendamentos por data
+// Função para atualizar o status do agendamento no banco de dados
+export const updateAgendamentoStatus = async (
+  id: number, 
+  data: Partial<Agendamento>
+) => {
   try {
-    const response = await api.get(`/agendamentos-por-data?DataAgendamento=${data}`, {
+    const accessToken = localStorage.getItem('accessToken'); // Obtendo o token correto
+    if (!accessToken) {
+      throw new Error('Token não encontrado');
+    }
+
+    // Decodificando o token
+    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(accessToken);
+    console.log("Token decodificado:", decodedToken); // Log para verificar os campos no token
+
+    // Usando 'id' em vez de 'userId' ou 'sub'
+    const usuarioId = decodedToken.id;
+
+    if (!usuarioId) {
+      throw new Error('ID do usuário não encontrado no token');
+    }
+
+    // Atualizando o status do agendamento
+    const response = await api.put(`/agendamentos/${id}`, {
+      ...data,
+      UsuarioAprovacao: usuarioId, // Usando o campo 'id' do token para aprovar o usuário
+    }, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
+
     return response.data;
   } catch (error) {
-    console.error('Erro ao buscar agendamentos por data:', error);
+    console.error("Erro ao atualizar o status do agendamento", error);
     throw error;
   }
 };
-
-
 // Função para autorizar agendamentos
 export const autorizarAgendamento = async (token: string, id: number): Promise<void> => {
   try {
-    await api.put(`/agendamentos/${id}`, { SituacaoAgendamento: 'Confirmado' }, {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      throw new Error('Token não encontrado');
+    }
+
+    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(accessToken);
+    const usuarioId = decodedToken.userId || decodedToken.sub;
+
+    if (!usuarioId) {
+      throw new Error('ID do usuário não encontrado no token');
+    }
+
+    await api.put(`/agendamentos/${id}`, { 
+      SituacaoAgendamento: 'Confirmado',
+      UsuarioAprovacao: usuarioId // Registrando o usuário que confirmou o agendamento
+    }, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     console.log('Agendamento autorizado com sucesso');
   } catch (error) {
     console.error('Erro ao autorizar agendamento:', error);
     throw error;
   }
 };
-// Função para recusar agendamentos
-export const recusarAgendamento = async (token: string, id: number): Promise<void> => {
+
+// Função para recusar agendamentos com motivo
+export const recusarAgendamento = async (token: string, id: number, motivo: string): Promise<void> => {
   try {
-    await api.put(`/agendamentos/${id}`, { SituacaoAgendamento: 'Recusado' }, {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      throw new Error('Token não encontrado');
+    }
+
+    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(accessToken);
+    const usuarioId = decodedToken.userId || decodedToken.sub;
+
+    if (!usuarioId) {
+      throw new Error('ID do usuário não encontrado no token');
+    }
+
+    await api.put(`/agendamentos/${id}`, { 
+      SituacaoAgendamento: 'Recusado',
+      UsuarioAprovacao: usuarioId, // Registrando o usuário que recusou o agendamento
+      MotivoRecusa: motivo
+    }, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     console.log('Agendamento recusado com sucesso');
   } catch (error) {
     console.error('Erro ao recusar agendamento:', error);
     throw error;
   }
 };
+
 // Atualizar um agendamento existente
 export const updateAgendamento = async (token: string, agendamento: Agendamento): Promise<void> => {
   try {

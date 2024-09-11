@@ -1,39 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { getAgendamentos } from "../services/agendamentoService";
+import { getAgendamentos, updateAgendamentoStatus } from "../services/agendamentoService";
 import { Agendamento } from "../models/Agendamento";
 import Navbar from "../components/Navbar";
+import DadosPessoais from "../components/DadosPessoais";
+import DadosVeicular from "../components/DadosVeicular";
+import DadosAgendamentos from "../components/DadosAgendamento";
+import Modal from "react-modal";
 import { addDays, format, subDays } from "date-fns";
-import { ptBR } from "date-fns/locale"; // Importando localização pt-BR
+import { ptBR } from "date-fns/locale";
 import DatePicker from "react-datepicker";
-import Modal from "react-modal"; // Importando o Modal
 
-import "react-datepicker/dist/react-datepicker.css"; // Estilos do DatePicker
-
-// Estilo do modal (você pode customizar como preferir)
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    zIndex: 1000, // Mantém o modal no topo
-  },
-  overlay: {
-    zIndex: 1000, // Mantém o overlay no topo
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fundo escurecido
-  },
-};
+import "react-datepicker/dist/react-datepicker.css";
 
 const AgendamentosAdmin: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentStartDate, setCurrentStartDate] = useState(new Date()); // Data inicial exibida na tela
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // Controla a abertura do modal de calendário
-  const daysToShow = 7; // Número de dias a serem exibidos
+  const [currentStartDate, setCurrentStartDate] = useState(new Date());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedAgendamento, setSelectedAgendamento] =
+    useState<Agendamento | null>(null); // Para armazenar o agendamento selecionado
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para o modal de detalhes
+  const [motivoRecusa, setMotivoRecusa] = useState<string>(""); // Motivo de recusa
+  const [showMotivoInput, setShowMotivoInput] = useState(false); // Mostrar input de recusa
+  const daysToShow = 7;
 
-  // Busca os agendamentos toda vez que a data inicial mudar
   useEffect(() => {
     const fetchAgendamentos = async () => {
       setLoading(true);
@@ -52,15 +42,13 @@ const AgendamentosAdmin: React.FC = () => {
     };
 
     fetchAgendamentos();
-  }, [currentStartDate]); // Atualiza os agendamentos quando a data inicial mudar
+  }, [currentStartDate]);
 
-  // Função para formatar a data do agendamento em português
   const formatarData = (data: string | Date) => {
     const dataObj = new Date(data);
     return format(dataObj, "eeee, dd/MM/yyyy", { locale: ptBR });
   };
 
-  // Função para obter um intervalo de dias (número de dias definido por 'daysToShow')
   const getDaysRange = () => {
     const days = [];
     for (let i = 0; i < daysToShow; i++) {
@@ -70,7 +58,6 @@ const AgendamentosAdmin: React.FC = () => {
     return days;
   };
 
-  // Função para buscar agendamentos de um determinado dia
   const getAgendamentosForDay = (day: Date) => {
     const dayString = format(day, "yyyy-MM-dd");
     return agendamentos.filter(
@@ -78,25 +65,21 @@ const AgendamentosAdmin: React.FC = () => {
     );
   };
 
-  // Função para avançar dias
   const handleNextWeek = () => {
     setCurrentStartDate(addDays(currentStartDate, daysToShow));
   };
 
-  // Função para retroceder dias
   const handlePreviousWeek = () => {
     setCurrentStartDate(subDays(currentStartDate, daysToShow));
   };
 
-  // Função para lidar com a mudança de data no calendário
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      setCurrentStartDate(date); // Atualiza a data inicial
+      setCurrentStartDate(date);
     }
-    setIsCalendarOpen(false); // Fecha o modal do calendário
+    setIsCalendarOpen(false);
   };
 
-  // Função para definir a classe com base no status do agendamento
   const getStatusClass = (status: string) => {
     switch (status) {
       case "Confirmado":
@@ -110,13 +93,65 @@ const AgendamentosAdmin: React.FC = () => {
     }
   };
 
+  // Função para abrir o modal de detalhes
+  const handleOpenModal = (agendamento: Agendamento) => {
+    setSelectedAgendamento(agendamento);
+    setIsModalOpen(true);
+  };
+
+  // Função para fechar o modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAgendamento(null);
+    setShowMotivoInput(false); // Reseta o campo de recusa quando fecha o modal
+  };
+
+  // Função para confirmar o agendamento
+  const handleConfirmar = async () => {
+    if (selectedAgendamento) {
+      try {
+        await updateAgendamentoStatus(selectedAgendamento.CodigoAgendamento!, {
+          SituacaoAgendamento: "Confirmado",
+          TipoAgendamento: selectedAgendamento.TipoAgendamento || "", // Enviando o tipo de agendamento
+          MotivoRecusa: "", // Motivo de recusa vazio para confirmação
+        });
+        alert("Agendamento confirmado com sucesso!");
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error("Erro ao confirmar agendamento:", error);
+        alert("Erro ao confirmar o agendamento.");
+      }
+    }
+  };
+  
+
+  // Função para rejeitar o agendamento
+  const handleRejeitar = async () => {
+    if (selectedAgendamento && motivoRecusa) {
+      try {
+        await updateAgendamentoStatus(selectedAgendamento.CodigoAgendamento!, {
+          SituacaoAgendamento: "Recusado",
+          MotivoRecusa: motivoRecusa, // Motivo da recusa informado
+        });
+        alert("Agendamento recusado com sucesso!");
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error("Erro ao rejeitar agendamento:", error);
+        alert("Erro ao rejeitar o agendamento.");
+      }
+    } else {
+      alert("Por favor, informe o motivo da recusa.");
+    }
+  };
+  
+  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Autorizar Agendamentos</h1>
 
-        {/* Botões para avançar/retroceder dias e abrir o calendário */}
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={handlePreviousWeek}
@@ -125,10 +160,9 @@ const AgendamentosAdmin: React.FC = () => {
             &larr; Dias anteriores
           </button>
 
-          {/* Data selecionada com botão para abrir o calendário */}
           <span
             className="text-lg font-semibold cursor-pointer"
-            onClick={() => setIsCalendarOpen(true)} // Abre o modal ao clicar
+            onClick={() => setIsCalendarOpen(true)}
           >
             {format(currentStartDate, "dd/MM/yyyy")} -{" "}
             {format(addDays(currentStartDate, daysToShow - 1), "dd/MM/yyyy")}
@@ -142,30 +176,112 @@ const AgendamentosAdmin: React.FC = () => {
           </button>
         </div>
 
-        {/* Modal para exibir o calendário */}
         <Modal
           isOpen={isCalendarOpen}
-          onRequestClose={() => setIsCalendarOpen(false)} // Fecha o modal ao clicar fora ou apertar "ESC"
-          style={customStyles}
+          onRequestClose={() => setIsCalendarOpen(false)}
+          className="bg-white rounded-lg p-4 max-w-lg mx-auto my-auto"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
           contentLabel="Selecionar Data"
         >
           <DatePicker
             selected={currentStartDate}
-            onChange={handleDateChange} // Atualiza a data inicial ao escolher uma nova data
+            onChange={handleDateChange}
             locale={ptBR}
             inline
           />
         </Modal>
 
+        {/* Modal para exibir detalhes do agendamento */}
+        <Modal
+          isOpen={isModalOpen}
+          onRequestClose={handleCloseModal}
+          className="bg-white rounded-lg p-6 max-w-4xl mx-auto my-auto h-[75%] overflow-y-auto shadow-lg"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          contentLabel="Detalhes do Agendamento"
+        >
+          {selectedAgendamento && (
+            <div className="border p-4 rounded-lg space-y-6">
+              <h2 className="text-xl font-bold mb-4 text-center">
+                Detalhes do Agendamento
+              </h2>
+
+              {/* DADOS PESSOAIS */}
+              <div className="border-2 p-4 rounded-lg">
+                <h2 className="text-lg font-bold mb-4">DADOS PESSOAIS</h2>
+                <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
+              </div>
+
+              {/* DADOS VEICULARES */}
+              <div className="border-2 p-4 rounded-lg">
+                <h2 className="text-lg font-bold mb-4">DADOS VEICULARES</h2>
+                <DadosVeicular
+                  codigoVeiculo={selectedAgendamento.CodigoVeiculo}
+                />
+              </div>
+
+              {/* DADOS DO AGENDAMENTO */}
+              <div className="border-2 p-4 rounded-lg">
+                <h2 className="text-lg font-bold mb-4">DADOS DO AGENDAMENTO</h2>
+                <DadosAgendamentos
+                  dataAgendamento={selectedAgendamento?.DataAgendamento ?? ""}
+                  horaAgendamento={selectedAgendamento?.HoraAgendamento ?? ""}
+                  produto={selectedAgendamento?.Produto ?? ""}
+                  quantidade={selectedAgendamento?.Quantidade ?? null}
+                  observacao={selectedAgendamento?.Observacao ?? null}
+                  safra={selectedAgendamento?.Safra ?? null}
+                  arquivo={selectedAgendamento?.Arquivo ?? null}
+                />
+              </div>
+
+              {/* Se o campo de motivo estiver visível, mostra o campo */}
+              {showMotivoInput && (
+                <div className="mt-4">
+                  <label className="block mb-2">Motivo da Recusa:</label>
+                  <textarea
+                    className="border p-2 rounded w-full"
+                    value={motivoRecusa}
+                    onChange={(e) => setMotivoRecusa(e.target.value)}
+                    placeholder="Descreva o motivo da recusa"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-between mt-6">
+                <button
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+                  onClick={handleConfirmar}
+                >
+                  Confirmar
+                </button>
+
+                {!showMotivoInput ? (
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                    onClick={() => setShowMotivoInput(true)}
+                  >
+                    Rejeitar
+                  </button>
+                ) : (
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                    onClick={handleRejeitar}
+                  >
+                    Confirmar Rejeição
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal>
+
         {loading ? (
           <p>Carregando agendamentos...</p>
         ) : (
-          <div className="grid grid-cols-7 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {getDaysRange().map((day) => {
-              const agendamentosForDay = getAgendamentosForDay(day); // Certifique-se de obter o array aqui
+              const agendamentosForDay = getAgendamentosForDay(day);
               return (
                 <div key={day.toString()} className="border p-4 rounded-lg">
-                  {/* Aplica a classe de tamanho de texto menor aqui */}
                   <h2 className="text-md font-semibold mb-2 text-center">
                     {formatarData(day)}
                   </h2>
@@ -176,9 +292,10 @@ const AgendamentosAdmin: React.FC = () => {
                       agendamentosForDay.map((agendamento) => (
                         <div
                           key={agendamento.CodigoAgendamento}
-                          className={`p-2 mb-2 rounded ${getStatusClass(
+                          className={`p-2 mb-2 rounded cursor-pointer ${getStatusClass(
                             agendamento.SituacaoAgendamento
                           )}`}
+                          onClick={() => handleOpenModal(agendamento)}
                         >
                           <p className="text-sm">
                             {agendamento.TipoAgendamento}{" "}

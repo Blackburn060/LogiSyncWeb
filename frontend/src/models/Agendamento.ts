@@ -18,5 +18,10 @@ export interface Agendamento {
   TipoAgendamento?: string | null; 
   DiaTodo: boolean;         
   Placa?: string;                   
-  veiculo?: Veiculo;                
+  veiculo?: Veiculo; 
+  Quantidade?: number | null;  
+  Produto?: string | null;   
+  Safra?: string | null;   
+  Arquivo?: string | null;   
+ 
 }
