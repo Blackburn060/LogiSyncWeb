@@ -8,14 +8,14 @@
   "theme_color": "#0335b0",
   "icons": [
     {
-      "src": "logo192.webp",
+      "src": "logo192ComFundo.webp",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/webp"
     },
     {
-      "src": "logo512.webp",
+      "src": "logo512ComFundo.webp",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/webp"
     }
   ],
   "scope": "/",
