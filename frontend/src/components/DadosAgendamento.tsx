@@ -1,4 +1,6 @@
 import React from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface DadosAgendamentoProps {
   dataAgendamento: string;
@@ -8,6 +10,10 @@ interface DadosAgendamentoProps {
   observacao: string | null;
   safra?: string | null;
   arquivo?: string | null;
+  editable?: boolean; // Propriedade para permitir edição
+  onProdutoChange?: (value: string) => void;
+  onQuantidadeChange?: (value: number | null) => void;
+  onSafraChange?: (value: string) => void;
 }
 
 const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
@@ -18,7 +24,17 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
   observacao,
   safra,
   arquivo,
+  editable = false, // Se editable for true, os campos serão editáveis
+  onProdutoChange,
+  onQuantidadeChange,
+  onSafraChange,
 }) => {
+  // Função para formatar a data no formato dia/mês/ano
+  const formatarData = (data: string) => {
+    const dataObj = new Date(data);
+    return format(dataObj, "dd/MM/yyyy", { locale: ptBR });
+  };
+
   return (
     <div className="border p-4 rounded-lg mb-4">
       <h2 className="text-xl font-bold">DADOS DO AGENDAMENTO</h2>
@@ -28,7 +44,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
-            value={dataAgendamento}
+            value={formatarData(dataAgendamento)}
             readOnly
           />
         </div>
@@ -47,16 +63,20 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             type="text"
             className="border w-full px-2 py-1 rounded-md"
             value={produto}
-            readOnly
+            onChange={(e) => onProdutoChange && onProdutoChange(e.target.value)}
+            readOnly={!editable} // Será editável apenas se "editable" for true
           />
         </div>
         <div>
           <label className="block font-semibold">Quantidade</label>
           <input
-            type="text"
+            type="number"
             className="border w-full px-2 py-1 rounded-md"
-            value={quantidade !== null ? String(quantidade) : "N/A"}
-            readOnly
+            value={quantidade !== null ? String(quantidade) : ""}
+            onChange={(e) =>
+              onQuantidadeChange && onQuantidadeChange(Number(e.target.value))
+            }
+            readOnly={!editable} // Será editável apenas se "editable" for true
           />
         </div>
         <div>
@@ -64,8 +84,9 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
-            value={safra || "N/A"}
-            readOnly
+            value={safra || ""}
+            onChange={(e) => onSafraChange && onSafraChange(e.target.value)}
+            readOnly={!editable} // Será editável apenas se "editable" for true
           />
         </div>
         <div>
