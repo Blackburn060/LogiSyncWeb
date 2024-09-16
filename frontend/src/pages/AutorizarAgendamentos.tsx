@@ -329,112 +329,129 @@ const AgendamentosAdmin: React.FC = () => {
           </button>
         </div>
 
+        {/* Modal de Seleção de Data */}
+        <Modal
+  isOpen={isCalendarOpen}
+  onRequestClose={() => setIsCalendarOpen(false)}
+  className="bg-white rounded-lg p-4 max-w-xs mx-auto my-auto shadow-lg" // Modifique "max-w-lg" para "max-w-xs"
+  overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+  contentLabel="Selecionar Data"
+>
+  <DatePicker
+    selected={currentStartDate}
+    onChange={handleDateChange}
+    locale={ptBR}
+    inline
+    calendarClassName="w-full"  // Garanta que o calendário ocupe toda a largura disponível
+  />
+</Modal>
+
         {/* Modal com ajuste de z-index e overlay cobrindo a tela */}
         <Modal
-  isOpen={isModalOpen}
-  onRequestClose={handleCloseModal}
-  className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
-  overlayClassName="fixed inset-0 bg-black bg-opacity-75 z-40"
-  bodyOpenClassName="overflow-hidden"
-  contentLabel="Detalhes do Agendamento"
->
-  {selectedAgendamento && (
-    <div className="border p-4 rounded-lg space-y-6 relative">
-      {/* Título e botão de fechar */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Detalhes do Agendamento</h2>
-        {/* Botão de fechar */}
-        <button
-          onClick={handleCloseModal}
-          className="text-gray-500 hover:text-gray-700 transition duration-200 ease-in-out"
+          isOpen={isModalOpen}
+          onRequestClose={handleCloseModal}
+          className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-75 z-40"
+          bodyOpenClassName="overflow-hidden"
+          contentLabel="Detalhes do Agendamento"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
+          {selectedAgendamento && (
+            <div className="border p-4 rounded-lg space-y-6 relative">
+              {/* Título e botão de fechar */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Detalhes do Agendamento</h2>
+                {/* Botão de fechar */}
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-500 hover:text-gray-700 transition duration-200 ease-in-out"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
 
-      {/* Conteúdo do modal */}
-      <div className="border-2 p-4 rounded-lg">
-        <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
-      </div>
+              {/* Conteúdo do modal */}
+              <div className="border-2 p-4 rounded-lg">
+                <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
+              </div>
 
-      <div className="border-2 p-4 rounded-lg">
-        <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
-      </div>
+              <div className="border-2 p-4 rounded-lg">
+                <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
+              </div>
 
-      {/* Removido o título duplicado aqui */}
-      <div className="border-2 p-4 rounded-lg">
-        <DadosAgendamentos
-          dataAgendamento={selectedAgendamento?.DataAgendamento ?? ""}
-          horaAgendamento={selectedAgendamento?.HoraAgendamento ?? ""}
-          produto={selectedAgendamento?.Produto ?? ""}
-          quantidade={selectedAgendamento?.Quantidade ?? null}
-          observacao={selectedAgendamento?.Observacao ?? null}
-          safra={selectedAgendamento?.Safra ?? null}
-          arquivo={selectedAgendamento?.Arquivo ?? null}
-        />
-      </div>
+              {/* Removido o título duplicado aqui */}
+              <div className="border-2 p-4 rounded-lg">
+                <DadosAgendamentos
+                  dataAgendamento={selectedAgendamento?.DataAgendamento ?? ""}
+                  horaAgendamento={selectedAgendamento?.HoraAgendamento ?? ""}
+                  produto={selectedAgendamento?.Produto ?? ""}
+                  quantidade={selectedAgendamento?.Quantidade ?? null}
+                  observacao={selectedAgendamento?.Observacao ?? null}
+                  safra={selectedAgendamento?.Safra ?? null}
+                  arquivo={selectedAgendamento?.Arquivo ?? null}
+                />
+              </div>
 
-      {showMotivoInput && (
-        <div className="mt-4">
-          <label className="block mb-2">Motivo da Recusa:</label>
-          <textarea
-            className="border p-2 rounded w-full"
-            value={motivoRecusa}
-            onChange={(e) => setMotivoRecusa(e.target.value)}
-            placeholder="Descreva o motivo da recusa"
-          />
-        </div>
-      )}
+              {showMotivoInput && (
+                <div className="mt-4">
+                  <label className="block mb-2">Motivo da Recusa:</label>
+                  <textarea
+                    className="border p-2 rounded w-full"
+                    value={motivoRecusa}
+                    onChange={(e) => setMotivoRecusa(e.target.value)}
+                    placeholder="Descreva o motivo da recusa"
+                  />
+                </div>
+              )}
 
-      <div className="flex justify-between mt-6">
-        {!showMotivoInput ? (
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
-            onClick={handleConfirmar}
-          >
-            Confirmar
-          </button>
-        ) : (
-          <button
-            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition"
-            onClick={() => setShowMotivoInput(false)}
-          >
-            Cancelar
-          </button>
-        )}
+              <div className="flex justify-between mt-6">
+                {!showMotivoInput ? (
+                  <button
+                    className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+                    onClick={handleConfirmar}
+                  >
+                    Confirmar
+                  </button>
+                ) : (
+                  <button
+                    className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition"
+                    onClick={() => setShowMotivoInput(false)}
+                  >
+                    Cancelar
+                  </button>
+                )}
 
-        {!showMotivoInput ? (
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-            onClick={() => setShowMotivoInput(true)}
-          >
-            Rejeitar
-          </button>
-        ) : (
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-            onClick={handleRejeitar}
-          >
-            Confirmar Rejeição
-          </button>
-        )}
-      </div>
-    </div>
-  )}
-</Modal>
+                {!showMotivoInput ? (
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                    onClick={() => setShowMotivoInput(true)}
+                  >
+                    Rejeitar
+                  </button>
+                ) : (
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                    onClick={handleRejeitar}
+                  >
+                    Confirmar Rejeição
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal>
 
         {loading ? (
           <p>Carregando agendamentos...</p>
