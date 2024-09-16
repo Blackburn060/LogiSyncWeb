@@ -2,7 +2,9 @@ import React, { useState, useEffect, SVGProps } from "react";
 import {
   getAgendamentos,
   updateAgendamentoStatus,
-} from "../services/agendamentoService";
+  getProdutoByCodigo, // Adicionando essa função
+  getSafraByCodigo, // Adicionando essa função
+} from "../services/agendamentoService"; // Importando as funções corretamente
 import { Agendamento } from "../models/Agendamento";
 import Navbar from "../components/Navbar";
 import DadosPessoais from "../components/DadosPessoais";
@@ -139,9 +141,31 @@ const AgendamentosAdmin: React.FC = () => {
     }
   };
 
-  const handleOpenModal = (agendamento: Agendamento) => {
-    setSelectedAgendamento(agendamento);
-    setIsModalOpen(true);
+  const handleOpenModal = async (agendamento: Agendamento) => {
+    setSelectedAgendamento(agendamento); // Define o agendamento selecionado inicialmente
+    setIsModalOpen(true); // Abre o modal
+
+    try {
+      // Buscar a descrição do produto, se existir
+      if (agendamento.CodigoProduto) {
+        const produtoDescricao = await getProdutoByCodigo(
+          agendamento.CodigoProduto
+        );
+        setSelectedAgendamento((prev) =>
+          prev ? { ...prev, DescricaoProduto: produtoDescricao } : prev
+        );
+      }
+
+      // Buscar o ano da safra, se existir
+      if (agendamento.CodigoSafra) {
+        const safraAno = await getSafraByCodigo(agendamento.CodigoSafra);
+        setSelectedAgendamento((prev) =>
+          prev ? { ...prev, AnoSafra: safraAno } : prev
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao buscar Produto ou Safra:", error);
+    }
   };
 
   const handleCloseModal = () => {
@@ -158,16 +182,17 @@ const AgendamentosAdmin: React.FC = () => {
           TipoAgendamento: selectedAgendamento.TipoAgendamento || "",
           MotivoRecusa: "",
         });
-  
+
         // Atualiza o estado do agendamento para "Confirmado"
         setAgendamentos((prevAgendamentos) =>
           prevAgendamentos.map((agendamento) =>
-            agendamento.CodigoAgendamento === selectedAgendamento.CodigoAgendamento
+            agendamento.CodigoAgendamento ===
+            selectedAgendamento.CodigoAgendamento
               ? { ...agendamento, SituacaoAgendamento: "Confirmado" }
               : agendamento
           )
         );
-  
+
         alert("Agendamento confirmado com sucesso!");
         handleCloseModal();
       } catch (error) {
@@ -176,7 +201,6 @@ const AgendamentosAdmin: React.FC = () => {
       }
     }
   };
-  
 
   const handleRejeitar = async () => {
     if (selectedAgendamento && motivoRecusa) {
@@ -185,16 +209,17 @@ const AgendamentosAdmin: React.FC = () => {
           SituacaoAgendamento: "Recusado",
           MotivoRecusa: motivoRecusa,
         });
-  
+
         // Atualiza o estado do agendamento para "Recusado"
         setAgendamentos((prevAgendamentos) =>
           prevAgendamentos.map((agendamento) =>
-            agendamento.CodigoAgendamento === selectedAgendamento.CodigoAgendamento
+            agendamento.CodigoAgendamento ===
+            selectedAgendamento.CodigoAgendamento
               ? { ...agendamento, SituacaoAgendamento: "Recusado" }
               : agendamento
           )
         );
-  
+
         alert("Agendamento recusado com sucesso!");
         handleCloseModal();
       } catch (error) {
@@ -205,7 +230,6 @@ const AgendamentosAdmin: React.FC = () => {
       alert("Por favor, informe o motivo da recusa.");
     }
   };
-  
 
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -331,20 +355,20 @@ const AgendamentosAdmin: React.FC = () => {
 
         {/* Modal de Seleção de Data */}
         <Modal
-  isOpen={isCalendarOpen}
-  onRequestClose={() => setIsCalendarOpen(false)}
-  className="bg-white rounded-lg p-4 max-w-xs mx-auto my-auto shadow-lg" // Modifique "max-w-lg" para "max-w-xs"
-  overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-  contentLabel="Selecionar Data"
->
-  <DatePicker
-    selected={currentStartDate}
-    onChange={handleDateChange}
-    locale={ptBR}
-    inline
-    calendarClassName="w-full"  // Garanta que o calendário ocupe toda a largura disponível
-  />
-</Modal>
+          isOpen={isCalendarOpen}
+          onRequestClose={() => setIsCalendarOpen(false)}
+          className="bg-white rounded-lg p-4 max-w-xs mx-auto my-auto shadow-lg" // Modifique "max-w-lg" para "max-w-xs"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          contentLabel="Selecionar Data"
+        >
+          <DatePicker
+            selected={currentStartDate}
+            onChange={handleDateChange}
+            locale={ptBR}
+            inline
+            calendarClassName="w-full" // Garanta que o calendário ocupe toda a largura disponível
+          />
+        </Modal>
 
         {/* Modal com ajuste de z-index e overlay cobrindo a tela */}
         <Modal
@@ -388,19 +412,39 @@ const AgendamentosAdmin: React.FC = () => {
               </div>
 
               <div className="border-2 p-4 rounded-lg">
-                <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
+                <DadosVeicular
+                  codigoVeiculo={selectedAgendamento.CodigoVeiculo}
+                />
               </div>
-
-              {/* Removido o título duplicado aqui */}
               <div className="border-2 p-4 rounded-lg">
                 <DadosAgendamentos
                   dataAgendamento={selectedAgendamento?.DataAgendamento ?? ""}
                   horaAgendamento={selectedAgendamento?.HoraAgendamento ?? ""}
-                  produto={selectedAgendamento?.Produto ?? ""}
-                  quantidade={selectedAgendamento?.Quantidade ?? null}
+                  produto={selectedAgendamento?.DescricaoProduto ?? ""} // Nome do produto
+                  quantidade={
+                    selectedAgendamento?.QuantidadeAgendamento ?? null
+                  }
                   observacao={selectedAgendamento?.Observacao ?? null}
-                  safra={selectedAgendamento?.Safra ?? null}
-                  arquivo={selectedAgendamento?.Arquivo ?? null}
+                  safra={selectedAgendamento?.AnoSafra ?? ""} // Ano da safra
+                  arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
+                  editable={
+                    selectedAgendamento?.SituacaoAgendamento === "Pendente"
+                  }
+                  onProdutoChange={(value) =>
+                    setSelectedAgendamento((prev) =>
+                      prev ? { ...prev, CodigoProduto: Number(value) } : prev
+                    )
+                  }
+                  onQuantidadeChange={(value) =>
+                    setSelectedAgendamento((prev) =>
+                      prev ? { ...prev, QuantidadeAgendamento: value } : prev
+                    )
+                  }
+                  onSafraChange={(value) =>
+                    setSelectedAgendamento((prev) =>
+                      prev ? { ...prev, CodigoSafra: Number(value) } : prev
+                    )
+                  }
                 />
               </div>
 

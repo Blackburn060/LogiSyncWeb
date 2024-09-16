@@ -70,6 +70,28 @@ export const addAgendamento = async (token: string, agendamento: Agendamento): P
     throw error;
   }
 };
+// Função para buscar o nome do Produto
+export const getProdutoByCodigo = async (codigoProduto: number) => {
+  try {
+    const response = await api.get(`/produtos/${codigoProduto}`);
+    return response.data.DescricaoProduto;  // Retorna a descrição do produto
+  } catch (error) {
+    console.error("Erro ao buscar Produto:", error);
+    throw error;
+  }
+};
+
+export const getSafraByCodigo = async (codigoSafra: number) => {
+  try {
+    const response = await api.get(`/safras/${codigoSafra}`);
+    return response.data.AnoSafra;  // Retorna o ano da safra
+  } catch (error) {
+    console.error("Erro ao buscar Safra:", error);
+    throw error;
+  }
+};
+
+
 
 // Função para buscar agendamentos por data
 // Função para atualizar o status do agendamento no banco de dados

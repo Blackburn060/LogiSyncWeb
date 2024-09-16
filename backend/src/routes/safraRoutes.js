@@ -7,5 +7,6 @@ router.get('/safras',authMiddleware, safraController.listarSafras);
 router.post('/safras',authMiddleware, safraController.adicionarSafra);
 router.put('/safras/:id',authMiddleware, safraController.atualizarSafra);
 router.delete('/safras/:id',authMiddleware, safraController.deletarSafra);
+router.get('/safras/:id', authMiddleware, safraController.getSafraById);
 
 module.exports = router;

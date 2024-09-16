@@ -9,7 +9,7 @@ interface DadosAgendamentoProps {
   quantidade: number | null;
   observacao: string | null;
   safra?: string | null;
-  arquivo?: string | null;
+  arquivo?: string | Blob | null; // Aceitando string ou Blob
   editable?: boolean; // Propriedade para permitir edição
   onProdutoChange?: (value: string) => void;
   onQuantidadeChange?: (value: number | null) => void;
@@ -64,7 +64,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             className="border w-full px-2 py-1 rounded-md"
             value={produto}
             onChange={(e) => onProdutoChange && onProdutoChange(e.target.value)}
-            readOnly={!editable} // Será editável apenas se "editable" for true
+            readOnly={!!produto || !editable} // Só será editável se o produto estiver vazio e editable for true
           />
         </div>
         <div>
@@ -76,7 +76,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             onChange={(e) =>
               onQuantidadeChange && onQuantidadeChange(Number(e.target.value))
             }
-            readOnly={!editable} // Será editável apenas se "editable" for true
+            readOnly={!!quantidade || !editable} // Só será editável se a quantidade estiver vazia e editable for true
           />
         </div>
         <div>
@@ -86,12 +86,12 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             className="border w-full px-2 py-1 rounded-md"
             value={safra || ""}
             onChange={(e) => onSafraChange && onSafraChange(e.target.value)}
-            readOnly={!editable} // Será editável apenas se "editable" for true
+            readOnly={!!safra || !editable} // Só será editável se a safra estiver vazia e editable for true
           />
         </div>
         <div>
           <label className="block font-semibold">Arquivo</label>
-          {arquivo ? (
+          {arquivo && typeof arquivo === "string" ? (
             <a
               href={arquivo}
               target="_blank"
@@ -100,10 +100,13 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             >
               Download do arquivo
             </a>
+          ) : arquivo ? (
+            <p>Arquivo anexado (não pode ser exibido diretamente)</p>
           ) : (
             <p>Nenhum arquivo anexado</p>
           )}
         </div>
+
         <div className="col-span-2">
           <label className="block font-semibold">Observação</label>
           <textarea

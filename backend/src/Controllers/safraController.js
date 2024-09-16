@@ -20,7 +20,19 @@ const adicionarSafra = async (req, res) => {
         res.status(500).send({ message: "Erro ao adicionar safra: " + error.message });
     }
 };
-
+const getSafraById = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const safra = await safraModel.getSafraById(id);
+      if (safra) {
+        res.json(safra);
+      } else {
+        res.status(404).json({ message: "Safra não encontrada" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar safra", error });
+    }
+  };
 const atualizarSafra = async (req, res) => {
     const safraId = req.params.id;
     const changes = req.body;
@@ -54,6 +66,7 @@ const deletarSafra = async (req, res) => {
 module.exports = {
     listarSafras,
     adicionarSafra,
+    getSafraById,
     atualizarSafra,
     deletarSafra
 };

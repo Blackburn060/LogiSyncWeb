@@ -23,5 +23,8 @@ export interface Agendamento {
   Produto?: string | null;   
   Safra?: string | null;   
   Arquivo?: string | null;   
- 
+  
+  // Novas propriedades adicionadas
+  DescricaoProduto?: string;
+  AnoSafra?: string;
 }

@@ -86,9 +86,22 @@ const deleteSafra = (id) => {
         });
     });
 };
+const getSafraById = (codigoSafra) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastrosafra WHERE CodigoSafra = ?';
+        db.get(sql, [codigoSafra], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);  // Retorna a linha correspondente à safra
+            }
+        });
+    });
+};
 
 module.exports = {
     getAllSafras,
+    getSafraById,
     addSafra,
     updateSafra,
     deleteSafra
