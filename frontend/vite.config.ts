@@ -17,12 +17,12 @@ export default defineConfig({
         theme_color: '#0335b0',
         icons: [
           {
-            src: 'assets/icons/logo192.webp',
+            src: 'public/logo192ComFundo.webp',
             sizes: '192x192',
             type: 'image/webp'
           },
           {
-            src: 'assets/icons/logo512.png',
+            src: 'public/logo512ComFundo.png',
             sizes: '512x512',
             type: 'image/webp'
           }

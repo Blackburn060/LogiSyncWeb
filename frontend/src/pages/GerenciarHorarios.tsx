@@ -7,19 +7,16 @@ import { registrarIndisponibilidade, getIndisponibilidades, deleteIndisponibilid
 import { useAuth } from '../context/AuthContext';
 import { Agendamento } from '../models/Agendamento';
 import { format, parseISO } from 'date-fns';
-import Select from 'react-select';
-import { Datepicker } from 'flowbite-react';
-import 'flowbite/dist/flowbite.css';
 
 const GerenciarHorarios: React.FC = () => {
   const { user, token } = useAuth();
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [editingHorario, setEditingHorario] = useState<Horario | null>(null);
-  const [dataIndisponivel, setDataIndisponivel] = useState<Date | null>(null);
+  const [dataIndisponivel, setDataIndisponivel] = useState<string>('');
   const [horaIndisponivel, setHoraIndisponivel] = useState<string>('');
   const [diaTodo, setDiaTodo] = useState<boolean>(false);
   const [TipoAgendamento, setTipoAgendamento] = useState<string>('carga');
-  const [horariosDisponiveis, setHorariosDisponiveis] = useState<{ value: string; label: string }[]>([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
   const [indisponibilidades, setIndisponibilidades] = useState<Agendamento[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
@@ -54,24 +51,22 @@ const GerenciarHorarios: React.FC = () => {
     fetchIndisponibilidades();
   }, [token, TipoAgendamento]);
 
-  const gerarHorariosDisponiveis = (horario: Horario | null, tipoAgendamento: string) => {
+  const gerarHorariosDisponiveis = (horario: Horario | null, TipoAgendamento: string) => {
     if (!horario) {
       setHorariosDisponiveis([]);
       return;
     }
 
-    const intervalo = tipoAgendamento === 'carga' ? horario.intervaloCarga : horario.intervaloDescarga;
-    const horariosGerados: { value: string; label: string }[] = [];
+    const intervalo = TipoAgendamento === 'carga' ? horario.intervaloCarga : horario.intervaloDescarga;
+    const horariosGerados: string[] = [];
     let current = new Date(`1970-01-01T${horario.horarioInicio}:00`);
     const end = new Date(`1970-01-01T${horario.horarioFim}:00`);
 
     while (current < end) {
       const next = new Date(current.getTime() + intervalo * 60000);
       if (next > end) break;
-
       const horaFormatada = `${current.toTimeString().substring(0, 5)} - ${next.toTimeString().substring(0, 5)}`;
-      horariosGerados.push({ value: horaFormatada, label: horaFormatada });
-
+      horariosGerados.push(horaFormatada);
       current = next;
     }
 
@@ -91,16 +86,10 @@ const GerenciarHorarios: React.FC = () => {
     setEditingHorario(horario);
   };
 
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (editingHorario) {
-      setEditingHorario({ ...editingHorario, [name]: value });
-    }
-  };
-
-  const handleTimeChange = (name: string, time: Date | null) => {
-    if (editingHorario && time) {
-      const formattedTime = format(time, 'HH:mm');
-      setEditingHorario({ ...editingHorario, [name]: formattedTime });
+      const { name, value } = e.target;
+      setEditingHorario({ ...editingHorario, [name]: Number(value) });
     }
   };
 
@@ -138,13 +127,13 @@ const GerenciarHorarios: React.FC = () => {
     try {
       await registrarIndisponibilidade(token, {
         CodigoUsuario: Number(user.id),
-        DataAgendamento: format(dataIndisponivel!, 'yyyy-MM-dd'),
+        DataAgendamento: dataIndisponivel,
         HoraAgendamento: diaTodo ? '' : horaIndisponivel,
         DiaTodo: diaTodo ? 1 : 0,
         TipoAgendamento: TipoAgendamento,
       });
       toast.success('Indisponibilidade registrada com sucesso.');
-      setDataIndisponivel(null);
+      setDataIndisponivel('');
       setHoraIndisponivel('');
       setDiaTodo(false);
 
@@ -209,10 +198,12 @@ const GerenciarHorarios: React.FC = () => {
                 <label htmlFor="horarioInicio" className="block text-sm font-medium text-gray-700">
                   Horário de Início
                 </label>
-                <Datepicker
-                  value={editingHorario.horarioInicio ? editingHorario.horarioInicio : ''}
-                  onSelectedDateChanged={(date) => handleTimeChange('horarioInicio', date)}
-                  placeholder="Selecione o horário de início"
+                <input
+                  type="time"
+                  id="horarioInicio"
+                  name="horarioInicio"
+                  value={editingHorario.horarioInicio}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -220,10 +211,12 @@ const GerenciarHorarios: React.FC = () => {
                 <label htmlFor="horarioFim" className="block text-sm font-medium text-gray-700">
                   Horário de Fim
                 </label>
-                <Datepicker
-                  value={editingHorario.horarioFim ? editingHorario.horarioFim : ''}
-                  onSelectedDateChanged={(date) => handleTimeChange('horarioFim', date)}
-                  placeholder="Selecione o horário de fim"
+                <input
+                  type="time"
+                  id="horarioFim"
+                  name="horarioFim"
+                  value={editingHorario.horarioFim}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -236,7 +229,7 @@ const GerenciarHorarios: React.FC = () => {
                   id="intervaloCarga"
                   name="intervaloCarga"
                   value={editingHorario.intervaloCarga}
-                  onChange={(e) => handleInputChange('intervaloCarga', e.target.value)}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -249,7 +242,7 @@ const GerenciarHorarios: React.FC = () => {
                   id="intervaloDescarga"
                   name="intervaloDescarga"
                   value={editingHorario.intervaloDescarga}
-                  onChange={(e) => handleInputChange('intervaloDescarga', e.target.value)}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -262,7 +255,7 @@ const GerenciarHorarios: React.FC = () => {
                 </button>
                 <button
                   onClick={handleUpdate}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ml-2"
+                  className="w-full bg-logisync-color-blue-300 text-white py-2 px-4 rounded-md hover:bg-logisync-color-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ml-2"
                 >
                   Atualizar
                 </button>
@@ -277,7 +270,7 @@ const GerenciarHorarios: React.FC = () => {
                       {horario.horarioInicio} - {horario.horarioFim} (Intervalo de Carga: {horario.intervaloCarga} minutos, Intervalo de Descarga: {horario.intervaloDescarga} minutos)
                       <button
                         onClick={() => handleEditClick(horario)}
-                        className="ml-4 bg-logisync-color-blue-200 text-white px-4 py-2 rounded-md hover:bg-logisync-color-blue-400"
+                        className="ml-4 bg-logisync-color-blue-300 text-white px-4 py-2 rounded-md hover:bg-logisync-color-blue-400"
                       >
                         Editar
                       </button>
@@ -309,10 +302,12 @@ const GerenciarHorarios: React.FC = () => {
                   <label htmlFor="dataIndisponivel" className="block text-sm font-medium text-gray-700">
                     Data
                   </label>
-                  <Datepicker
-                    value={dataIndisponivel ? format(dataIndisponivel, 'yyyy-MM-dd') : ''}
-                    onSelectedDateChanged={(date) => setDataIndisponivel(date)}
-                    placeholder="Selecione uma data"
+                  <input
+                    type="date"
+                    id="dataIndisponivel"
+                    name="dataIndisponivel"
+                    value={dataIndisponivel}
+                    onChange={(e) => setDataIndisponivel(e.target.value)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
@@ -320,16 +315,21 @@ const GerenciarHorarios: React.FC = () => {
                   <label htmlFor="horaIndisponivel" className="block text-sm font-medium text-gray-700">
                     Horário
                   </label>
-                  <Select
+                  <select
                     id="horaIndisponivel"
                     name="horaIndisponivel"
-                    value={{ label: horaIndisponivel, value: horaIndisponivel }}
-                    options={horariosDisponiveis}
-                    onChange={(option) => setHoraIndisponivel(option?.value || '')}
-                    isClearable
-                    isDisabled={diaTodo}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
+                    value={horaIndisponivel}
+                    onChange={(e) => setHoraIndisponivel(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    disabled={diaTodo}
+                  >
+                    <option value="">Selecione um horário</option>
+                    {horariosDisponiveis.map((horario, index) => (
+                      <option key={index} value={horario}>
+                        {horario}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label htmlFor="diaTodo" className="block text-sm font-medium text-gray-700">
@@ -353,23 +353,27 @@ const GerenciarHorarios: React.FC = () => {
               </div>
 
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Indisponibilidades Registradas</h2>
-              {indisponibilidades.length > 0 ? (
-                <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
-                  {indisponibilidades.map((ind) => (
-                    <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
-                      {ind.DataAgendamento} - {ind.HoraAgendamento}
-                      <button
-                        onClick={() => openModal(ind.CodigoAgendamento!)}
-                        className="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                      >
-                        Excluir
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-center text-gray-500">Não há registros de indisponibilidades no momento.</p>
-              )}
+{indisponibilidades.length > 0 ? (
+  <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
+    {indisponibilidades.map((ind) => (
+      <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
+        <div>
+          <p>{ind.DataAgendamento} - {ind.HoraAgendamento}</p>
+          <p><strong>Tipo:</strong> {ind.TipoAgendamento}</p> {/* Adiciona o campo TipoAgendamento */}
+        </div>
+        <button
+          onClick={() => openModal(ind.CodigoAgendamento!)}
+          className="ml-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+        >
+          Excluir
+        </button>
+      </li>
+    ))}
+  </ul>
+) : (
+  <p className="text-center text-gray-500">Não há registros de indisponibilidades no momento.</p>
+)}
+
             </div>
           )}
         </div>
