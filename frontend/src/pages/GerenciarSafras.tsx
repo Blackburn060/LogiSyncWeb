@@ -54,7 +54,7 @@ const GerenciarSafras: React.FC = () => {
       setSituacaoSafra(1);
     } catch (error) {
       toast.error('Erro ao salvar safra');
-    } finally { 
+    } finally {
       setLoading(false);
     }
   };
@@ -75,7 +75,7 @@ const GerenciarSafras: React.FC = () => {
       toast.error('Erro: usuário não autenticado');
       return;
     }
-    
+
     if (safraToToggle) {
       setLoading(true);
       try {
@@ -92,19 +92,22 @@ const GerenciarSafras: React.FC = () => {
       }
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
       <Toaster />
-      <div className="flex-grow flex flex-col items-center p-4">
-        <h1 className="text-2xl font-bold mb-4">Gerenciar Safras</h1>
-        <div className="w-full max-w-xl">
+      <div className="flex-grow flex flex-col items-center p-4 pt-10">
+        <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg">
+          <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">
+            Safras
+          </h1>
+
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Lista de Safras</h2>
+            <h2 className="text-xl font-bold text-white">Lista de Safras</h2>
             <button
               onClick={() => setIsNovaSafraFormOpen(true)}
-              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
             >
               Nova
             </button>
@@ -112,31 +115,36 @@ const GerenciarSafras: React.FC = () => {
 
           {loading ? (
             <div className="flex justify-center items-center">
-              <ClipLoader size={50} color={"#123abc"} loading={loading} />
+              <ClipLoader size={50} color={"#FFF"} loading={loading} />
             </div>
           ) : (
             <>
               {safras.length === 0 ? (
-                <div className="text-center text-gray-500">
+                <div className="text-center text-white">
                   Não há registros de safras no momento.
                 </div>
               ) : (
-                <div className="max-h-[26rem] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
+                <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
                   <ul className="space-y-2">
                     {safras.map((safra) => (
                       <li key={safra.CodigoSafra} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
                         <div>
                           <p>Ano Safra: {safra.AnoSafra}</p>
-                          <p>Situação: {safra.SituacaoSafra === 1 ? 'Ativa' : 'Inativa'}</p>
+                          <p>
+                            Situação:
+                            <span className={safra.SituacaoSafra === 1 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                              {safra.SituacaoSafra === 1 ? ' Ativa' : ' Inativa'}
+                            </span>
+                          </p>
                         </div>
+
                         <button
                           onClick={() => {
                             setSafraToToggle(safra);
                             setIsModalOpen(true);
                           }}
-                          className={`ml-4 px-4 py-2 rounded-md text-white ${
-                            safra.SituacaoSafra === 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-                          }`}
+                          className={`ml-4 px-4 py-2 rounded-md text-white ${safra.SituacaoSafra === 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+                            }`}
                         >
                           {safra.SituacaoSafra === 1 ? 'Inativar' : 'Ativar'}
                         </button>
@@ -150,10 +158,11 @@ const GerenciarSafras: React.FC = () => {
         </div>
       </div>
 
+      {/* Modal de Confirmação */}
       {isModalOpen && (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4">
+            <h2 className="text-lg font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">
               {`Tem certeza que deseja ${safraToToggle?.SituacaoSafra === 1 ? 'inativar' : 'ativar'} esta safra?`}
             </h2>
             <div className="flex justify-end">
@@ -174,10 +183,11 @@ const GerenciarSafras: React.FC = () => {
         </div>
       )}
 
+      {/* Modal de Nova Safra */}
       {isNovaSafraFormOpen && (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-lg">
-            <h2 className="text-lg font-bold mb-4">Nova Safra</h2>
+            <h2 className="text-lg font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Nova Safra</h2>
             <form onSubmit={handleSubmitNovaSafra}>
               <div className="mb-4">
                 <label htmlFor="anoSafra" className="block text-sm font-medium text-gray-700">Ano Safra</label>
@@ -201,7 +211,7 @@ const GerenciarSafras: React.FC = () => {
                     onChange={(e) => setSituacaoSafra(Number(e.target.value))}
                     className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                   />
-                  <label htmlFor="situacaoAtiva" className="ml-3 block text-sm font-medium text-gray-700">
+                  <label htmlFor="situacaoAtiva" className="ml-3 block text-sm font-bold text-green-600">
                     Ativa
                   </label>
                 </div>
@@ -215,7 +225,7 @@ const GerenciarSafras: React.FC = () => {
                     onChange={(e) => setSituacaoSafra(Number(e.target.value))}
                     className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                   />
-                  <label htmlFor="situacaoInativa" className="ml-3 block text-sm font-medium text-gray-700">
+                  <label htmlFor="situacaoInativa" className="ml-3 block text-sm font-bold text-red-600">
                     Inativa
                   </label>
                 </div>
