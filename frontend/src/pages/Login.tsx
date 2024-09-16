@@ -7,7 +7,7 @@ import { FaSpinner } from 'react-icons/fa';
 import logoHorizontal from '../assets/images/Logo-LogiSync-Horizontal-02-SF.webp';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.webp';
 import api from '../services/axiosConfig';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 interface ExtendedJwtPayload {
   id: string;
@@ -43,12 +43,17 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
+        console.log(err)
         if (err.message === 'Network Error' && err.response === undefined) {
           toast.error('Não foi possível conectar ao servidor. Por favor, tente mais tarde.');
         } else if (err.response?.status === 500) {
           toast.error('Erro interno do servidor. Por favor, tente mais tarde.');
+        } else if (err.response?.status === 404) {
+          toast.error('Conta não encontrada com o e-mail informado.');
+        } else if (err.response?.status === 403) {
+          toast.error('Conta inativa. Entre em contato com o suporte.');
         } else if (err.response?.status === 401) {
-          toast.error('Credenciais inválidas. Por favor, tente novamente.');
+          toast.error('Senha inválida. Por favor, tente novamente.');
         } else {
           toast.error('Erro desconhecido. Por favor, tente mais tarde.');
         }

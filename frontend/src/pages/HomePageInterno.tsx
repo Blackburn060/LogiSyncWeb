@@ -20,7 +20,7 @@ const HomePageInterno: React.FC = () => {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-6 font-bold">
 
                         <button
-                            onClick={() => handleNavigation('/agendamentos')}
+                            onClick={() => handleNavigation('/gestao/autorizarAgendamentos')}
                             className="bg-logisync-color-blue-400 text-white p-10 rounded-lg flex flex-col items-center hover:bg-logisync-color-blue-200 transition duration-300"
                         >
                             <FaCalendarAlt className="mb-4 size-12" />
@@ -28,7 +28,7 @@ const HomePageInterno: React.FC = () => {
                         </button>
 
                         <button
-                            onClick={() => handleNavigation('/portaria')}
+                            onClick={() => handleNavigation('/gestao/portaria')}
                             className="bg-logisync-color-blue-400 text-white p-10 rounded-lg flex flex-col items-center hover:bg-logisync-color-blue-200 transition duration-300"
                         >
                             <img src={IconeHomePortaria} alt="Portaria" className="mb-3 w-20 h-full object-contain" />
@@ -36,7 +36,7 @@ const HomePageInterno: React.FC = () => {
                         </button>
 
                         <button
-                            onClick={() => handleNavigation('/produtos')}
+                            onClick={() => handleNavigation('/gestao/produtos')}
                             className="bg-logisync-color-blue-400 text-white p-10 rounded-lg flex flex-col items-center hover:bg-logisync-color-blue-200 transition duration-300"
                         >
                             <FaCubes className="mb-4 size-12" />
