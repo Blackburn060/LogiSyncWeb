@@ -2,13 +2,11 @@ import api from './axiosConfig';
 import { Agendamento } from '../models/Agendamento';
 import { AxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
+
+// Interface para decodificar o token
 interface DecodedToken {
-  id?: number; // Adicionando a propriedade 'id'
-  userId?: number;
-  sub?: number; // Use "sub" se "userId" não estiver presente
+  id?: number; // O campo 'id' será utilizado para identificar o usuário
 }
-
-
 
 // Função para buscar agendamentos por usuário com a placa associada
 export const getAgendamentosComPlaca = async (token: string, userId: number): Promise<Agendamento[]> => {
@@ -33,6 +31,7 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
   }
 };
 
+// Função para buscar agendamentos
 export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
   try {
     const response = await api.get('/agendamentos', {
@@ -70,10 +69,15 @@ export const addAgendamento = async (token: string, agendamento: Agendamento): P
     throw error;
   }
 };
+
 // Função para buscar o nome do Produto
-export const getProdutoByCodigo = async (codigoProduto: number) => {
+export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
   try {
-    const response = await api.get(`/produtos/${codigoProduto}`);
+    const response = await api.get(`/produtos/${codigoProduto}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data.DescricaoProduto;  // Retorna a descrição do produto
   } catch (error) {
     console.error("Erro ao buscar Produto:", error);
@@ -81,9 +85,14 @@ export const getProdutoByCodigo = async (codigoProduto: number) => {
   }
 };
 
-export const getSafraByCodigo = async (codigoSafra: number) => {
+// Função para buscar a safra pelo código
+export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
   try {
-    const response = await api.get(`/safras/${codigoSafra}`);
+    const response = await api.get(`/safras/${codigoSafra}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data.AnoSafra;  // Retorna o ano da safra
   } catch (error) {
     console.error("Erro ao buscar Safra:", error);
@@ -91,25 +100,15 @@ export const getSafraByCodigo = async (codigoSafra: number) => {
   }
 };
 
-
-
-// Função para buscar agendamentos por data
 // Função para atualizar o status do agendamento no banco de dados
 export const updateAgendamentoStatus = async (
   id: number, 
-  data: Partial<Agendamento>
+  data: Partial<Agendamento>,
+  token: string // Passa o token como parâmetro
 ) => {
   try {
-    const accessToken = localStorage.getItem('accessToken'); // Obtendo o token correto
-    if (!accessToken) {
-      throw new Error('Token não encontrado');
-    }
-
-    // Decodificando o token
-    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(accessToken);
-    console.log("Token decodificado:", decodedToken); // Log para verificar os campos no token
-
-    // Usando 'id' em vez de 'userId' ou 'sub'
+    // Decodificando o token para obter o ID do usuário
+    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
     const usuarioId = decodedToken.id;
 
     if (!usuarioId) {
@@ -119,10 +118,10 @@ export const updateAgendamentoStatus = async (
     // Atualizando o status do agendamento
     const response = await api.put(`/agendamentos/${id}`, {
       ...data,
-      UsuarioAprovacao: usuarioId, // Usando o campo 'id' do token para aprovar o usuário
+      UsuarioAprovacao: usuarioId, // Usando o campo 'id' do token
     }, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -132,16 +131,13 @@ export const updateAgendamentoStatus = async (
     throw error;
   }
 };
+
 // Função para autorizar agendamentos
 export const autorizarAgendamento = async (token: string, id: number): Promise<void> => {
   try {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      throw new Error('Token não encontrado');
-    }
-
-    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(accessToken);
-    const usuarioId = decodedToken.userId || decodedToken.sub;
+    // Decodificando o token para obter o ID do usuário
+    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
+    const usuarioId = decodedToken.id;
 
     if (!usuarioId) {
       throw new Error('ID do usuário não encontrado no token');
@@ -166,13 +162,9 @@ export const autorizarAgendamento = async (token: string, id: number): Promise<v
 // Função para recusar agendamentos com motivo
 export const recusarAgendamento = async (token: string, id: number, motivo: string): Promise<void> => {
   try {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      throw new Error('Token não encontrado');
-    }
-
-    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(accessToken);
-    const usuarioId = decodedToken.userId || decodedToken.sub;
+    // Decodificando o token para obter o ID do usuário
+    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
+    const usuarioId = decodedToken.id;
 
     if (!usuarioId) {
       throw new Error('ID do usuário não encontrado no token');

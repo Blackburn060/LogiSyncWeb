@@ -2,11 +2,12 @@ import React, { useState, useEffect, SVGProps } from "react";
 import {
   getAgendamentos,
   updateAgendamentoStatus,
-  getProdutoByCodigo, // Adicionando essa função
-  getSafraByCodigo, // Adicionando essa função
-} from "../services/agendamentoService"; // Importando as funções corretamente
+  getProdutoByCodigo,
+  getSafraByCodigo,
+} from "../services/agendamentoService";
 import { Agendamento } from "../models/Agendamento";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext"; // Importando useAuth
 import DadosPessoais from "../components/DadosPessoais";
 import DadosVeicular from "../components/DadosVeicular";
 import DadosAgendamentos from "../components/DadosAgendamento";
@@ -38,12 +39,14 @@ export function IcBaselineCompareArrows(props: SVGProps<SVGSVGElement>) {
 // Componente principal
 const AgendamentosAdmin: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentStartDate, setCurrentStartDate] = useState(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedAgendamento, setSelectedAgendamento] =
     useState<Agendamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { token } = useAuth(); // Removi 'user' já que não está sendo usado
+  const [loading, setLoading] = useState<boolean>(true); // Declaração de loading e setLoading
+
   const [motivoRecusa, setMotivoRecusa] = useState<string>("");
   const [showMotivoInput, setShowMotivoInput] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -53,23 +56,19 @@ const AgendamentosAdmin: React.FC = () => {
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
-      setLoading(true);
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Token não encontrado");
-        }
-        const agendamentosData = await getAgendamentos(token);
-        setAgendamentos(agendamentosData);
+        setLoading(true); // Ativa o estado de loading quando começa a buscar os agendamentos
+        const data = await getAgendamentos(token!); // Usa o token para buscar os agendamentos
+        setAgendamentos(data);
       } catch (error) {
         console.error("Erro ao buscar agendamentos:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Desativa o estado de loading ao finalizar a busca
       }
     };
 
     fetchAgendamentos();
-  }, [currentStartDate]);
+  }, [currentStartDate, token]);
 
   const countFuturePendingAgendamentos = () => {
     const lastDayShown = addDays(currentStartDate, daysToShow - 1);
@@ -149,8 +148,9 @@ const AgendamentosAdmin: React.FC = () => {
       // Buscar a descrição do produto, se existir
       if (agendamento.CodigoProduto) {
         const produtoDescricao = await getProdutoByCodigo(
-          agendamento.CodigoProduto
-        );
+          agendamento.CodigoProduto,
+          token!
+        ); // Passando o token
         setSelectedAgendamento((prev) =>
           prev ? { ...prev, DescricaoProduto: produtoDescricao } : prev
         );
@@ -158,7 +158,10 @@ const AgendamentosAdmin: React.FC = () => {
 
       // Buscar o ano da safra, se existir
       if (agendamento.CodigoSafra) {
-        const safraAno = await getSafraByCodigo(agendamento.CodigoSafra);
+        const safraAno = await getSafraByCodigo(
+          agendamento.CodigoSafra,
+          token!
+        ); // Passando o token
         setSelectedAgendamento((prev) =>
           prev ? { ...prev, AnoSafra: safraAno } : prev
         );
@@ -177,11 +180,15 @@ const AgendamentosAdmin: React.FC = () => {
   const handleConfirmar = async () => {
     if (selectedAgendamento) {
       try {
-        await updateAgendamentoStatus(selectedAgendamento.CodigoAgendamento!, {
-          SituacaoAgendamento: "Confirmado",
-          TipoAgendamento: selectedAgendamento.TipoAgendamento || "",
-          MotivoRecusa: "",
-        });
+        await updateAgendamentoStatus(
+          selectedAgendamento.CodigoAgendamento!,
+          {
+            SituacaoAgendamento: "Confirmado",
+            TipoAgendamento: selectedAgendamento.TipoAgendamento || "",
+            MotivoRecusa: "",
+          },
+          token!
+        ); // Passando o token
 
         // Atualiza o estado do agendamento para "Confirmado"
         setAgendamentos((prevAgendamentos) =>
@@ -205,10 +212,14 @@ const AgendamentosAdmin: React.FC = () => {
   const handleRejeitar = async () => {
     if (selectedAgendamento && motivoRecusa) {
       try {
-        await updateAgendamentoStatus(selectedAgendamento.CodigoAgendamento!, {
-          SituacaoAgendamento: "Recusado",
-          MotivoRecusa: motivoRecusa,
-        });
+        await updateAgendamentoStatus(
+          selectedAgendamento.CodigoAgendamento!,
+          {
+            SituacaoAgendamento: "Recusado",
+            MotivoRecusa: motivoRecusa,
+          },
+          token!
+        ); // Passando o token
 
         // Atualiza o estado do agendamento para "Recusado"
         setAgendamentos((prevAgendamentos) =>
@@ -357,7 +368,7 @@ const AgendamentosAdmin: React.FC = () => {
         <Modal
           isOpen={isCalendarOpen}
           onRequestClose={() => setIsCalendarOpen(false)}
-          className="bg-white rounded-lg p-4 max-w-xs mx-auto my-auto shadow-lg" // Modifique "max-w-lg" para "max-w-xs"
+          className="bg-white rounded-lg p-4 max-w-xs mx-auto my-auto shadow-lg"
           overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
           contentLabel="Selecionar Data"
         >
@@ -366,7 +377,7 @@ const AgendamentosAdmin: React.FC = () => {
             onChange={handleDateChange}
             locale={ptBR}
             inline
-            calendarClassName="w-full" // Garanta que o calendário ocupe toda a largura disponível
+            calendarClassName="w-full"
           />
         </Modal>
 
@@ -384,7 +395,6 @@ const AgendamentosAdmin: React.FC = () => {
               {/* Título e botão de fechar */}
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Detalhes do Agendamento</h2>
-                {/* Botão de fechar */}
                 <button
                   onClick={handleCloseModal}
                   className="text-gray-500 hover:text-gray-700 transition duration-200 ease-in-out"
@@ -497,7 +507,7 @@ const AgendamentosAdmin: React.FC = () => {
           )}
         </Modal>
 
-        {loading ? (
+        {loading ? ( // Usa o estado de loading para exibir um indicativo de carregamento
           <p>Carregando agendamentos...</p>
         ) : (
           <div
@@ -528,7 +538,9 @@ const AgendamentosAdmin: React.FC = () => {
                           onClick={() => handleOpenModal(agendamento)}
                         >
                           <p className="text-sm text-center text-white">
-                            {agendamento.TipoAgendamento}{" "}
+                            {agendamento.TipoAgendamento ||
+                              "Tipo não especificado"}{" "}
+                            {/* Verifica se o valor existe, senão exibe um valor padrão */}
                             <span className="text-xs">
                               | {agendamento.HoraAgendamento}
                             </span>
