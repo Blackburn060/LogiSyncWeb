@@ -17,6 +17,7 @@ import GerenciarSafras from './pages/GerenciarSafras';
 import HomePageInterno from './pages/HomePageInterno';
 import SelecionarProcesso from './pages/SelecionarProcesso';
 import AutorizarAgendamentos from './pages/AutorizarAgendamentos';
+import Portaria from './pages/portaria'; 
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,7 @@ const App: React.FC = () => {
           <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
           <Route path="/gestao/safra" element={<GerenciarSafras />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/Portaria" element={<Portaria />} /> {/* Adicionar a rota da Portaria */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

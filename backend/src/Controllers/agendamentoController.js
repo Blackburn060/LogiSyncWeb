@@ -1,4 +1,5 @@
 const agendamentoModel = require('../models/agendamentoModel');
+const portariaController = require('../Controllers/portariaController');
 
 // Listar agendamentos por usuário
 const listarAgendamentos = async (req, res) => {
@@ -23,7 +24,69 @@ const listarAgendamentosPorData = async (req, res) => {
       res.status(500).send({ message: 'Erro ao buscar agendamentos por data: ' + error.message });
     }
   };
-  
+  // Listar agendamentos aprovados
+// Listar agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
+const listarAgendamentosPorStatus = async (req, res) => {
+    try {
+        const agendamentos = await agendamentoModel.getAgendamentosPorStatus();  // Chama o model que retorna os agendamentos com os três status
+        res.json(agendamentos);
+    } catch (error) {
+        res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
+    }
+};
+const aprovarAgendamento = async (req, res) => {
+    try {
+        const { CodigoAgendamento } = req.params;
+        const { UsuarioAprovacao, ObservacaoPortaria } = req.body;
+        
+        // Aprovar o agendamento - Atualizar status para "Andamento"
+        const aprovado = await agendamentoModel.updateStatusAgendamento(CodigoAgendamento, 'Andamento');
+        
+        if (aprovado) {
+            // Adicionar dados na portaria
+            const portariaData = {
+                CodigoAgendamento,
+                DataHoraEntrada: new Date().toISOString(), // Adiciona a data/hora de entrada
+                UsuarioAprovacao,
+                ObservacaoPortaria
+            };
+
+            await portariaController.adicionarPortaria({ body: portariaData }, res);  // Chama a função do controller de portaria para adicionar os dados
+
+            res.status(200).json({ message: 'Agendamento aprovado e dados da portaria adicionados' });
+        } else {
+            res.status(404).json({ message: 'Agendamento não encontrado' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao aprovar o agendamento', error });
+    }
+};
+const recusarAgendamento = async (req, res) => {
+    try {
+        const { CodigoAgendamento } = req.params;
+        const { UsuarioAprovacao, MotivoRecusa } = req.body;
+
+        // Atualiza o status do agendamento para "Recusado"
+        const recusado = await agendamentoModel.updateStatusAgendamento(CodigoAgendamento, 'Recusado');
+
+        if (recusado) {
+            // Atualiza ou insere os dados da portaria com o motivo da recusa
+            const portariaData = {
+                CodigoAgendamento,
+                MotivoRecusa,
+                UsuarioAprovacao
+            };
+
+            await portariaController.adicionarPortaria({ body: portariaData }, res);  // Chama a função para inserir os dados da portaria
+
+            res.status(200).json({ message: 'Agendamento recusado e dados da portaria adicionados' });
+        } else {
+            res.status(404).json({ message: 'Agendamento não encontrado' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao recusar o agendamento', error });
+    }
+};
   
 // Listar agendamentos com placa do veículo
 const listarAgendamentosComPlaca = async (req, res) => {
@@ -128,11 +191,14 @@ const deletarIndisponibilidade = async (req, res) => {
 
 module.exports = {
     listarAgendamentos,
+    recusarAgendamento,
     listarAgendamentosComPlaca,
+    aprovarAgendamento,
     adicionarAgendamento,
     atualizarAgendamento,
     cancelarAgendamento,
     deletarAgendamento,
+    listarAgendamentosPorStatus,
     listarAgendamentosPorData,
     registrarIndisponibilidadeHorario,
     listarIndisponibilidades,

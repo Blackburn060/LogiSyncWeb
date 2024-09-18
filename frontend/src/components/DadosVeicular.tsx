@@ -20,13 +20,14 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
       if (codigoVeiculo) {
         try {
           const response = await api.get(`/veiculos/${codigoVeiculo}`);
+          const veiculoData = response.data || {}; // Verifique se há dados
           setVeiculo({
-            placa: response.data.Placa || "N/A",
-            marca: response.data.Marca || "N/A",
-            modelo: response.data.ModeloTipo || "N/A",
-            ano: response.data.AnoFabricacao || "N/A",
-            cor: response.data.Cor || "N/A",
-            capacidadeCarga: response.data.CapacidadeCarga || "N/A",
+            placa: veiculoData.Placa || "N/A",
+            marca: veiculoData.Marca || "N/A",
+            modelo: veiculoData.ModeloTipo || "N/A",
+            ano: veiculoData.AnoFabricacao || "N/A",
+            cor: veiculoData.Cor || "N/A",
+            capacidadeCarga: veiculoData.CapacidadeCarga || "N/A",
           });
         } catch (error) {
           console.error("Erro ao buscar dados veiculares:", error);
@@ -41,6 +42,7 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
     <div className="border p-4 rounded-lg mb-4">
       <h2 className="text-xl font-bold">DADOS VEICULARES</h2>
       <div className="grid grid-cols-2 gap-4">
+        {/* Placa */}
         <div>
           <label className="block font-semibold">Placa</label>
           <input
@@ -50,6 +52,7 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
             readOnly
           />
         </div>
+        {/* Marca */}
         <div>
           <label className="block font-semibold">Marca</label>
           <input
@@ -59,6 +62,7 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
             readOnly
           />
         </div>
+        {/* Modelo */}
         <div>
           <label className="block font-semibold">Modelo/Tipo</label>
           <input
@@ -68,6 +72,7 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
             readOnly
           />
         </div>
+        {/* Ano de Fabricação */}
         <div>
           <label className="block font-semibold">Ano de Fabricação</label>
           <input
@@ -77,16 +82,17 @@ const DadosVeicular: React.FC<DadosVeicularProps> = ({ codigoVeiculo }) => {
             readOnly
           />
         </div>
+        {/* Cor */}
         <div>
           <label className="block font-semibold">Cor</label>
-
-            <input
+          <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
             value={veiculo.cor}
             readOnly
           />
         </div>
+        {/* Capacidade de Carga */}
         <div>
           <label className="block font-semibold">Capacidade de Carga</label>
           <input

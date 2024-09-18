@@ -36,6 +36,15 @@ export function IcBaselineCompareArrows(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+// Função para controlar a rolagem da página quando o modal estiver aberto
+const toggleBodyScroll = (isModalOpen: boolean) => {
+  if (isModalOpen) {
+    document.body.style.overflow = "hidden"; // Impede a rolagem
+  } else {
+    document.body.style.overflow = ""; // Restaura a rolagem
+  }
+};
+
 // Componente principal
 const AgendamentosAdmin: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
@@ -44,7 +53,7 @@ const AgendamentosAdmin: React.FC = () => {
   const [selectedAgendamento, setSelectedAgendamento] =
     useState<Agendamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { token } = useAuth(); // Removi 'user' já que não está sendo usado
+  const { token } = useAuth(); // Usando token do contexto de autenticação
   const [loading, setLoading] = useState<boolean>(true); // Declaração de loading e setLoading
 
   const [motivoRecusa, setMotivoRecusa] = useState<string>("");
@@ -54,16 +63,22 @@ const AgendamentosAdmin: React.FC = () => {
 
   const daysToShow = 7;
 
+  // Efeito para desativar a rolagem quando o modal estiver aberto
+  useEffect(() => {
+    toggleBodyScroll(isModalOpen); // Desativa a rolagem quando o modal estiver aberto
+    return () => toggleBodyScroll(false); // Garante que a rolagem seja restaurada ao desmontar o componente
+  }, [isModalOpen]);
+
   useEffect(() => {
     const fetchAgendamentos = async () => {
       try {
-        setLoading(true); // Ativa o estado de loading quando começa a buscar os agendamentos
+        setLoading(true); // Ativa o estado de loading ao iniciar a busca dos agendamentos
         const data = await getAgendamentos(token!); // Usa o token para buscar os agendamentos
         setAgendamentos(data);
       } catch (error) {
         console.error("Erro ao buscar agendamentos:", error);
       } finally {
-        setLoading(false); // Desativa o estado de loading ao finalizar a busca
+        setLoading(false); // Desativa o estado de loading após finalizar a busca
       }
     };
 
@@ -85,8 +100,7 @@ const AgendamentosAdmin: React.FC = () => {
   };
 
   const getFilteredDays = () => {
-    const allDays = getDaysRange();
-    return allDays;
+    return getDaysRange();
   };
 
   const getDaysRange = () => {
@@ -139,7 +153,6 @@ const AgendamentosAdmin: React.FC = () => {
         return "bg-gray-500 text-white";
     }
   };
-
   const handleOpenModal = async (agendamento: Agendamento) => {
     setSelectedAgendamento(agendamento); // Define o agendamento selecionado inicialmente
     setIsModalOpen(true); // Abre o modal

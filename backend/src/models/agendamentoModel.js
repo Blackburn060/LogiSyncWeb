@@ -42,6 +42,35 @@ const getAllAgendamentos = (filters = {}) => {
       });
     });
   };
+// Função para listar os agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
+const getAgendamentosPorStatus = () => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT * FROM agendamentos
+            WHERE SituacaoAgendamento IN ("Confirmado", "Andamento", "Finalizado", "Recusado")
+        `;
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+const updateStatusAgendamento = (CodigoAgendamento, novoStatus) => {
+    return new Promise((resolve, reject) => {
+        const sql = `UPDATE agendamentos SET SituacaoAgendamento = ? WHERE CodigoAgendamento = ?`;
+        db.run(sql, [novoStatus, CodigoAgendamento], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);
+            }
+        });
+    });
+};
+
 // Função para buscar agendamentos com placa do veículo
 const getAllAgendamentosWithPlaca = (filters = {}) => {
     return new Promise((resolve, reject) => {
@@ -217,6 +246,8 @@ const deleteIndisponibilidade = (id) => {
 module.exports = {
     getAllAgendamentos,
     addAgendamento,
+    updateStatusAgendamento,
+    getAgendamentosPorStatus,
     updateAgendamento,
     getAllAgendamentosWithPlaca,
     deleteAgendamento,

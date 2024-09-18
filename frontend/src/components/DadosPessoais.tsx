@@ -16,10 +16,11 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
     const fetchDadosPessoais = async () => {
       try {
         const response = await api.get(`/usuarios/${usuarioId}`);
+        const userData = response.data || {}; // Verifique se há dados
         setDadosPessoais({
-          nome: response.data.NomeCompleto || "N/A",
-          cpf: response.data.CPF || "N/A",
-          telefone: response.data.NumeroCelular || "N/A",
+          nome: userData.NomeCompleto || "N/A",
+          cpf: userData.CPF || "N/A",
+          telefone: userData.NumeroCelular || "N/A",
         });
       } catch (error) {
         console.error("Erro ao buscar dados pessoais:", error);
@@ -35,7 +36,6 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
     <div className="border p-4 rounded-lg mb-4">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-bold">DADOS PESSOAIS</h2>
-        {/* Status */}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
