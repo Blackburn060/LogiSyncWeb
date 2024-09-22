@@ -114,8 +114,8 @@ const GerenciarSafras: React.FC = () => {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center">
-              <ClipLoader size={50} color={"#FFF"} loading={loading} />
+            <div className="flex justify-center items-center h-full">
+              <l-helix size="45" speed="2.5" color="white"></l-helix>
             </div>
           ) : (
             <>
