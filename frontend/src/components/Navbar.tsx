@@ -4,9 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import UserMenu from './UserMenu';
 import logo from '../assets/images/Logo-LogiSync-02-SF.webp';
 import iconeMenu from '../assets/icons/Icone-barra-de-menu.webp';
-import { FaCalendarAlt, FaTruck, FaBuilding, FaChartLine, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog, FaHome } from 'react-icons/fa';
+import { FaCalendarAlt, FaTruck, FaBuilding, FaClock, FaChevronDown, FaUsers, FaBoxOpen, FaSeedling, FaCog, FaHome, FaChartLine } from 'react-icons/fa';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  showLogin?: boolean;
+  showRegister?: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -76,39 +81,20 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const renderSidebarLinks = () => {
-    if (user?.tipousuario === 'motorista') {
-      return (
-        <>
-          <Link to="/calendario" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Calendário</Link>
-          <Link to="/agendamentos" className="hover:text-gray-300 flex items-center"><FaClock className="mr-2" /> Agendamentos</Link>
-          <Link to="/veiculos" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Veículos</Link>
-          <Link to="/transportadora" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Transportadora</Link>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <Link to="/gestao/home" className="hover:text-gray-300 flex items-center"><FaHome className="mr-2" /> Início</Link>
-          <Link to="/gestao/autorizarAgendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
-          <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
-          <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
-          <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
-          <div className="w-full">
-            <div onClick={toggleSidebarDropdown} className="hover:text-gray-300 flex items-center cursor-pointer">
-              <FaCog className="mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isSidebarDropdownOpen ? 'rotate-180' : ''}`} />
-            </div>
-            <div className={`ml-4 mt-2 ${isSidebarDropdownOpen ? 'block' : 'hidden'}`}>
-              <Link to="/gestao/usuarios" className="block py-2 text-gray-200 hover:text-gray-400">Usuários</Link>
-              <Link to="/gestao/produtos" className="block py-2 text-gray-200 hover:text-gray-400">Produtos</Link>
-              <Link to="/gestao/horarios" className="block py-2 text-gray-200 hover:text-gray-400">Horários</Link>
-              <Link to="/gestao/safra" className="block py-2 text-gray-200 hover:text-gray-400">Safra</Link>
-            </div>
-          </div>
-        </>
-      );
-    }
-  };
+  const renderAuthLinks = () => (
+    <>
+      {showLogin && (
+        <Link to="/login" className="hover:text-gray-300 flex items-center">
+          Login
+        </Link>
+      )}
+      {showRegister && (
+        <Link to="/registro/usuario" className="hover:text-gray-300 flex items-center">
+          Cadastrar-se
+        </Link>
+      )}
+    </>
+  );
 
   return (
     <nav className="bg-logisync-color-blue-400 shadow-md w-full z-10">
@@ -126,15 +112,18 @@ const Navbar: React.FC = () => {
           <span className="text-white font-bold text-xl ml-2">LogiSync</span>
         </div>
         <div className="hidden min-[1410px]:flex items-center space-x-6 text-white font-bold text-xl">
-          {renderNavLinks()}
+          {user ? renderNavLinks() : renderAuthLinks()}
         </div>
         <div className='flex items-center'>
-          <div className="hidden min-[1410px]:flex items-center">
-            <span className="text-white font-bold text-xl mr-3">{user ? `Olá, ${user.nomecompleto}` : 'Usuário'}</span>
-          </div>
-          <UserMenu logout={logout} user={user} />
+          {user && (
+            <div className="hidden min-[1410px]:flex items-center">
+              <span className="text-white font-bold text-xl mr-3">Olá, {user.nomecompleto}</span>
+            </div>
+          )}
+          {user && <UserMenu logout={logout} user={user} />}
         </div>
       </div>
+      {/* Sidebar menu */}
       <div
         className={`fixed inset-0 bg-gray-800 bg-opacity-50 z-20 min-[1410px]:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       />
@@ -147,8 +136,7 @@ const Navbar: React.FC = () => {
           <button onClick={toggleMenu} className="text-white text-2xl">×</button>
         </div>
         <nav className="flex flex-col p-4 space-y-2 font-bold text-xl items-start text-white">
-          {renderSidebarLinks()}
-          {/* <button onClick={logout} className="hover:text-gray-300 flex items-center"><FaSignOutAlt className="mr-2" /> Sair</button> */}
+          {user ? renderNavLinks() : renderAuthLinks()}
         </nav>
       </div>
     </nav>

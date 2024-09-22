@@ -29,6 +29,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/processo" element={<SelecionarProcesso />} />
+          <Route path="/calendario" element={<CalendarioAgendamentos />} />
           <Route path="/registro/veiculo" element={<RegistroVeiculo />} />
           <Route path="/registro/usuario" element={<RegistroUsuario />} />
           <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
@@ -40,7 +41,6 @@ const App: React.FC = () => {
           <Route path="/veiculos" element={<ProtectedRoute><Veiculos /></ProtectedRoute>} />
           <Route path="/conta" element={<ProtectedRoute><DadosPessoais /></ProtectedRoute>} />
           <Route path="/transportadora" element={<ProtectedRoute><DadosTransportadora /></ProtectedRoute>} />
-          <Route path="/calendario" element={<ProtectedRoute><CalendarioAgendamentos /></ProtectedRoute>} />
           <Route path="/gestao/home" element={<ProtectedRoute><HomePageInterno /></ProtectedRoute>} />
           <Route path="/gestao/autorizarAgendamentos" element={<ProtectedRoute><AutorizarAgendamentos /></ProtectedRoute>} />
           <Route path="/gestao/horarios" element={<ProtectedRoute><GerenciarHorarios /></ProtectedRoute>} />
