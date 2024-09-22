@@ -87,21 +87,22 @@ const RegistroVeiculo: React.FC = () => {
   };
 
   return (
-    <div className="flex lg:flex-row h-screen lg:py-10 lg:px-24">
+    <div className="flex flex-col lg:flex-row h-screen lg:py-10 lg:px-24 overflow-y-auto">
       <Toaster position="top-right" reverseOrder={false} />
       
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
         <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full object-contain" />
       </div>
       
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none p-4">
+        <form onSubmit={handleSubmit} className="w-full max-w-full lg:max-w-sm overflow-y-auto">
           <div className="mb-6">
             <h1 className="bg-logisync-color-blue-50 text-white text-2xl font-extrabold py-2 w-full rounded flex items-center justify-center">
               Cadastre seu primeiro Veículo
             </h1>
           </div>
 
+          {/* Form Fields */}
           <div className="mb-4">
             <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomeVeiculo">
               Nome do veículo

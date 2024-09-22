@@ -34,7 +34,6 @@ const RegistroUsuario: React.FC = () => {
         return;
       }
 
-      // Salva os dados do usuário no localStorage e redireciona
       localStorage.setItem('registroUsuario', JSON.stringify(formData));
       navigate('/registro/transportadora');
     } catch (err) {

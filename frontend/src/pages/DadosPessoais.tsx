@@ -205,6 +205,7 @@ const DadosPessoais: React.FC = () => {
                     value={handleMaskPhone(usuario.NumeroCelular)}
                     disabled
                     className="w-full p-2 border border-gray-300 rounded bg-white text-black"
+                    placeholder='Seu número de celular (Opcional)'
                   />
                 </div>
                 <div className="flex justify-between">
