@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { FaSpinner, FaAsterisk } from 'react-icons/fa';
 import imagemCadastroVeiculo from '../assets/images/ImagemCadastroVeículo.webp';
-import { useAuth } from '../context/AuthContext';
 
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 const RegistroVeiculo: React.FC = () => {
-  const { user, token, refreshAccessToken } = useAuth();
   const [formData, setFormData] = useState({
     nomeVeiculo: '',
     placa: '',
@@ -18,10 +16,20 @@ const RegistroVeiculo: React.FC = () => {
     anoFabricacao: '',
     cor: '',
     capacidadeCarga: '',
-    bloqueado: false,
+    bloqueado: 1,
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('registroUsuario') || '{}');
+    const transportadora = JSON.parse(localStorage.getItem('RegistroTransportadora') || '{}');
+
+    if (!usuario || !usuario.nomeCompleto) {
+      toast.error('Dados do usuário não encontrados. Complete o cadastro.');
+      navigate('/registro/usuario');
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -33,36 +41,46 @@ const RegistroVeiculo: React.FC = () => {
     setLoading(true);
 
     try {
-      if (!user || !token) {
-        throw new Error('Usuário não autenticado.');
-      }
+      const usuario = JSON.parse(localStorage.getItem('registroUsuario') || '{}');
+      const transportadora = JSON.parse(localStorage.getItem('RegistroTransportadora') || '{}');
 
-      const response = await axios.post(`${backendUrl}/veiculos`, { ...formData, codigoUsuario: user.id }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 201) {
-        toast.success('Veículo cadastrado com sucesso!');
-        navigate('/agendamentos');
-      }
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 401) {
+      try {
+        const usuarioResponse = await axios.post(`${backendUrl}/usuarios/public`, usuario);
+        const codigoUsuario = usuarioResponse.data.id;
+        toast.success('Usuário cadastrado com sucesso!');
+        
+        let codigoTransportadora: number | null = null;
+        if (transportadora && transportadora.nomeEmpresa) {
           try {
-            await refreshAccessToken();
-            handleSubmit(e);
-          } catch (refreshError) {
-            toast.error('Erro ao renovar autenticação. Faça login novamente.');
-            navigate('/login');
+            const transportadoraResponse = await axios.post(`${backendUrl}/transportadoras/public`, {
+              ...transportadora,
+              userId: codigoUsuario,
+            });
+            codigoTransportadora = transportadoraResponse.data.transportadora.CodigoTransportadora;
+            toast.success('Transportadora cadastrada com sucesso!');
+          } catch (error) {
+            toast.error('Erro ao cadastrar a transportadora. Tente novamente.');
+            return;
           }
-        } else {
-          toast.error('Erro ao cadastrar veículo. Tente novamente.');
         }
-      } else {
-        toast.error('Erro desconhecido ao cadastrar veículo.');
+
+        const veiculoData = { ...formData, CodigoUsuario: codigoUsuario };
+        try {
+          const veiculoResponse = await axios.post(`${backendUrl}/veiculos/public`, veiculoData);
+          if (veiculoResponse.status === 201) {
+            toast.success('Veículo cadastrado com sucesso!');
+            navigate('/calendario');
+          }
+        } catch (error) {
+          toast.error('Erro ao cadastrar o veículo. Tente novamente.');
+        }
+
+      } catch (error) {
+        toast.error('Erro ao cadastrar o usuário. Tente novamente.');
       }
+
+    } catch (err) {
+      toast.error('Erro inesperado. Tente novamente.');
     } finally {
       setLoading(false);
     }

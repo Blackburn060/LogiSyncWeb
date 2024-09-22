@@ -41,21 +41,13 @@ const getUserById = (id) => {
 const addUser = (user) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
-        const saltRounds = 10;
 
-        // Hash da senha antes de salvar no banco de dados
-        bcrypt.hash(user.senha, saltRounds, (err, hashedPassword) => {
+        const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, DataGeracao, CPF) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [user.nomeCompleto, user.codigoTransportadora, user.email, user.senha, user.tipoUsuario, 1, user.numeroCelular, dataGeracao, user.cpf], function(err) {
             if (err) {
                 reject(err);
             } else {
-                const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, DataGeracao, CPF) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                db.run(sql, [user.nomeCompleto, user.codigoTransportadora, user.email.toLowerCase(), hashedPassword, user.tipoUsuario, 1, user.numeroCelular, dataGeracao, user.cpf], function(err) {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(this.lastID);
-                    }
-                });
+                resolve(this.lastID);
             }
         });
     });

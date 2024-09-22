@@ -18,31 +18,35 @@ import HomePageInterno from './pages/HomePageInterno';
 import SelecionarProcesso from './pages/SelecionarProcesso';
 import AutorizarAgendamentos from './pages/AutorizarAgendamentos';
 import Portaria from './pages/portaria';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/processo" element={<SelecionarProcesso />} />
-            <Route path="/registro/veiculo" element={<RegistroVeiculo />} />
-            <Route path="/registro/usuario" element={<RegistroUsuario />} />
-            <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
-            <Route path="/agendamentos" element={<MeusAgendamentos />} />
-            <Route path="/veiculos" element={<Veiculos />} />
-            <Route path="/conta" element={<DadosPessoais />} />
-            <Route path="/transportadora" element={<DadosTransportadora />} />
-            <Route path="/calendario" element={<CalendarioAgendamentos />} />
-            <Route path="/gestao/home" element={<HomePageInterno />} />
-            <Route path="/gestao/autorizarAgendamentos" element={<AutorizarAgendamentos />} />
-            <Route path="/gestao/horarios" element={<GerenciarHorarios />} />
-            <Route path="/gestao/safra" element={<GerenciarSafras />} />
-            <Route path="/gestao/portaria" element={<Portaria />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+        <Routes>
+          {/* Rotas que não exigem autenticação */}
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/processo" element={<SelecionarProcesso />} />
+          <Route path="/registro/veiculo" element={<RegistroVeiculo />} />
+          <Route path="/registro/usuario" element={<RegistroUsuario />} />
+          <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="*" element={<NotFound />} />
+
+          {/* Rotas que exigem autenticação usando ProtectedRoute */}
+          <Route path="/agendamentos" element={<ProtectedRoute><MeusAgendamentos /></ProtectedRoute>} />
+          <Route path="/veiculos" element={<ProtectedRoute><Veiculos /></ProtectedRoute>} />
+          <Route path="/conta" element={<ProtectedRoute><DadosPessoais /></ProtectedRoute>} />
+          <Route path="/transportadora" element={<ProtectedRoute><DadosTransportadora /></ProtectedRoute>} />
+          <Route path="/calendario" element={<ProtectedRoute><CalendarioAgendamentos /></ProtectedRoute>} />
+          <Route path="/gestao/home" element={<ProtectedRoute><HomePageInterno /></ProtectedRoute>} />
+          <Route path="/gestao/autorizarAgendamentos" element={<ProtectedRoute><AutorizarAgendamentos /></ProtectedRoute>} />
+          <Route path="/gestao/horarios" element={<ProtectedRoute><GerenciarHorarios /></ProtectedRoute>} />
+          <Route path="/gestao/safra" element={<ProtectedRoute><GerenciarSafras /></ProtectedRoute>} />
+          <Route path="/gestao/portaria" element={<ProtectedRoute><Portaria /></ProtectedRoute>} />
+        </Routes>
       </AuthProvider>
     </Router>
   );

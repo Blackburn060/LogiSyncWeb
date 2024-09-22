@@ -61,10 +61,44 @@ const deletarVeiculo = async (req, res) => {
     }
 };
 
+const adicionarVeiculoPublic = async (req, res) => {
+    try {
+        const { CodigoUsuario, nomeVeiculo, placa, marca, modeloTipo, anoFabricacao, cor, capacidadeCarga } = req.body;
+
+        // Validação de campos obrigatórios
+        if (!CodigoUsuario || !nomeVeiculo || !placa || !marca || !modeloTipo || !anoFabricacao || !cor || !capacidadeCarga) {
+            return res.status(400).send({ message: "Campos obrigatórios ausentes" });
+        }
+
+        // Adicionar o veículo
+        const novoVeiculoId = await veiculoModel.addVeiculo({
+            CodigoUsuario,
+            nomeVeiculo,
+            placa,
+            marca,
+            modeloTipo,
+            anoFabricacao,
+            cor,
+            capacidadeCarga,
+            Bloqueado: 1
+        });
+
+        return res.status(201).send({
+            id: novoVeiculoId,
+            message: "Veículo adicionado com sucesso"
+        });
+    } catch (error) {
+        console.error('Erro ao adicionar veículo:', error);
+        return res.status(500).send({ message: "Erro ao adicionar veículo: " + error.message });
+    }
+};
+
+
 module.exports = {
     listarVeiculos,
     adicionarVeiculo,
     obterVeiculoPorId,
     atualizarVeiculo,
-    deletarVeiculo
+    deletarVeiculo,
+    adicionarVeiculoPublic
 };

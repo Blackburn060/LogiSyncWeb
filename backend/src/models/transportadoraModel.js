@@ -46,7 +46,7 @@ const addTransportadora = (transportadora, userId) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sqlInsert = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
 
-        db.run(sqlInsert, [transportadora.Nome, transportadora.NomeFantasia, transportadora.CNPJ, 1, dataGeracao], function(err) {
+        db.run(sqlInsert, [transportadora.nomeEmpresa, transportadora.nomeFantasia, transportadora.cnpj, 1, dataGeracao], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -65,9 +65,9 @@ const addTransportadora = (transportadora, userId) => {
 
                             resolve({
                                 CodigoTransportadora: newCodigoTransportadora,
-                                Nome: transportadora.Nome,
-                                NomeFantasia: transportadora.NomeFantasia,
-                                CNPJ: transportadora.CNPJ,
+                                nomeEmpresa: transportadora.nomeEmpresa,
+                                nomeFantasia: transportadora.nomeFantasia,
+                                cnpj: transportadora.cnpj,
                                 SituacaoTransportadora: 1,
                                 DataGeracao: dataGeracao
                             });

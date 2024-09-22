@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSpinner } from 'react-icons/fa';
 import { Toaster, toast } from 'react-hot-toast';
+import { checkEmailExistsPublic } from '../services/usuarioService';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.webp';
 import { FaAsterisk } from 'react-icons/fa';
 
 const RegistroUsuario: React.FC = () => {
   const [formData, setFormData] = useState({
-    nomecompleto: '',
+    nomeCompleto: '',
     email: '',
     senha: '',
     cpf: '',
@@ -20,15 +21,24 @@ const RegistroUsuario: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const emailExists = await checkEmailExistsPublic(formData.email);
+
+      if (emailExists) {
+        toast.error('E-mail já utilizado em outra conta. Por favor, use outro e-mail.');
+        setLoading(false);
+        return;
+      }
+
+      // Salva os dados do usuário no localStorage e redireciona
       localStorage.setItem('registroUsuario', JSON.stringify(formData));
       navigate('/registro/transportadora');
     } catch (err) {
-      toast.error('Erro ao salvar dados do usuário. Tente novamente.');
+      toast.error('Erro ao verificar o e-mail. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -47,16 +57,16 @@ const RegistroUsuario: React.FC = () => {
             <h1 className="bg-logisync-color-blue-50 text-white text-2xl font-extrabold py-2 w-full rounded flex items-center justify-center">Insira seus dados</h1>
           </div>
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomecompleto">
+            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomeCompleto">
               Nome Completo
               <FaAsterisk size={13} color='red' className='ml-2' /></label>
             <input
               type="text"
-              id="nomecompleto"
-              name="nomecompleto"
+              id="nomeCompleto"
+              name="nomeCompleto"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="Digite o seu nome completo"
-              value={formData.nomecompleto}
+              value={formData.nomeCompleto}
               onChange={handleChange}
               required
             />
@@ -70,7 +80,7 @@ const RegistroUsuario: React.FC = () => {
               id="cpf"
               name="cpf"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite o seu cpf"
+              placeholder="Digite o seu CPF"
               value={formData.cpf}
               onChange={handleChange}
               required

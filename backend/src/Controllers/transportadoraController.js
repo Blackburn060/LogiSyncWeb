@@ -84,11 +84,34 @@ const getTransportadoraById = async (req, res) => {
     }
 };
 
+const adicionarTransportadoraPublic = async (req, res) => {
+    try {
+        const { nomeEmpresa, nomeFantasia, cnpj, userId } = req.body;
+
+        // Validação de campos obrigatórios
+        if (!nomeEmpresa || !nomeFantasia || !cnpj || !userId) {
+            return res.status(400).send({ message: "Campos obrigatórios ausentes" });
+        }
+
+        // Adicionar a nova transportadora
+        const novaTransportadora = await transportadoraModel.addTransportadora(req.body, userId);
+
+        return res.status(201).send({
+            message: "Transportadora adicionada com sucesso",
+            transportadora: novaTransportadora
+        });
+    } catch (error) {
+        console.error('Erro ao adicionar transportadora:', error);
+        return res.status(500).send({ message: "Erro ao adicionar transportadora: " + error.message });
+    }
+};
+
 
 module.exports = {
     listarTransportadoras,
     adicionarTransportadora,
     atualizarTransportadora,
     deletarTransportadora,
-    getTransportadoraById
+    getTransportadoraById,
+    adicionarTransportadoraPublic
 };

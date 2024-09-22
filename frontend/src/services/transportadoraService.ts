@@ -78,6 +78,27 @@ export const addTransportadora = async (token: string, transportadora: Partial<T
     throw error;
   }
 };
+
+// Função para adicionar uma nova transportadora (endpoint público)
+export const addTransportadoraPublic = async (transportadora: Partial<Transportadora>): Promise<{ transportadora: Transportadora }> => {
+  try {
+    const response = await axios.post(`${apiUrl}/transportadoras/public`, transportadora);  // Endpoint público
+    if (!response.data || !response.data.transportadora || !response.data.transportadora.CodigoTransportadora) {
+      throw new Error('CodigoTransportadora não retornado do backend');
+    }
+    return {
+      transportadora: response.data.transportadora,
+    };
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error('Erro ao adicionar transportadora:', error.message);
+    } else {
+      console.error('Erro desconhecido ao adicionar transportadora:', error);
+    }
+    throw error;
+  }
+};
+
 // Função para atualizar o usuário com o CodigoTransportadora
 export const updateUserTransportadora = async (token: string, userId: number, transportadoraId: number): Promise<void> => {
   try {
@@ -92,7 +113,6 @@ export const updateUserTransportadora = async (token: string, userId: number, tr
       }
     });
 
-    console.log('Usuário atualizado com sucesso:', response.data);
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Erro ao atualizar usuário com transportadora:', error.message);

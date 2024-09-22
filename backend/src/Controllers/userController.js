@@ -1,5 +1,5 @@
 const userModel = require('../models/userModel');
-const { hashPassword } = require('../services/authService');
+const bcrypt = require("bcrypt");
 
 // Listar todos os usuários
 const listarUsuarios = async (req, res) => {
@@ -31,16 +31,21 @@ const adicionarUsuario = async (req, res) => {
     const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular, cpf } = req.body;
 
     try {
-        const hashedPassword = await hashPassword(senha);
+        const existingUser = await userModel.findUserByEmail(email.toLowerCase());
+        if (existingUser) {
+            return res.status(400).send({ message: 'E-mail já está em uso.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(senha, 10);
         const user = {
-            NomeCompleto: nomeCompleto,
-            Email: email,
-            Senha: hashedPassword,
-            TipoUsuario: tipoUsuario,
-            CodigoTransportadora: codigoTransportadora || null,
-            SituacaoUsuario: 1,
-            NumeroCelular: numeroCelular || null,
-            CPF: cpf || null
+            nomeCompleto: nomeCompleto,
+            email: email.toLowerCase(),
+            senha: hashedPassword,
+            tipoUsuario: tipoUsuario,
+            codigoTransportadora: codigoTransportadora || null,
+            situacaoUsuario: 1,
+            numeroCelular: numeroCelular || null,
+            cpf: cpf || null
         };
 
         const userId = await userModel.addUser(user);
@@ -78,7 +83,7 @@ const atualizarUsuario = async (req, res) => {
 const verificarEmailExistente = async (req, res) => {
     const { email } = req.query;
     try {
-        const user = await userModel.findUserByEmail(email);
+        const user = await userModel.findUserByEmail(email.toLowerCase());
         if (user) {
             res.json({ exists: true });
         } else {
@@ -103,11 +108,40 @@ const deletarUsuario = async (req, res) => {
     }
 };
 
+// Adicionar um usuário sem autenticação
+const adicionarUsuarioPublic = async (req, res) => {
+    const { nomeCompleto, email, senha, tipoUsuario, numeroCelular, cpf } = req.body;
+
+    try {
+        const existingUser = await userModel.findUserByEmail(email.toLowerCase());
+        if (existingUser) {
+            return res.status(400).send({ message: 'E-mail já está em uso.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(senha, 10);
+        const user = {
+            nomeCompleto: nomeCompleto,
+            email: email.toLowerCase(),
+            senha: hashedPassword,
+            tipoUsuario: 'motorista',
+            situacaoUsuario: 1,
+            numeroCelular: numeroCelular || null,
+            cpf: cpf || null
+        };
+
+        const userId = await userModel.addUser(user);
+        res.status(201).send({ id: userId, message: "Usuário registrado com sucesso" });
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao registrar usuário: " + error.message });
+    }
+};
+
 module.exports = {
     listarUsuarios,
     adicionarUsuario,
     listarUsuario, 
     verificarEmailExistente,
     atualizarUsuario,
-    deletarUsuario
+    deletarUsuario,
+    adicionarUsuarioPublic
 };

@@ -21,6 +21,12 @@ export const addVeiculo = async (token: string, veiculo: Omit<Veiculo, 'CodigoVe
   return response.data;
 };
 
+// Função para adicionar um novo veículo (endpoint público)
+export const addVeiculoPublic = async (veiculo: Omit<Veiculo, 'CodigoVeiculo'>): Promise<{ id: number }> => {
+  const response = await axios.post(`${apiUrl}/veiculos/public`, veiculo);  // Endpoint público
+  return response.data;
+};
+
 export const updateVeiculo = async (token: string, id: number, veiculo: Partial<Veiculo>): Promise<void> => {
   await axios.put(`${apiUrl}/veiculos/${id}`, veiculo, {
     headers: {
