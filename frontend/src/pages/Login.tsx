@@ -43,7 +43,7 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        console.log(err)
+        console.log(err);
         if (err.message === 'Network Error' && err.response === undefined) {
           toast.error('Não foi possível conectar ao servidor. Por favor, tente mais tarde.');
         } else if (err.response?.status === 500) {
@@ -63,6 +63,10 @@ const Login: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleContinueWithoutLogin = () => {
+    navigate('/processo');
   };
 
   return (
@@ -101,16 +105,26 @@ const Login: React.FC = () => {
             />
             <p className="text-white text-md font-extrabold text-right">Esqueceu sua senha?</p>
           </div>
-          <div className="flex items-center justify-center pt-8">
+          <div className="flex items-center justify-center pt-3">
             <button
               type="submit"
-              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-2xl font-extrabold py-2 px-20 lg:px-32 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
+              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-xl font-extrabold py-2 px-32 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
               disabled={loading}
             >
               {loading ? <FaSpinner className="animate-spin text-3xl" /> : 'Entrar'}
             </button>
           </div>
-          <p className="text-white text-lg font-extrabold mt-4 text-center">Não tem uma conta? <Link to="/registro/usuario" target='_blank' className='underline'>Cadastre-se aqui!</Link></p>
+          <p className="text-white text-lg font-extrabold pt-3 text-center">Não tem uma conta? <Link to="/registro/usuario" target='_blank' className='underline'>Cadastre-se aqui!</Link></p>
+
+          <div className="flex flex-col items-center pt-1">
+            <p className="text-white text-lg font-extrabold mt-1 text-center">Ou</p>
+            <button
+              onClick={handleContinueWithoutLogin}
+              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-xl font-extrabold py-2 px-16 rounded focus:outline-none focus:shadow-outline mt-3"
+            >
+              Continuar sem login
+            </button>
+          </div>
         </form>
       </div>
     </div>
