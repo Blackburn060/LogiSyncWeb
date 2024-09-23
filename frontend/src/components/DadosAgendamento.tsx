@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -29,6 +29,19 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
   onQuantidadeChange,
   onSafraChange,
 }) => {
+  const [arquivoUrl, setArquivoUrl] = useState<string | null>(null);
+
+  // Função para gerar a URL do Blob, se necessário
+  useEffect(() => {
+    if (arquivo && arquivo instanceof Blob) {
+      const url = URL.createObjectURL(arquivo);
+      setArquivoUrl(url);
+      return () => URL.revokeObjectURL(url); // Limpeza da URL criada
+    } else if (typeof arquivo === "string") {
+      setArquivoUrl(arquivo);
+    }
+  }, [arquivo]);
+
   // Função para formatar a data no formato dia/mês/ano
   const formatarData = (data: string) => {
     const dataObj = new Date(data);
@@ -62,9 +75,9 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
-            value={produto}
+            value={produto || ""}
             onChange={(e) => onProdutoChange && onProdutoChange(e.target.value)}
-            readOnly={!!produto || !editable} // Só será editável se o produto estiver vazio e editable for true
+            readOnly={!editable} // Produto será editável apenas se editable for true
           />
         </div>
         <div>
@@ -76,7 +89,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             onChange={(e) =>
               onQuantidadeChange && onQuantidadeChange(Number(e.target.value))
             }
-            readOnly={!!quantidade || !editable} // Só será editável se a quantidade estiver vazia e editable for true
+            readOnly={!editable} // Quantidade será editável apenas se editable for true
           />
         </div>
         <div>
@@ -86,27 +99,24 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             className="border w-full px-2 py-1 rounded-md"
             value={safra || ""}
             onChange={(e) => onSafraChange && onSafraChange(e.target.value)}
-            readOnly={!!safra || !editable} // Só será editável se a safra estiver vazia e editable for true
+            readOnly={!editable} // Safra será editável apenas se editable for true
           />
         </div>
         <div>
           <label className="block font-semibold">Arquivo</label>
-          {arquivo && typeof arquivo === "string" ? (
+          {arquivoUrl ? (
             <a
-              href={arquivo}
+              href={arquivoUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
               Download do arquivo
             </a>
-          ) : arquivo ? (
-            <p>Arquivo anexado (não pode ser exibido diretamente)</p>
           ) : (
             <p>Nenhum arquivo anexado</p>
           )}
         </div>
-
         <div className="col-span-2">
           <label className="block font-semibold">Observação</label>
           <textarea

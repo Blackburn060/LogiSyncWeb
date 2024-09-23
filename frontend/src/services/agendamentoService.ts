@@ -39,7 +39,27 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;
+
+    const agendamentos = response.data;
+
+    console.log('Agendamentos recebidos:', agendamentos);  // Verifica se o CódigoProduto está presente
+
+    // Iterar pelos agendamentos e buscar a descrição do produto para cada um
+    for (const agendamento of agendamentos) {
+      if (agendamento.CodigoProduto) {
+        try {
+          const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
+          console.log(`Produto encontrado: ${descricaoProduto} para agendamento ${agendamento.CodigoAgendamento}`);
+          agendamento.DescricaoProduto = descricaoProduto;  // Adiciona a descrição do produto ao agendamento
+        } catch (error) {
+          console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
+        }
+      } else {
+        console.log(`Agendamento ${agendamento.CodigoAgendamento} não possui CodigoProduto.`);
+      }
+    }
+
+    return agendamentos;
   } catch (error) {
     console.error('Erro ao buscar agendamentos:', error);
     throw error;
@@ -133,28 +153,33 @@ export const updateAgendamentoStatus = async (
 };
 
 // Função para autorizar agendamentos
-export const autorizarAgendamento = async (token: string, id: number): Promise<void> => {
+export const finalizarAgendamento = async (
+  token: string,
+  agendamentoId: number,
+  tipoAgendamento: string
+) => {
   try {
-    // Decodificando o token para obter o ID do usuário
-    const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
-    const usuarioId = decodedToken.id;
+    const dataHoraSaida = new Date().toISOString(); // Gera a data/hora atual
+    console.log('DataHoraSaida enviada:', dataHoraSaida); // Verifica no console se está sendo enviada
 
-    if (!usuarioId) {
-      throw new Error('ID do usuário não encontrado no token');
-    }
-
-    await api.put(`/agendamentos/${id}`, { 
-      SituacaoAgendamento: 'Confirmado',
-      UsuarioAprovacao: usuarioId // Registrando o usuário que confirmou o agendamento
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await api.put(
+      `/agendamentos/${agendamentoId}`,
+      {
+        SituacaoAgendamento: "Finalizado",
+        DataHoraSaida: dataHoraSaida,
+        TipoAgendamento: tipoAgendamento,
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    console.log('Agendamento autorizado com sucesso');
+    console.log('Resposta da API ao finalizar:', response.data); // Verifica o que o backend está retornando
+    return { message: "Agendamento finalizado com sucesso!" };
   } catch (error) {
-    console.error('Erro ao autorizar agendamento:', error);
+    console.error("Erro ao finalizar o agendamento:", error);
     throw error;
   }
 };

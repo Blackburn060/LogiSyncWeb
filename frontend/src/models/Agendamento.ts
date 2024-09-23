@@ -1,4 +1,5 @@
 import { Veiculo } from '../models/Veiculo';
+import { Portaria } from './Portaria';
 
 export interface Agendamento {
   CodigoAgendamento?: number;    
@@ -23,8 +24,12 @@ export interface Agendamento {
   Produto?: string | null;   
   Safra?: string | null;   
   Arquivo?: string | null;   
-  
+  DataHoraSaida?: string;    // Defina a propriedade DataHoraSaida como opcional
+
   // Novas propriedades adicionadas
   DescricaoProduto?: string;
   AnoSafra?: string;
+  DadosPortaria?: Portaria;
+
+ 
 }

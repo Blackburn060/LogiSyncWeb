@@ -1,181 +1,237 @@
-import api from './axiosConfig';
-import { Agendamento } from '../models/Agendamento';
-import { AxiosError } from 'axios';
+  import api from './axiosConfig';
+  import { Agendamento } from '../models/Agendamento';
+  import { AxiosError } from 'axios';
 
-// Função para buscar agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
-export const getAgendamentosPorStatus = async (token: string): Promise<Agendamento[]> => {
-  try {
-    const response = await api.get('/agendamentos/status', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;  // Retorna os agendamentos com os três status
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      console.error('Erro ao buscar agendamentos:', error.message);
-      if (error.response) {
-        console.error('Detalhes do erro:', error.response.data);
+  // Função para buscar agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
+  export const getAgendamentosPorStatus = async (token: string): Promise<Agendamento[]> => {
+    try {
+      const response = await api.get('/agendamentos/status', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const agendamentos = response.data;
+
+      // Iterar pelos agendamentos e buscar a descrição do produto para cada um
+      for (const agendamento of agendamentos) {
+        if (agendamento.CodigoProduto) {
+          try {
+            const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
+            agendamento.DescricaoProduto = descricaoProduto;  // Adiciona a descrição do produto ao agendamento
+          } catch (error) {
+            console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
+          }
+        }
       }
-    } else {
-      console.error('Erro desconhecido ao buscar agendamentos:', error);
-    }
-    throw error;
-  }
-};
 
-// Função para finalizar um agendamento
-export const finalizarAgendamento = async (token: string, agendamentoId: number): Promise<void> => {
+      return agendamentos;  // Retorna os agendamentos com os três status
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        console.error('Erro ao buscar agendamentos:', error.message);
+        if (error.response) {
+          console.error('Detalhes do erro:', error.response.data);
+        }
+      } else {
+        console.error('Erro desconhecido ao buscar agendamentos:', error);
+      }
+      throw error;
+    }
+  };
+
+
+  export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
+    try {
+      const response = await api.get(`/produtos/${codigoProduto}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data.DescricaoProduto;  
+    } catch (error) {
+      console.error("Erro ao buscar Produto:", error);
+      throw error;
+    }
+  };
+  // Função para finalizar um agendamento e definir a DataHoraSaida
+  // Função para finalizar o agendamento e definir a DataHoraSaida
+// Função para finalizar o agendamento e definir a DataHoraSaida
+export const finalizarAgendamento = async (token: string, agendamentoId: number, tipoAgendamento: string, dataHoraSaida: string) => {
   try {
     const response = await api.put(
-      `/agendamentos/${agendamentoId}`, 
-      { SituacaoAgendamento: 'Finalizado' }, 
+      `/agendamentos/${agendamentoId}`,  // rota para atualizar o agendamento
+      { SituacaoAgendamento: "Finalizado", DataHoraSaida: dataHoraSaida, TipoAgendamento: tipoAgendamento },  // payload
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-    console.log('Agendamento finalizado com sucesso:', response.data);
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      console.error('Erro ao finalizar agendamento:', error.message);
-      if (error.response) {
-        console.error('Detalhes do erro:', error.response.data);
-      }
-    } else {
-      console.error('Erro desconhecido ao finalizar agendamento:', error);
-    }
+    console.log("Resposta da API ao finalizar agendamento:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao finalizar agendamento:", error);
     throw error;
   }
 };
 
-// Função para aprovar agendamento e preencher o campo DataHoraEntrada
-// Função para aprovar agendamento e preencher o campo DataHoraEntrada
-export const aprovarAgendamento = async (
-  token: string,
-  agendamentoId: number,
-  tipoAgendamento: string,
-  usuarioId: number // ID do usuário que aprovou
-) => {
+  
+// Função para atualizar a DataHoraSaida na portaria
+export const atualizarPortaria = async (token: string, portariaId: number, dataHoraSaida: string) => {
   try {
-    // Atualizar o status do agendamento
-    await api.put(
-      `/agendamentos/${agendamentoId}`,
-      {
-        SituacaoAgendamento: "Andamento", // Status para andamento
-        DataHoraEntrada: new Date().toISOString(), // Atualiza a DataHoraEntrada
-        TipoAgendamento: tipoAgendamento, // Mantém o tipo original do agendamento
-      },
+    const response = await api.put(
+      `/portarias/${portariaId}`,  // rota para atualizar a portaria
+      { DataHoraSaida: dataHoraSaida },  // payload contendo a DataHoraSaida
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-
-    // Atualizar os dados na tabela de portaria (inserir ou atualizar)
-    await api.post(
-      `/portarias`, // Certifique-se de que essa rota exista no seu backend para criar os dados de portaria
-      {
-        CodigoAgendamento: agendamentoId,
-        DataHoraEntrada: new Date().toISOString(), // Atualiza a data/hora de entrada
-        UsuarioAprovacao: usuarioId, // Usuário que aprovou
-        ObservacaoPortaria: "Aprovado pela portaria" // Pode ser atualizado conforme a necessidade
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return { message: "Agendamento aprovado com sucesso" };
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      console.error("Erro ao aprovar agendamento:", error.message);
-      if (error.response) {
-        console.error("Detalhes do erro:", error.response.data);
-      }
-    } else {
-      console.error("Erro desconhecido ao aprovar agendamento:", error);
-    }
+    console.log("Resposta da API ao atualizar a portaria:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar a portaria:", error);
     throw error;
   }
 };
 
 
-// Função para recusar agendamento e alterar o status para "Recusado"
-// Função para recusar agendamento e alterar o status para "Recusado"
-export const recusarAgendamento = async (
-  token: string,
-  agendamentoId: number,
-  motivoRecusa: string, // Motivo da recusa
-  usuarioId: number // ID do usuário que recusou
-) => {
-  try {
-    // Atualizar o status do agendamento para "Recusado"
-    await api.put(
-      `/agendamentos/${agendamentoId}`,
-      {
-        SituacaoAgendamento: "Recusado", // Atualiza o status para recusado
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
 
-    // Atualizar os dados na tabela de portaria (inserir ou atualizar)
-    await api.post(
-      `/portarias`,
-      {
-        CodigoAgendamento: agendamentoId,
-        UsuarioAprovacao: usuarioId, // Usuário que recusou
-        MotivoRecusa: motivoRecusa, // Motivo da recusa
-        ObservacaoPortaria: "Agendamento recusado pela portaria" // Pode ser atualizado conforme a necessidade
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
 
-    return { message: "Agendamento recusado com sucesso" };
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      console.error("Erro ao recusar agendamento:", error.message);
-      if (error.response) {
-        console.error("Detalhes do erro:", error.response.data);
+
+  // Função para aprovar agendamento e preencher o campo DataHoraEntrada
+  export const aprovarAgendamento = async (
+    token: string,
+    agendamentoId: number,
+    tipoAgendamento: string,
+    usuarioId: number 
+  ) => {
+    try {
+    
+      await api.put(
+        `/agendamentos/${agendamentoId}`,
+        {
+          SituacaoAgendamento: "Andamento", 
+          DataHoraEntrada: new Date().toISOString(), 
+          TipoAgendamento: tipoAgendamento,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await api.post(
+        `/portarias`, 
+        {
+          CodigoAgendamento: agendamentoId,
+          DataHoraEntrada: new Date().toISOString(), 
+          UsuarioAprovacao: usuarioId, 
+          ObservacaoPortaria: "Aprovado pela portaria", 
+          
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return { message: "Agendamento aprovado com sucesso" };
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        console.error("Erro ao aprovar agendamento:", error.message);
+        if (error.response) {
+          console.error("Detalhes do erro:", error.response.data);
+        }
+      } else {
+        console.error("Erro desconhecido ao aprovar agendamento:", error);
       }
-    } else {
-      console.error("Erro desconhecido ao recusar agendamento:", error);
+      throw error;
     }
-    throw error;
-  }
-};
+  };
 
+  // Função para recusar agendamento e alterar o status para "Recusado"
+  export const recusarAgendamento = async (
+    token: string,
+    agendamentoId: number,
+    motivoRecusa: string,
+    usuarioId: number,
+    tipoAgendamento: string
+  ): Promise<{ message: string }> => {
+    try {
+      await api.put(
+        `/agendamentos/${agendamentoId}`,
+        {
+          SituacaoAgendamento: "Recusado",
+          MotivoRecusa: motivoRecusa,
+          TipoAgendamento: tipoAgendamento // Inclui o tipo de agendamento aqui
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-// Função para verificar se os dados do motorista estão corretos
-export const verificarDadosMotorista = async (token: string, agendamentoId: number): Promise<Agendamento> => {
+      // Retorne a mensagem de sucesso
+      return { message: "Agendamento recusado com sucesso" };
+      
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        console.error("Erro ao recusar agendamento:", error.message);
+        if (error.response) {
+          console.error("Detalhes do erro:", error.response.data);
+        }
+      } else {
+        console.error("Erro desconhecido ao recusar agendamento:", error);
+      }
+      throw error; // Lança o erro para ser tratado externamente
+    }
+  };
+
+// Função para buscar os dados da portaria relacionados a um agendamento
+export const getDadosPortaria = async (token: string, codigoAgendamento: number) => {
   try {
-    const response = await api.get(`/agendamentos/${agendamentoId}/verificar-dados`, {
+    const response = await api.get(`/portarias/${codigoAgendamento}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;  // Retorna os dados verificados do agendamento
+    return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      console.error('Erro ao verificar dados do motorista:', error.message);
+      console.error('Erro ao buscar dados da portaria:', error.message);
       if (error.response) {
         console.error('Detalhes do erro:', error.response.data);
       }
     } else {
-      console.error('Erro desconhecido ao verificar dados do motorista:', error);
+      console.error('Erro desconhecido ao buscar dados da portaria:', error);
     }
     throw error;
   }
 };
+
+
+  // Função para verificar se os dados do motorista estão corretos
+  export const verificarDadosMotorista = async (token: string, agendamentoId: number): Promise<Agendamento> => {
+    try {
+      const response = await api.get(`/agendamentos/${agendamentoId}/verificar-dados`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;  // Retorna os dados verificados do agendamento
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        console.error('Erro ao verificar dados do motorista:', error.message);
+        if (error.response) {
+          console.error('Detalhes do erro:', error.response.data);
+        }
+      } else {
+        console.error('Erro desconhecido ao verificar dados do motorista:', error);
+      }
+      throw error;
+    }
+  };

@@ -449,7 +449,7 @@ const AgendamentosAdmin: React.FC = () => {
                   }
                   observacao={selectedAgendamento?.Observacao ?? null}
                   safra={selectedAgendamento?.AnoSafra ?? ""} // Ano da safra
-                  arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
+                  arquivo={selectedAgendamento?.ArquivoAnexado ?? null}  // Campo de arquivo, passando o valor diretamente
                   editable={
                     selectedAgendamento?.SituacaoAgendamento === "Pendente"
                   }
@@ -519,6 +519,7 @@ const AgendamentosAdmin: React.FC = () => {
             </div>
           )}
         </Modal>
+
 
         {loading ? ( // Usa o estado de loading para exibir um indicativo de carregamento
           <p>Carregando agendamentos...</p>

@@ -31,16 +31,22 @@ const adicionarPortaria = async (req, res) => {
 
 const atualizarPortaria = async (req, res) => {
     try {
-        const changes = await portariaModel.updatePortaria(req.body, req.params.id);
-        if (changes) {
-            res.send({ message: "Dados da portaria atualizados com sucesso" });
-        } else {
-            res.status(404).send({ message: "Dados da portaria não encontrados" });
-        }
+      const { id } = req.params;  // Pega o ID da portaria da rota
+      const { DataHoraSaida } = req.body;  // Recebe a DataHoraSaida do payload
+  
+      // Atualiza a portaria no banco de dados
+      const result = await portariaModel.updatePortaria(id, { DataHoraSaida });
+  
+      if (result) {
+        res.json({ message: "Portaria atualizada com sucesso", data: result });
+      } else {
+        res.status(404).json({ message: "Portaria não encontrada" });
+      }
     } catch (error) {
-        res.status(500).send({ message: "Erro ao atualizar dados da portaria: " + error.message });
+      res.status(500).json({ message: "Erro ao atualizar portaria", error: error.message });
     }
-};
+  };
+  
 
 const deletarPortaria = async (req, res) => {
     try {

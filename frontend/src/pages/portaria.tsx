@@ -5,7 +5,7 @@ import {
   aprovarAgendamento,
   recusarAgendamento,
 } from "../services/portariaService";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 import { Agendamento } from "../models/Agendamento";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -16,7 +16,27 @@ import DadosVeicular from "../components/DadosVeicular";
 import DadosPessoais from "../components/DadosPessoais";
 import DadosAgendamentos from "../components/DadosAgendamento";
 import DadosPortaria from "../components/DadosPortaria";
-import "react-datepicker/dist/react-datepicker.css";
+import "react-datepicker/dist/react-datepicker.css"; // Importa o CSS do Datepicker
+import DatePicker from "react-datepicker"; // Importa o componente DatePicker
+import { getDadosPortaria } from "../services/portariaService";
+
+// Aqui está o seu ícone personalizado
+export function IcBaselineCompareArrows(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <path
+        fill="currentColor"
+        d="M9.01 14H2v2h7.01v3L13 15l-3.99-4zm5.98-1v-3H22V8h-7.01V5L11 9z"
+      ></path>
+    </svg>
+  );
+}
 
 // Função para controlar a rolagem da página quando o modal estiver aberto
 const toggleBodyScroll = (isModalOpen: boolean) => {
@@ -37,22 +57,25 @@ const getStatusColor = (status: string) => {
     case "Andamento":
       return "bg-yellow-500";
     case "Finalizado":
-      return "bg-blue-500";
-    default:
       return "bg-gray-500";
+    default:
+      return "bg-orange-500";
   }
 };
 
 const Portaria: React.FC = () => {
-  const { token, user } = useAuth(); // Obtendo o token e o usuario do contexto de autenticação
+  const { token, user } = useAuth();
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [currentStartDate, setCurrentStartDate] = useState(new Date());
   const [selectedAgendamento, setSelectedAgendamento] =
     useState<Agendamento | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false); // Estado para o modal de recusa
-  const [motivoRecusa, setMotivoRecusa] = useState(""); // Motivo de recusa
+  const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false);
+  const [motivoRecusa, setMotivoRecusa] = useState("");
+  const [observacaoAdmin] = useState(""); // Para a observação do administrador ao aprovar
+  const [observacao, setObservacao] = useState(""); // Para mostrar a observação correta no modal
   const [loading, setLoading] = useState<boolean>(true);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false); // Controla a exibição do modal do calendário
 
   const daysToShow = 7;
 
@@ -65,9 +88,10 @@ const Portaria: React.FC = () => {
     const fetchAgendamentos = async () => {
       try {
         setLoading(true);
-        const data = await getAgendamentosPorStatus(token!); // Busca os agendamentos por status
+        const data = await getAgendamentosPorStatus(token!);
         setAgendamentos(data);
       } catch (error) {
+        toast.error("Erro ao buscar agendamentos.");
         console.error("Erro ao buscar agendamentos:", error);
       } finally {
         setLoading(false);
@@ -77,97 +101,173 @@ const Portaria: React.FC = () => {
     fetchAgendamentos();
   }, [token, currentStartDate]);
 
-  // Função para finalizar o agendamento
-  const handleFinalizarAgendamento = async (agendamentoId: number) => {
+  const voltarParaHoje = () => {
+    setCurrentStartDate(new Date()); // Define o dia atual no estado
+  };
+
+  const handleFinalizarAgendamento = async (agendamento: Agendamento) => {
     try {
-      await finalizarAgendamento(token!, agendamentoId); // Finaliza o agendamento
-      toast.success("Agendamento finalizado com sucesso!");
+      const dataHoraSaida = new Date().toISOString();
+      console.log("Atualizando agendamento com DataHoraSaida:", dataHoraSaida);
+
+      const response = await finalizarAgendamento(
+        token!,
+        agendamento.CodigoAgendamento!,
+        agendamento.TipoAgendamento!,
+        dataHoraSaida
+      );
+
+      console.log("Resposta da API:", response);
+
       setAgendamentos((prevAgendamentos) =>
-        prevAgendamentos.filter(
-          (agendamento) => agendamento.CodigoAgendamento !== agendamentoId
+        prevAgendamentos.map((a) =>
+          a.CodigoAgendamento === agendamento.CodigoAgendamento
+            ? { ...a, SituacaoAgendamento: "Finalizado" }
+            : a
         )
       );
-      setIsModalOpen(false); // Fecha o modal após finalizar
+
+      setSelectedAgendamento((prevAgendamento) =>
+        prevAgendamento
+          ? {
+              ...prevAgendamento,
+              DadosPortaria: {
+                ...prevAgendamento.DadosPortaria,
+                DataHoraSaida: dataHoraSaida,
+              },
+            }
+          : null
+      );
+
+      handleCloseModal();
+      toast.success("Agendamento finalizado com sucesso!");
     } catch (error) {
-      console.error("Erro ao finalizar o agendamento:", error);
       toast.error("Erro ao finalizar o agendamento.");
+      console.error("Erro ao finalizar o agendamento:", error);
     }
   };
 
-  // Função para aprovar agendamento
   const handleAprovarAgendamento = async (agendamento: Agendamento) => {
     try {
-      const usuarioId = Number(user!.id); // Obtendo o usuarioId do contexto de autenticação
-    
+      const usuarioId = Number(user!.id);
+
+      // Se o admin quiser adicionar uma observação antes de aprovar
       await aprovarAgendamento(
         token!,
         agendamento.CodigoAgendamento!,
         agendamento.TipoAgendamento!,
-        usuarioId // Agora passando o usuarioId correto
+        usuarioId
       );
-    
-      toast.success("Agendamento aprovado com sucesso!"); // Mensagem de sucesso
-      setIsModalOpen(false);
-    
-      // Atualize a lista de agendamentos removendo o que foi aprovado ou atualizando seu status
+
+      toast.success("Agendamento aprovado com sucesso!");
+      handleCloseModal();
+
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
-            ? { ...a, SituacaoAgendamento: "Andamento" }
+            ? { ...a, SituacaoAgendamento: "Andamento", Observacao: observacaoAdmin } // Adicionar observação do admin
             : a
         )
       );
     } catch (error) {
-      toast.error("Erro ao aprovar o agendamento."); // Mensagem de erro
+      toast.error("Erro ao aprovar o agendamento.");
       console.error("Erro ao aprovar o agendamento:", error);
     }
   };
 
-  // Função para abrir o modal de recusa
-  const handleOpenRecusaModal = () => {
-    setIsRecusaModalOpen(true);
-  };
+  const handleRecusarAgendamento = async (agendamento: Agendamento | null) => {
+    if (!agendamento) {
+      toast.error("Nenhum agendamento selecionado.");
+      return;
+    }
 
-  // Função para fechar o modal de recusa
-  const handleCloseRecusaModal = () => {
-    setIsRecusaModalOpen(false);
-    setMotivoRecusa(""); // Limpa o motivo quando fechar o modal
-  };
-
-  // Função para recusar agendamento
-  const handleRecusarAgendamento = async (agendamento: Agendamento) => {
     try {
-      const usuarioId = Number(user!.id); // Converta para number
-  
+      const usuarioId = Number(user!.id);
+
       if (!motivoRecusa) {
-        toast.error("Motivo de recusa é necessário."); // Mensagem de erro
+        toast.error("Motivo de recusa é necessário.");
         return;
       }
-  
-      // Passe o tipo do agendamento junto com a requisição de recusa
+
       await recusarAgendamento(
         token!,
         agendamento.CodigoAgendamento!,
         motivoRecusa,
-        usuarioId
+        usuarioId,
+        agendamento.TipoAgendamento!
       );
-  
-      toast.success("Agendamento recusado com sucesso!"); // Mensagem de sucesso
-      setIsModalOpen(false);
-      setIsRecusaModalOpen(false); // Fecha o modal de recusa
-  
-      // Atualize a lista de agendamentos removendo o que foi recusado ou atualizando seu status
+
+      toast.success("Agendamento recusado com sucesso!");
+      handleCloseRecusaModal();
+      handleCloseModal();
+
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
-            ? { ...a, SituacaoAgendamento: "Recusado" }
+            ? { ...a, SituacaoAgendamento: "Recusado", MotivoRecusa: motivoRecusa } // Adicionar motivo de recusa
             : a
         )
       );
     } catch (error) {
-      toast.error("Erro ao recusar o agendamento."); // Mensagem de erro
+      toast.error("Erro ao recusar o agendamento.");
       console.error("Erro ao recusar o agendamento:", error);
     }
+  };
+
+  const handleOpenModal = async (agendamento: Agendamento) => {
+    setSelectedAgendamento(agendamento);
+    setObservacao(""); // Resetar observação
+
+    try {
+      const dadosPortaria = await getDadosPortaria(
+        token!,
+        agendamento.CodigoAgendamento!
+      );
+
+      setSelectedAgendamento((prevAgendamento) => {
+        if (!prevAgendamento) return null;
+
+        return {
+          ...prevAgendamento,
+          DataHoraSaida: dadosPortaria?.DataHoraSaida || "N/A",
+          DadosPortaria: {
+            ...prevAgendamento.DadosPortaria,
+            ...dadosPortaria,
+          },
+        };
+      });
+
+      // Ajustar observação com base no status
+      if (agendamento.SituacaoAgendamento === "Recusado") {
+        setObservacao(agendamento.MotivoRecusa || "Sem motivo fornecido");
+      } else if (agendamento.SituacaoAgendamento === "Andamento" || agendamento.SituacaoAgendamento === "Finalizado") {
+        setObservacao(agendamento.Observacao || "Aprovado pela portaria");
+      }
+
+    } catch (error) {
+      toast.error("Erro ao buscar dados da portaria.");
+      console.error("Erro ao buscar dados da portaria:", error);
+    }
+
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAgendamento(null);
+  };
+
+  const handleOpenRecusaModal = () => {
+    if (!selectedAgendamento) {
+      toast.error("Nenhum agendamento selecionado.");
+      return;
+    }
+    setIsRecusaModalOpen(true);
+  };
+
+  const handleCloseRecusaModal = () => {
+    setIsRecusaModalOpen(false);
+    setMotivoRecusa("");
   };
 
   const getDaysRange = () => {
@@ -198,23 +298,20 @@ const Portaria: React.FC = () => {
     return format(data, "eee, dd/MM/yyyy", { locale: ptBR });
   };
 
-  const handleOpenModal = (agendamento: Agendamento) => {
-    setSelectedAgendamento(agendamento);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedAgendamento(null);
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <Toaster /> {/* Toaster para as notificações */}
+      <Toaster />
+
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-700">Portaria</h1>
+          <button
+            onClick={voltarParaHoje}
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+          >
+            <IcBaselineCompareArrows width={20} height={20} /> {/* Novo ícone sendo utilizado */}
+          </button>
         </div>
 
         {/* Navegação entre semanas */}
@@ -226,10 +323,16 @@ const Portaria: React.FC = () => {
             &larr; Dias anteriores
           </button>
 
-          <span className="text-lg font-semibold">
-            {format(currentStartDate, "dd/MM/yyyy")} -{" "}
-            {format(addDays(currentStartDate, daysToShow - 1), "dd/MM/yyyy")}
-          </span>
+          {/* Botão que abre o modal do calendário */}
+          <div>
+            <span
+              className="text-lg font-semibold cursor-pointer"
+              onClick={() => setIsCalendarModalOpen(true)} // Abre o modal do calendário
+            >
+              {format(currentStartDate, "dd/MM/yyyy")} -{" "}
+              {format(addDays(currentStartDate, daysToShow - 1), "dd/MM/yyyy")}
+            </span>
+          </div>
 
           <button
             onClick={handleNextWeek}
@@ -239,7 +342,25 @@ const Portaria: React.FC = () => {
           </button>
         </div>
 
-        {/* Listagem dos agendamentos por dia */}
+        {/* Modal do calendário */}
+        <Modal
+          isOpen={isCalendarModalOpen}
+          onRequestClose={() => setIsCalendarModalOpen(false)}
+          className="bg-white rounded-lg p-6 max-w-md mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
+        >
+          <DatePicker
+            selected={currentStartDate}
+            onChange={(date: Date | null) => {
+              if (date) {
+                setCurrentStartDate(date);
+              }
+              setIsCalendarModalOpen(false); // Fecha o modal após selecionar uma data
+            }}
+            inline
+          />
+        </Modal>
+
         {loading ? (
           <p>Carregando agendamentos...</p>
         ) : (
@@ -282,81 +403,81 @@ const Portaria: React.FC = () => {
           </div>
         )}
 
-        {/* Modal para detalhes e ações */}
         {selectedAgendamento && (
-          <Modal
-            isOpen={isModalOpen}
-            onRequestClose={handleCloseModal}
-            className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
-            overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40"
-          >
-            <h2 className="text-2xl font-bold mb-4">Detalhes do Agendamento</h2>
-            <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
-            <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
-            <DadosAgendamentos
-              dataAgendamento={selectedAgendamento.DataAgendamento ?? ""}
-              horaAgendamento={selectedAgendamento.HoraAgendamento ?? ""}
-              produto={selectedAgendamento.DescricaoProduto ?? ""}
-              quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
-              observacao={selectedAgendamento.Observacao ?? null}
-            />
-            <DadosPortaria
-              codigoAgendamento={selectedAgendamento.CodigoAgendamento!}
-            />
-
-            <div className="flex justify-end mt-4 space-x-4">
-              {/* Se o status for "Confirmado", mostra os botões de Aprovar e Recusar */}
-              {selectedAgendamento.SituacaoAgendamento === "Confirmado" && (
-                <>
-                  <button
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    onClick={() =>
-                      handleAprovarAgendamento(selectedAgendamento)
-                    }
-                  >
-                    Aprovar
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    onClick={handleOpenRecusaModal} // Abre o modal de recusa
-                  >
-                    Recusar
-                  </button>
-                </>
-              )}
-
-              {/* Se o status for "Andamento", mostra apenas o botão de Finalizar */}
-              {selectedAgendamento.SituacaoAgendamento === "Andamento" && (
-                <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                  onClick={() =>
-                    handleFinalizarAgendamento(
-                      selectedAgendamento.CodigoAgendamento!
-                    )
-                  }
-                >
-                  Finalizar
-                </button>
-              )}
-
-              <button
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={handleCloseModal}
-              >
-                Fechar
-              </button>
-            </div>
-          </Modal>
+         <Modal
+         isOpen={isModalOpen}
+         onRequestClose={handleCloseModal}
+         className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
+         overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40"
+       >
+         <div className="flex justify-between items-center mb-4">
+           <h2 className="text-2xl font-bold">Detalhes do Agendamento</h2>
+           <button
+             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+             onClick={handleCloseModal}
+           >
+             Fechar
+           </button>
+         </div>
+       
+         <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
+         <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
+         <DadosAgendamentos
+           dataAgendamento={selectedAgendamento.DataAgendamento ?? ""}
+           horaAgendamento={selectedAgendamento.HoraAgendamento ?? ""}
+           produto={selectedAgendamento?.DescricaoProduto ?? ""}
+           quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
+           observacao={observacao} // Mostrar observação correta
+           arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
+         />
+       
+         <DadosPortaria
+           codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
+           dataHoraSaida={
+             selectedAgendamento?.DadosPortaria?.DataHoraSaida ?? "N/A"
+           }
+         />
+       
+         <div className="flex justify-between mt-4 space-x-4">
+           {selectedAgendamento.SituacaoAgendamento === "Confirmado" && (
+             <>
+               <button
+                 className="bg-green-500 text-white px-2 py-2 rounded hover:bg-green-600"
+                 onClick={() => handleAprovarAgendamento(selectedAgendamento)}
+               >
+                 Aprovar
+               </button>
+               <button
+                 className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
+                 onClick={handleOpenRecusaModal}
+               >
+                 Recusar
+               </button>
+             </>
+           )}
+       
+           {selectedAgendamento.SituacaoAgendamento === "Andamento" && (
+             <button
+               className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600"
+               onClick={() => handleFinalizarAgendamento(selectedAgendamento)}
+             >
+               Finalizar
+             </button>
+           )}
+         </div>
+       </Modal>
+       
         )}
 
-        {/* Modal de Recusa */}
         <Modal
           isOpen={isRecusaModalOpen}
           onRequestClose={handleCloseRecusaModal}
           className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg z-50"
           overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
         >
-          <h2 className="text-lg font-bold mb-4">Por favor, insira o motivo da recusa:</h2>
+          <h2 className="text-lg font-bold mb-4">
+            Por favor, insira o motivo da recusa:
+          </h2>
           <textarea
             value={motivoRecusa}
             onChange={(e) => setMotivoRecusa(e.target.value)}
@@ -373,7 +494,7 @@ const Portaria: React.FC = () => {
             </button>
             <button
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={() => handleRecusarAgendamento(selectedAgendamento!)}
+              onClick={() => handleRecusarAgendamento(selectedAgendamento)}
             >
               Confirmar
             </button>
