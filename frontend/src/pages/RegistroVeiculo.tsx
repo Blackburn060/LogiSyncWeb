@@ -69,7 +69,7 @@ const RegistroVeiculo: React.FC = () => {
           const veiculoResponse = await axios.post(`${backendUrl}/veiculos/public`, veiculoData);
           if (veiculoResponse.status === 201) {
             toast.success('Veículo cadastrado com sucesso!');
-            navigate('/calendario');
+            navigate('/login');
           }
         } catch (error) {
           toast.error('Erro ao cadastrar o veículo. Tente novamente.');

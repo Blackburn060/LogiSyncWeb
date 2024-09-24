@@ -24,18 +24,23 @@ const RegistroUsuario: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
-      const emailExists = await checkEmailExistsPublic(formData.email);
-
-      if (emailExists) {
+      const { exists, active } = await checkEmailExistsPublic(formData.email);
+  
+      if (exists && active) {
         toast.error('E-mail já utilizado em outra conta. Por favor, use outro e-mail.');
         setLoading(false);
         return;
       }
-
-      localStorage.setItem('registroUsuario', JSON.stringify(formData));
-      navigate('/registro/transportadora');
+  
+      if (exists && !active) {
+        localStorage.setItem('registroUsuario', JSON.stringify(formData));
+        navigate('/registro/transportadora');
+      } else {
+        localStorage.setItem('registroUsuario', JSON.stringify(formData));
+        navigate('/registro/transportadora');
+      }
     } catch (err) {
       toast.error('Erro ao verificar o e-mail. Tente novamente.');
     } finally {

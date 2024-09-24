@@ -79,15 +79,16 @@ const atualizarUsuario = async (req, res) => {
 
 
 
-// Verificar se o e-mail já existe
+// Verificar se o e-mail já existe e retornar se a conta está ativa ou não
 const verificarEmailExistente = async (req, res) => {
     const { email } = req.query;
     try {
         const user = await userModel.findUserByEmail(email.toLowerCase());
         if (user) {
-            res.json({ exists: true });
+            // Verifica se o usuário existe e se está ativo (SituacaoUsuario = 1)
+            res.json({ exists: true, active: user.SituacaoUsuario === 1 });
         } else {
-            res.json({ exists: false });
+            res.json({ exists: false, active: false });
         }
     } catch (error) {
         res.status(500).send({ message: "Erro ao verificar e-mail: " + error.message });

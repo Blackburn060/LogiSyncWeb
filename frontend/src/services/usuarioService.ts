@@ -32,12 +32,11 @@ export const checkEmailExists = async (email: string, token: string): Promise<bo
   return response.data.exists;
 };
 
-// Função para verificar se o e-mail já existe no sistema (endpoint público)
-export const checkEmailExistsPublic = async (email: string): Promise<boolean> => {
+// Função para verificar se o e-mail já existe no sistema e se a conta está ativa (endpoint público)
+export const checkEmailExistsPublic = async (email: string): Promise<{ exists: boolean, active: boolean }> => {
   const response = await axios.get(`${apiUrl}/verificar-email/public?email=${email}`);
-  return response.data.exists;
+  return response.data;
 };
-
 
 // Função para inativar um usuário
 export const inactivateUsuario = async (token: string, id: number): Promise<void> => {
