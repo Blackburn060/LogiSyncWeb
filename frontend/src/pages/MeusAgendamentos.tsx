@@ -305,7 +305,7 @@ const MeusAgendamentos: React.FC = () => {
             />
 
             {/* Dados da Portaria */}
-            <DadosPortaria codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null} />
+            <DadosPortaria codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null} dataHoraSaida={""} />
 
             {/* Botão de Cancelar */}
             {selectedAgendamento.SituacaoAgendamento === "Pendente" && (
