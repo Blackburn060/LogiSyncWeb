@@ -4,43 +4,45 @@ import { AxiosError } from "axios";  // Importa AxiosError para definir o tipo d
 
 interface DadosPortariaProps {
   codigoAgendamento: number | null;
-  dataHoraSaida: string;  // Adiciona a nova propriedade
+  dataHoraSaida: string;
+  observacaoPortaria: string;
+  setObservacaoPortaria: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const DadosPortaria: React.FC<DadosPortariaProps> = ({ codigoAgendamento, dataHoraSaida }) => {
+const DadosPortaria: React.FC<DadosPortariaProps> = ({ 
+  codigoAgendamento, 
+  dataHoraSaida, 
+  observacaoPortaria, 
+  setObservacaoPortaria 
+}) => {
   const [portariaData, setPortariaData] = useState({
-    dataChegada: "N/A",
-    observacao: "N/A",
+    dataChegada: "Não Informado",
+    observacao: "",
   });
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true; // Para evitar atualizações no componente desmontado
+    let isMounted = true;
     const fetchDadosPortaria = async () => {
       if (codigoAgendamento) {
         try {
           const response = await api.get(`/portarias/${codigoAgendamento}`);
-          console.log('Dados da portaria recebidos:', response.data); // Adicione este log
-
           if (isMounted) {
             setPortariaData({
               dataChegada: response.data.DataHoraEntrada || "N/A",
-              observacao: response.data.ObservacaoPortaria || response.data.MotivoRecusa || "N/A", // Usando a observação ou motivo de recusa
+              observacao: response.data.ObservacaoPortaria || "N/A",
             });
-            setErrorMessage(null); // Limpa a mensagem de erro se os dados foram encontrados
+            setErrorMessage(null); 
           }
         } catch (error: unknown) {
           if (error instanceof AxiosError) {
             if (error.response?.status === 404) {
-              console.log("Dados da portaria não encontrados.");
               setErrorMessage("Dados da portaria não encontrados.");
             } else {
-              console.error("Erro ao buscar dados da portaria:", error.message);
               setErrorMessage("Erro ao carregar dados da portaria.");
             }
           } else {
-            console.error("Erro desconhecido ao buscar dados da portaria:", error);
             setErrorMessage("Erro desconhecido ao buscar dados da portaria.");
           }
         } finally {
@@ -54,7 +56,7 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({ codigoAgendamento, dataHo
     fetchDadosPortaria();
 
     return () => {
-      isMounted = false; // Cleanup no desmontar do componente
+      isMounted = false;
     };
   }, [codigoAgendamento]);
 
@@ -80,7 +82,7 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({ codigoAgendamento, dataHo
             <input
               type="text"
               className="border w-full px-2 py-1 rounded-md"
-              value={dataHoraSaida} // Usando a prop diretamente
+              value={dataHoraSaida}
               readOnly
               placeholder="Data de Saída"
             />
@@ -89,9 +91,9 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({ codigoAgendamento, dataHo
             <label className="block font-semibold">Observação</label>
             <textarea
               className="border w-full px-2 py-1 rounded-md"
-              value={portariaData.observacao}
-              readOnly
-              placeholder="Observações"
+              value={observacaoPortaria}
+              onChange={(e) => setObservacaoPortaria(e.target.value)} // Permitir que a observação seja atualizada
+              placeholder="Insira uma observação"
             ></textarea>
           </div>
         </div>

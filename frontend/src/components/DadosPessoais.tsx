@@ -7,9 +7,9 @@ interface DadosPessoaisProps {
 
 const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
   const [dadosPessoais, setDadosPessoais] = useState({
-    nome: "N/A",
-    cpf: "N/A",
-    telefone: "N/A",
+    nome: "Não Informado",
+    cpf: "Não Informado",
+    telefone: "Não Informado",
   });
 
   useEffect(() => {
@@ -18,9 +18,9 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
         const response = await api.get(`/usuarios/${usuarioId}`);
         const userData = response.data || {}; // Verifique se há dados
         setDadosPessoais({
-          nome: userData.NomeCompleto || "N/A",
-          cpf: userData.CPF || "N/A",
-          telefone: userData.NumeroCelular || "N/A",
+          nome: userData.NomeCompleto || "Não Informado",
+          cpf: userData.CPF || "Não Informado",
+          telefone: userData.NumeroCelular || "Não Informado",
         });
       } catch (error) {
         console.error("Erro ao buscar dados pessoais:", error);

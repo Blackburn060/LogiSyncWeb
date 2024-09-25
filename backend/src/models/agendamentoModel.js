@@ -47,7 +47,7 @@ const getAgendamentosPorStatus = () => {
     return new Promise((resolve, reject) => {
         const sql = `
             SELECT * FROM agendamentos
-            WHERE SituacaoAgendamento IN ("Confirmado", "Andamento", "Finalizado", "Recusado")
+            WHERE SituacaoAgendamento IN ("Confirmado", "Andamento", "Finalizado", "Reprovado")
         `;
         db.all(sql, [], (err, rows) => {
             if (err) {

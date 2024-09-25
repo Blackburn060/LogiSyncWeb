@@ -104,15 +104,15 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
     token: string,
     agendamentoId: number,
     tipoAgendamento: string,
-    usuarioId: number 
+    usuarioId: number,
+    observacaoPortaria?: string // Adicionar este parâmetro
   ) => {
     try {
-    
       await api.put(
         `/agendamentos/${agendamentoId}`,
         {
           SituacaoAgendamento: "Andamento", 
-          DataHoraEntrada: new Date().toISOString(), 
+          DataHoraEntrada: new Date().toISOString(),
           TipoAgendamento: tipoAgendamento,
         },
         {
@@ -121,15 +121,14 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
           },
         }
       );
-
+  
       await api.post(
         `/portarias`, 
         {
           CodigoAgendamento: agendamentoId,
-          DataHoraEntrada: new Date().toISOString(), 
-          UsuarioAprovacao: usuarioId, 
-          ObservacaoPortaria: "Aprovado pela portaria", 
-          
+          DataHoraEntrada: new Date().toISOString(),
+          UsuarioAprovacao: usuarioId,
+          ObservacaoPortaria: observacaoPortaria || "Aprovado pela portaria",  // Adiciona a observação da portaria
         },
         {
           headers: {
@@ -137,7 +136,7 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
           },
         }
       );
-
+  
       return { message: "Agendamento aprovado com sucesso" };
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -151,7 +150,7 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
       throw error;
     }
   };
-
+  
   // Função para recusar agendamento e alterar o status para "Recusado"
   export const recusarAgendamento = async (
     token: string,
@@ -164,7 +163,7 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
       await api.put(
         `/agendamentos/${agendamentoId}`,
         {
-          SituacaoAgendamento: "Recusado",
+          SituacaoAgendamento: "Reprovado",
           MotivoRecusa: motivoRecusa,
           TipoAgendamento: tipoAgendamento // Inclui o tipo de agendamento aqui
         },

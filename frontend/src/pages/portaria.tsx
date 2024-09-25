@@ -38,6 +38,23 @@ export function IcBaselineCompareArrows(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IcOutlineCalendarMonth(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <path
+        fill="currentColor"
+        d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2m0 16H5V10h14zm0-12H5V6h14zM9 14H7v-2h2zm4 0h-2v-2h2zm4 0h-2v-2h2zm-8 4H7v-2h2zm4 0h-2v-2h2zm4 0h-2v-2h2z"
+      />
+    </svg>
+  );
+}
+
 // Função para controlar a rolagem da página quando o modal estiver aberto
 const toggleBodyScroll = (isModalOpen: boolean) => {
   if (isModalOpen) {
@@ -72,10 +89,12 @@ const Portaria: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false);
   const [motivoRecusa, setMotivoRecusa] = useState("");
-  const [observacaoAdmin] = useState(""); // Para a observação do administrador ao aprovar
   const [observacao, setObservacao] = useState(""); // Para mostrar a observação correta no modal
+  const [observacaoPortaria, setObservacaoPortaria] = useState(""); // Observação para o campo da portaria
   const [loading, setLoading] = useState<boolean>(true);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false); // Controla a exibição do modal do calendário
+  const [filterStatus, setFilterStatus] = useState<string>("Todos"); // Filtro de status
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false); // Controla o dropdown de filtro
 
   const daysToShow = 7;
 
@@ -103,6 +122,36 @@ const Portaria: React.FC = () => {
 
   const voltarParaHoje = () => {
     setCurrentStartDate(new Date()); // Define o dia atual no estado
+  };
+
+  // Toggle para abrir/fechar o dropdown
+  const toggleFilterDropdown = () => {
+    setIsFilterDropdownOpen(!isFilterDropdownOpen);
+  };
+
+  const handleFilterChange = (status: string) => {
+    setFilterStatus(status);
+    setIsFilterDropdownOpen(false); // Fecha o dropdown ao selecionar um filtro
+  };
+
+  const FunnelIcon = ({ onClick }: { onClick: () => void }) => {
+    return (
+      <svg
+        onClick={onClick}
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-6 w-6 cursor-pointer"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 11.414V16a1 1 0 01-.293.707l-2 2A1 1 0 0110 18v-6.586L3.293 6.707A1 1 0 013 6V4z"
+        />
+      </svg>
+    );
   };
 
   const handleFinalizarAgendamento = async (agendamento: Agendamento) => {
@@ -151,12 +200,13 @@ const Portaria: React.FC = () => {
     try {
       const usuarioId = Number(user!.id);
 
-      // Se o admin quiser adicionar uma observação antes de aprovar
+      // Aprovar o agendamento e enviar a observação da portaria
       await aprovarAgendamento(
         token!,
         agendamento.CodigoAgendamento!,
         agendamento.TipoAgendamento!,
-        usuarioId
+        usuarioId,
+        observacaoPortaria // Observação da portaria passada aqui
       );
 
       toast.success("Agendamento aprovado com sucesso!");
@@ -165,7 +215,10 @@ const Portaria: React.FC = () => {
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
-            ? { ...a, SituacaoAgendamento: "Andamento", Observacao: observacaoAdmin } // Adicionar observação do admin
+            ? {
+                ...a,
+                SituacaoAgendamento: "Andamento",
+              }
             : a
         )
       );
@@ -204,7 +257,11 @@ const Portaria: React.FC = () => {
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
-            ? { ...a, SituacaoAgendamento: "Recusado", MotivoRecusa: motivoRecusa } // Adicionar motivo de recusa
+            ? {
+                ...a,
+                SituacaoAgendamento: "Recusado",
+                MotivoRecusa: motivoRecusa,
+              }
             : a
         )
       );
@@ -240,10 +297,12 @@ const Portaria: React.FC = () => {
       // Ajustar observação com base no status
       if (agendamento.SituacaoAgendamento === "Recusado") {
         setObservacao(agendamento.MotivoRecusa || "Sem motivo fornecido");
-      } else if (agendamento.SituacaoAgendamento === "Andamento" || agendamento.SituacaoAgendamento === "Finalizado") {
+      } else if (
+        agendamento.SituacaoAgendamento === "Andamento" ||
+        agendamento.SituacaoAgendamento === "Finalizado"
+      ) {
         setObservacao(agendamento.Observacao || "Aprovado pela portaria");
       }
-
     } catch (error) {
       toast.error("Erro ao buscar dados da portaria.");
       console.error("Erro ao buscar dados da portaria:", error);
@@ -282,7 +341,10 @@ const Portaria: React.FC = () => {
   const getAgendamentosForDay = (day: Date) => {
     const dayString = format(day, "yyyy-MM-dd");
     return agendamentos.filter(
-      (agendamento) => agendamento.DataAgendamento === dayString
+      (agendamento) =>
+        agendamento.DataAgendamento === dayString &&
+        (filterStatus === "Todos" ||
+          agendamento.SituacaoAgendamento === filterStatus)
     );
   };
 
@@ -304,41 +366,127 @@ const Portaria: React.FC = () => {
       <Toaster />
 
       <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-700">Portaria</h1>
-          <button
-            onClick={voltarParaHoje}
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
-          >
-            <IcBaselineCompareArrows width={20} height={20} /> {/* Novo ícone sendo utilizado */}
-          </button>
-        </div>
-
         {/* Navegação entre semanas */}
         <div className="flex justify-between items-center mb-6">
+          {/* Botão de "Dias Anteriores" */}
           <button
             onClick={handlePreviousWeek}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
           >
-            &larr; Dias anteriores
+            {/* Exibe ícone em telas pequenas */}
+            <span className="block md:hidden">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </span>
+            {/* Exibe texto em telas maiores */}
+            <span className="hidden md:block">&larr; Dias anteriores</span>
           </button>
 
-          {/* Botão que abre o modal do calendário */}
-          <div>
-            <span
-              className="text-lg font-semibold cursor-pointer"
+          {/* Contêiner central com data e botões */}
+          <div className="flex items-center space-x-4">
+            {/* Botão de voltar para a data atual */}
+            <button
+              onClick={voltarParaHoje}
+              className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+            >
+              <IcBaselineCompareArrows width={20} height={20} />{" "}
+              {/* Ícone da seta */}
+            </button>
+
+            {/* Data central */}
+            <div
+              className="text-lg font-semibold cursor-pointer flex items-center"
               onClick={() => setIsCalendarModalOpen(true)} // Abre o modal do calendário
             >
-              {format(currentStartDate, "dd/MM/yyyy")} -{" "}
-              {format(addDays(currentStartDate, daysToShow - 1), "dd/MM/yyyy")}
-            </span>
+              {/* Exibe o ícone de calendário em telas pequenas */}
+              <button className="block md:hidden p-2 bg-blue-500 text-white rounded-lg">
+                <IcOutlineCalendarMonth width={24} height={24} />
+              </button>
+
+              {/* Exibe o texto da data em telas maiores */}
+              <span className="hidden md:block">
+                {format(currentStartDate, "dd/MM/yyyy")} -{" "}
+                {format(
+                  addDays(currentStartDate, daysToShow - 1),
+                  "dd/MM/yyyy"
+                )}
+              </span>
+            </div>
+
+            {/* Botão de filtro com fundo azul */}
+            <div className="relative">
+              <button
+                className="p-2 bg-blue-500 text-white rounded-lg"
+                onClick={toggleFilterDropdown}
+              >
+                <FunnelIcon onClick={toggleFilterDropdown} />{" "}
+                {/* Ícone do funil com onClick */}
+              </button>
+              {isFilterDropdownOpen && (
+                <div className="absolute mt-2 right-0 bg-white border border-gray-300 shadow-lg rounded-md z-10">
+                  <ul className="py-1">
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterChange("Todos")}
+                    >
+                      Todos
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterChange("Confirmado")}
+                    >
+                      Confirmado
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterChange("Andamento")}
+                    >
+                      Andamento
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterChange("Finalizado")}
+                    >
+                      Finalizado
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterChange("Recusado")}
+                    >
+                      Recusado
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
+          {/* Botão de "Próximos dias" */}
           <button
             onClick={handleNextWeek}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
           >
-            Próximos dias &rarr;
+            {/* Exibe ícone em telas pequenas */}
+            <span className="block md:hidden">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
+              </svg>
+            </span>
+            {/* Exibe texto em telas maiores */}
+            <span className="hidden md:block">Próximos dias &rarr;</span>
           </button>
         </div>
 
@@ -404,69 +552,88 @@ const Portaria: React.FC = () => {
         )}
 
         {selectedAgendamento && (
-         <Modal
-         isOpen={isModalOpen}
-         onRequestClose={handleCloseModal}
-         className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
-         overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40"
-       >
-         <div className="flex justify-between items-center mb-4">
-           <h2 className="text-2xl font-bold">Detalhes do Agendamento</h2>
-           <button
-             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-             onClick={handleCloseModal}
-           >
-             Fechar
-           </button>
-         </div>
-       
-         <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
-         <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
-         <DadosAgendamentos
-           dataAgendamento={selectedAgendamento.DataAgendamento ?? ""}
-           horaAgendamento={selectedAgendamento.HoraAgendamento ?? ""}
-           produto={selectedAgendamento?.DescricaoProduto ?? ""}
-           quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
-           observacao={observacao} // Mostrar observação correta
-           arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
-         />
-       
-         <DadosPortaria
-           codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
-           dataHoraSaida={
-             selectedAgendamento?.DadosPortaria?.DataHoraSaida ?? "N/A"
-           }
-         />
-       
-         <div className="flex justify-between mt-4 space-x-4">
-           {selectedAgendamento.SituacaoAgendamento === "Confirmado" && (
-             <>
-               <button
-                 className="bg-green-500 text-white px-2 py-2 rounded hover:bg-green-600"
-                 onClick={() => handleAprovarAgendamento(selectedAgendamento)}
-               >
-                 Aprovar
-               </button>
-               <button
-                 className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
-                 onClick={handleOpenRecusaModal}
-               >
-                 Recusar
-               </button>
-             </>
-           )}
-       
-           {selectedAgendamento.SituacaoAgendamento === "Andamento" && (
-             <button
-               className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600"
-               onClick={() => handleFinalizarAgendamento(selectedAgendamento)}
-             >
-               Finalizar
-             </button>
-           )}
-         </div>
-       </Modal>
-       
+          <Modal
+            isOpen={isModalOpen}
+            onRequestClose={handleCloseModal}
+            className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg max-h-screen overflow-y-auto"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Detalhes do Agendamento</h2>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                onClick={handleCloseModal}
+              >
+                Fechar
+              </button>
+            </div>
+
+            {/* Exibir o Status do Agendamento */}
+            <div className="mb-4">
+              <span
+                className={`px-4 py-2 rounded text-white font-semibold ${getStatusColor(
+                  selectedAgendamento?.SituacaoAgendamento || ""
+                )}`}
+              >
+                {selectedAgendamento?.SituacaoAgendamento}
+              </span>
+            </div>
+
+            {/* Restante dos detalhes do agendamento */}
+            <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
+            <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
+            <DadosAgendamentos
+              dataAgendamento={selectedAgendamento.DataAgendamento ?? ""}
+              horaAgendamento={selectedAgendamento.HoraAgendamento ?? ""}
+              produto={selectedAgendamento?.DescricaoProduto ?? ""}
+              quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
+              observacao={observacao} // Mostrar observação correta
+              arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
+            />
+
+            {/* Utilizando o campo de observação da portaria */}
+            <DadosPortaria
+              codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
+              dataHoraSaida={
+                selectedAgendamento?.DadosPortaria?.DataHoraSaida ?? "N/A"
+              }
+              observacaoPortaria={observacaoPortaria}
+              setObservacaoPortaria={setObservacaoPortaria} // Atualiza o estado da observação da portaria
+            />
+
+            <div className="flex justify-between mt-4 space-x-4">
+              {selectedAgendamento.SituacaoAgendamento === "Confirmado" && (
+                <>
+                  {/* Removi o textarea separado para observação */}
+                  <button
+                    className="bg-green-500 text-white px-2 py-2 rounded hover:bg-green-600"
+                    onClick={() =>
+                      handleAprovarAgendamento(selectedAgendamento)
+                    }
+                  >
+                    Aprovar
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
+                    onClick={handleOpenRecusaModal}
+                  >
+                    Recusar
+                  </button>
+                </>
+              )}
+
+              {selectedAgendamento.SituacaoAgendamento === "Andamento" && (
+                <button
+                  className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600"
+                  onClick={() =>
+                    handleFinalizarAgendamento(selectedAgendamento)
+                  }
+                >
+                  Finalizar
+                </button>
+              )}
+            </div>
+          </Modal>
         )}
 
         <Modal
