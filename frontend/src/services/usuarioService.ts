@@ -57,3 +57,29 @@ export const createUsuarioPublic = async (usuario: Omit<Usuario, 'id'>): Promise
     throw error;
   }
 };
+
+// Função para solicitar recuperação de senha
+export const solicitarRecuperacaoSenha = async (email: string): Promise<void> => {
+  try {
+    const response = await axios.post(`${apiUrl}/recuperar-senha`, { email });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao solicitar recuperação de senha:', error);
+    throw error;
+  }
+};
+
+// Função para redefinir senha
+export const redefinirSenha = async (token: string, id: number, novaSenha: string): Promise<void> => {
+  try {
+    const response = await axios.post(`${apiUrl}/redefinir-senha`, {
+      token,
+      id,
+      novaSenha
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error);
+    throw error;
+  }
+};

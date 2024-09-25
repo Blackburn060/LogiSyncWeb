@@ -7,4 +7,7 @@ router.post('/login', AuthController.login);
 router.post('/registro', AuthController.registro);
 router.post('/refresh-token', AuthController.refreshToken);
 
+router.post('/recuperar-senha', AuthController.recuperarSenha);
+router.post('/redefinir-senha', AuthController.redefinirSenha);
+
 module.exports = router;

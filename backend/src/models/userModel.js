@@ -147,6 +147,35 @@ const deleteUser = (id) => {
     });
 };
 
+// Função para salvar token de redefinição de senha
+const savePasswordResetToken = (userId, tokenHash) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'UPDATE cadastrousuarios SET ResetTokenHash = ?, TokenExpiration = ? WHERE CodigoUsuario = ?';
+        const expiration = moment().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
+        db.run(sql, [tokenHash, expiration, userId], (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
+// Função para atualizar a senha
+const updatePassword = (userId, hashedPassword) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'UPDATE cadastrousuarios SET Senha = ?, ResetTokenHash = NULL, TokenExpiration = NULL WHERE CodigoUsuario = ?';
+        db.run(sql, [hashedPassword, userId], (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
 module.exports = {
     getAllUsers,
     addUser,
@@ -154,5 +183,7 @@ module.exports = {
     getUserById, 
     findUserByEmail,
     findUserById,
-    deleteUser
+    deleteUser,
+    savePasswordResetToken,
+    updatePassword
 };

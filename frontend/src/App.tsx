@@ -19,6 +19,8 @@ import SelecionarProcesso from './pages/SelecionarProcesso';
 import AutorizarAgendamentos from './pages/AutorizarAgendamentos';
 import Portaria from './pages/portaria';
 import ProtectedRoute from './components/ProtectedRoute';
+import RecuperarSenha from './pages/RecuperarSenha';
+import RedefinirSenha from './pages/RedefinirSenha';
 
 const App: React.FC = () => {
   return (
@@ -33,6 +35,8 @@ const App: React.FC = () => {
           <Route path="/registro/veiculo" element={<RegistroVeiculo />} />
           <Route path="/registro/usuario" element={<RegistroUsuario />} />
           <Route path="/registro/transportadora" element={<RegistroTransportadora />} />
+          <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenha />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
 

@@ -103,7 +103,10 @@ const Login: React.FC = () => {
               required
               autoComplete="current-password"
             />
-            <p className="text-white text-md font-extrabold text-right">Esqueceu sua senha?</p>
+            <p className="text-white text-md font-extrabold text-right">
+              <Link to="/recuperar-senha">Esqueceu sua senha?</Link>
+            </p>
+
           </div>
           <div className="flex items-center justify-center pt-3">
             <button
@@ -114,15 +117,15 @@ const Login: React.FC = () => {
               {loading ? <FaSpinner className="animate-spin text-3xl" /> : 'Entrar'}
             </button>
           </div>
-          <p className="text-white text-lg font-extrabold pt-3 text-center">Não tem uma conta? <Link to="/registro/usuario" target='_blank' className='underline'>Cadastre-se aqui!</Link></p>
+          <p className="text-white text-lg font-extrabold pt-3 text-center">Não tem uma conta? <Link to="/registro/usuario" target='_blank' className='underline'>Crie uma!</Link></p>
 
           <div className="flex flex-col items-center pt-1">
             <p className="text-white text-lg font-extrabold mt-1 text-center">Ou</p>
             <button
               onClick={handleContinueWithoutLogin}
-              className="bg-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-xl font-extrabold py-2 px-16 rounded focus:outline-none focus:shadow-outline mt-3"
+              className="border-4 border-logisync-color-blue-50 hover:bg-logisync-color-blue-200 text-white text-xl font-extrabold py-2 px-9 rounded focus:outline-none focus:shadow-outline mt-3"
             >
-              Continuar sem login
+              Continuar sem uma conta
             </button>
           </div>
         </form>
