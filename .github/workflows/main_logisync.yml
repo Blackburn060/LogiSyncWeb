@@ -40,8 +40,10 @@ jobs:
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1
           build-args: |
             VITE_APP_BACKEND_API_URL=${{ secrets.VITE_APP_BACKEND_API_URL }}
+            VITE_APP_GOOGLE_APIKEY=${{ secrets.VITE_APP_GOOGLE_APIKEY }}
         env:
           VITE_APP_BACKEND_API_URL: ${{ secrets.VITE_APP_BACKEND_API_URL }}
+          VITE_APP_GOOGLE_APIKEY: ${{ secrets.VITE_APP_GOOGLE_APIKEY }}
 
       - name: Build and push backend homologation Docker image
         uses: docker/build-push-action@v3
@@ -53,6 +55,8 @@ jobs:
           REACT_APP_FRONTEND_URL: ${{ secrets.REACT_APP_FRONTEND_URL }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -66,7 +70,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config appsettings set --name logisync-homologation-frontend --resource-group LogiSync --settings VITE_APP_BACKEND_API_URL=${{ secrets.VITE_APP_BACKEND_API_URL }}
+            az webapp config appsettings set --name logisync-homologation-frontend --resource-group LogiSync --settings VITE_APP_BACKEND_API_URL=${{ secrets.VITE_APP_BACKEND_API_URL }} VITE_APP_GOOGLE_APIKEY=${{ secrets.VITE_APP_GOOGLE_APIKEY }}
             az webapp config container set --name logisync-homologation-frontend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
 
       - name: Restart Azure App Service for Frontend
@@ -87,7 +91,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config appsettings set --name logisync-homologation-backend --resource-group LogiSync --settings REACT_APP_FRONTEND_URL=${{ secrets.REACT_APP_FRONTEND_URL }} SECRET_KEY=${{ secrets.SECRET_KEY }} REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }}
+            az webapp config appsettings set --name logisync-homologation-backend --resource-group LogiSync --settings REACT_APP_FRONTEND_URL=${{ secrets.REACT_APP_FRONTEND_URL }} SECRET_KEY=${{ secrets.SECRET_KEY }} REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }} EMAIL_USER=${{ secrets.EMAIL_USER }} EMAIL_PASS=${{ secrets.EMAIL_PASS }}
             az webapp config container set --name logisync-homologation-backend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-backend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
 
       - name: Restart Azure App Service for Backend
