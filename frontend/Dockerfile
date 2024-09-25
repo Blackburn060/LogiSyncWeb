@@ -15,9 +15,10 @@ COPY . .
 
 # Defina as variáveis de ambiente para o build
 ARG VITE_APP_BACKEND_API_URL
+ARG VITE_APP_GOOGLE_APIKEY
 
-# Crie o build da aplicação Vite.js
-RUN VITE_APP_BACKEND_API_URL=$VITE_APP_BACKEND_API_URL npm run build
+# Crie o build da aplicação Vite.js com ambas as variáveis
+RUN VITE_APP_BACKEND_API_URL=$VITE_APP_BACKEND_API_URL VITE_APP_GOOGLE_APIKEY=$VITE_APP_GOOGLE_APIKEY npm run build
 
 # Use uma imagem de servidor HTTP para servir o build
 FROM nginx:alpine
