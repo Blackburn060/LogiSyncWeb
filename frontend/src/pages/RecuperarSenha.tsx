@@ -15,7 +15,7 @@ const RecuperarSenha: React.FC = () => {
 
         try {
             await solicitarRecuperacaoSenha(email);
-            toast.success('Verifique seu e-mail para redefinir a senha.');
+            toast.success('Se o e-mail existir, um link de recuperação foi enviado.');
             setEmailEnviado(true);
         } catch (error) {
             toast.error('Erro ao enviar e-mail de recuperação. Por favor, tente novamente.');

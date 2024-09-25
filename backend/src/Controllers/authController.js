@@ -47,24 +47,26 @@ class AuthController {
   // Função para solicitar recuperação de senha
   static async recuperarSenha(req, res) {
     const { email } = req.body;
+
     try {
       const user = await User.findUserByEmail(email.toLowerCase());
-      if (!user) {
-        return res.status(404).json({ message: "E-mail não encontrado." });
+
+      if (user) {
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const hashedToken = await bcrypt.hash(resetToken, 10);
+
+        await User.savePasswordResetToken(user.CodigoUsuario, hashedToken);
+
+        const resetLink = `${process.env.REACT_APP_FRONTEND_URL}/redefinir-senha?token=${resetToken}&id=${user.CodigoUsuario}`;
+
+        await enviarEmailRecuperacaoSenha(user.Email, resetLink);
       }
 
-      // Gerar token de redefinição
-      const resetToken = crypto.randomBytes(32).toString("hex");
-      const hashedToken = await bcrypt.hash(resetToken, 10);
-
-      // Salvar token com validade no banco
-      await User.savePasswordResetToken(user.CodigoUsuario, hashedToken);
-
-      // Enviar e-mail com link de redefinição
-      const resetLink = `${process.env.REACT_APP_FRONTEND_URL}/redefinir-senha?token=${resetToken}&id=${user.CodigoUsuario}`;
-      await enviarEmailRecuperacaoSenha(user.Email, resetLink);
-
-      res.status(200).json({ message: "E-mail de recuperação enviado." });
+      res
+        .status(200)
+        .json({
+          message: "Se o e-mail existir, um link de recuperação foi enviado.",
+        });
     } catch (error) {
       res.status(500).json({ message: "Erro ao processar a solicitação." });
     }
