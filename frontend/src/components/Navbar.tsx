@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserMenu from './UserMenu';
 import logo from '../assets/images/Logo-LogiSync-02-SF.webp';
@@ -13,6 +13,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -47,33 +48,61 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
     };
   }, [isOpen]);
 
+  const isActive = (path: string) => location.pathname === path;
+
   const renderNavLinks = () => {
     if (user?.tipousuario === 'motorista') {
       return (
         <>
-          <Link to="/calendario" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Calendário</Link>
-          <Link to="/agendamentos" className="hover:text-gray-300 flex items-center"><FaClock className="mr-2" /> Agendamentos</Link>
-          <Link to="/veiculos" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Veículos</Link>
-          <Link to="/transportadora" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Transportadora</Link>
+          <Link to="/calendario" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/calendario') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaCalendarAlt className="mr-2" /> Calendário
+          </Link>
+          <Link to="/agendamentos" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/agendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaClock className="mr-2" /> Agendamentos
+          </Link>
+          <Link to="/veiculos" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/veiculos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaTruck className="mr-2" /> Veículos
+          </Link>
+          <Link to="/transportadora" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/transportadora') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaBuilding className="mr-2" /> Transportadora
+          </Link>
         </>
       );
     } else {
       return (
         <>
-          <Link to="/gestao/home" className="hover:text-gray-300 flex items-center"><FaHome className="mr-2" /> Início</Link>
-          <Link to="/gestao/autorizarAgendamentos" className="hover:text-gray-300 flex items-center"><FaCalendarAlt className="mr-2" /> Agendamentos</Link>
-          <Link to="/gestao/portaria" className="hover:text-gray-300 flex items-center"><FaBuilding className="mr-2" /> Portaria</Link>
-          <Link to="/gestao/patio" className="hover:text-gray-300 flex items-center"><FaTruck className="mr-2" /> Gestão de Pátio</Link>
-          <Link to="/gestao/relatorios" className="hover:text-gray-300 flex items-center"><FaChartLine className="mr-2" /> Relatórios</Link>
+          <Link to="/gestao/home" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/home') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaHome className="mr-2" /> Início
+          </Link>
+          <Link to="/gestao/autorizarAgendamentos" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/autorizarAgendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaCalendarAlt className="mr-2" /> Agendamentos
+          </Link>
+          <Link to="/gestao/portaria" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/portaria') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaBuilding className="mr-2" /> Portaria
+          </Link>
+          <Link to="/gestao/patio" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/patio') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaTruck className="mr-2" /> Gestão de Pátio
+          </Link>
+          <Link to="/gestao/relatorios" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/relatorios') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaChartLine className="mr-2" /> Relatórios
+          </Link>
           <div onClick={toggleDropdown} className="relative cursor-pointer">
             <div className="hover:text-gray-300 flex items-center">
               <FaCog className="mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </div>
             <div className={`absolute mt-2 py-2 w-40 bg-white rounded-lg shadow-xl z-20 ${isDropdownOpen ? 'block' : 'hidden'}`}>
-              <Link to="/gestao/usuarios" className="px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center"><FaUsers className="mr-2" /> Usuários</Link>
-              <Link to="/gestao/produtos" className="px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center"><FaBoxOpen className="mr-2" /> Produtos</Link>
-              <Link to="/gestao/horarios" className="px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center"><FaClock className="mr-2" /> Horários</Link>
-              <Link to="/gestao/safra" className="px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center"><FaSeedling className="mr-2" /> Safra</Link>
+              <Link to="/gestao/usuarios" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/usuarios') ? 'bg-gray-200' : ''}`}>
+                <FaUsers className="mr-2" /> Usuários
+              </Link>
+              <Link to="/gestao/produtos" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/produtos') ? 'bg-gray-200' : ''}`}>
+                <FaBoxOpen className="mr-2" /> Produtos
+              </Link>
+              <Link to="/gestao/horarios" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/horarios') ? 'bg-gray-200' : ''}`}>
+                <FaClock className="mr-2" /> Horários
+              </Link>
+              <Link to="/gestao/safra" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/safra') ? 'bg-gray-200' : ''}`}>
+                <FaSeedling className="mr-2" /> Safra
+              </Link>
             </div>
           </div>
         </>
@@ -98,7 +127,7 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
 
   return (
     <nav className="bg-logisync-color-blue-400 shadow-md w-full z-10">
-      <div className="flex justify-between items-center px-2 py-1">
+      <div className="flex justify-between items-center px-4 py-2">
         <div className="flex items-center">
           <img
             src={iconeMenu}
@@ -109,7 +138,7 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
           <Link to={user?.tipousuario === 'motorista' ? "/calendario" : "/gestao/home"}>
             <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
           </Link>
-          <span className="text-white font-bold text-xl ml-2">LogiSync</span>
+          <span className="text-white font-bold text-xl ml-4">LogiSync</span>
         </div>
         <div className="hidden min-[1410px]:flex items-center space-x-6 text-white font-bold text-xl">
           {user ? renderNavLinks() : renderAuthLinks()}
