@@ -21,7 +21,7 @@ import DatePicker from "react-datepicker"; // Importa o componente DatePicker
 import { getDadosPortaria } from "../services/portariaService";
 
 // Aqui está o seu ícone personalizado
-export function IcBaselineCompareArrows(props: React.SVGProps<SVGSVGElement>) {
+export function IcRoundRefresh(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -32,7 +32,7 @@ export function IcBaselineCompareArrows(props: React.SVGProps<SVGSVGElement>) {
     >
       <path
         fill="currentColor"
-        d="M9.01 14H2v2h7.01v3L13 15l-3.99-4zm5.98-1v-3H22V8h-7.01V5L11 9z"
+        d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44c-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z"
       ></path>
     </svg>
   );
@@ -89,7 +89,6 @@ const Portaria: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false);
   const [motivoRecusa, setMotivoRecusa] = useState("");
-  const [observacao, setObservacao] = useState(""); // Para mostrar a observação correta no modal
   const [observacaoPortaria, setObservacaoPortaria] = useState(""); // Observação para o campo da portaria
   const [loading, setLoading] = useState<boolean>(true);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false); // Controla a exibição do modal do calendário
@@ -273,7 +272,7 @@ const Portaria: React.FC = () => {
 
   const handleOpenModal = async (agendamento: Agendamento) => {
     setSelectedAgendamento(agendamento);
-    setObservacao(""); // Resetar observação
+    setObservacaoPortaria(""); // Resetar observação
 
     try {
       const dadosPortaria = await getDadosPortaria(
@@ -293,16 +292,7 @@ const Portaria: React.FC = () => {
           },
         };
       });
-
-      // Ajustar observação com base no status
-      if (agendamento.SituacaoAgendamento === "Recusado") {
-        setObservacao(agendamento.MotivoRecusa || "Sem motivo fornecido");
-      } else if (
-        agendamento.SituacaoAgendamento === "Andamento" ||
-        agendamento.SituacaoAgendamento === "Finalizado"
-      ) {
-        setObservacao(agendamento.Observacao || "Aprovado pela portaria");
-      }
+      console.log(agendamento); // Adiciona esse log para inspecionar os dados
     } catch (error) {
       toast.error("Erro ao buscar dados da portaria.");
       console.error("Erro ao buscar dados da portaria:", error);
@@ -364,7 +354,9 @@ const Portaria: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
       <Toaster />
-
+      <div className="text-balck text-left font-bold text-lg py-1 ml-12">
+      PORTARIA
+      </div>
       <div className="container mx-auto p-4">
         {/* Navegação entre semanas */}
         <div className="flex justify-between items-center mb-6">
@@ -396,8 +388,7 @@ const Portaria: React.FC = () => {
               onClick={voltarParaHoje}
               className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
             >
-              <IcBaselineCompareArrows width={20} height={20} />{" "}
-              {/* Ícone da seta */}
+              <IcRoundRefresh width={20} height={20} /> {/* Ícone da seta */}
             </button>
 
             {/* Data central */}
@@ -579,7 +570,9 @@ const Portaria: React.FC = () => {
               </span>
             </div>
 
-            {/* Restante dos detalhes do agendamento */}
+            {/* Exibir Observação da Portaria */}
+
+            {/* Exibir outros detalhes do agendamento */}
             <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
             <DadosVeicular codigoVeiculo={selectedAgendamento.CodigoVeiculo} />
             <DadosAgendamentos
@@ -587,7 +580,7 @@ const Portaria: React.FC = () => {
               horaAgendamento={selectedAgendamento.HoraAgendamento ?? ""}
               produto={selectedAgendamento?.DescricaoProduto ?? ""}
               quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
-              observacao={observacao} // Mostrar observação correta
+              observacao={selectedAgendamento?.Observacao ?? null}
               arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
             />
 
@@ -599,6 +592,9 @@ const Portaria: React.FC = () => {
               }
               observacaoPortaria={observacaoPortaria}
               setObservacaoPortaria={setObservacaoPortaria} // Atualiza o estado da observação da portaria
+              isObservacaoEditable={
+                selectedAgendamento.SituacaoAgendamento === "Confirmado"
+              } // Apenas permitir editar se estiver "Confirmado"
             />
 
             <div className="flex justify-between mt-4 space-x-4">

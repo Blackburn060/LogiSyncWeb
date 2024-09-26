@@ -2,41 +2,51 @@
   import { Agendamento } from '../models/Agendamento';
   import { AxiosError } from 'axios';
 
-  // Função para buscar agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
-  export const getAgendamentosPorStatus = async (token: string): Promise<Agendamento[]> => {
-    try {
-      const response = await api.get('/agendamentos/status', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const agendamentos = response.data;
+// Função para buscar agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
+export const getAgendamentosPorStatus = async (token: string): Promise<Agendamento[]> => {
+  try {
+    const response = await api.get('/agendamentos/status', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const agendamentos = response.data;
 
-      // Iterar pelos agendamentos e buscar a descrição do produto para cada um
-      for (const agendamento of agendamentos) {
-        if (agendamento.CodigoProduto) {
-          try {
-            const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
-            agendamento.DescricaoProduto = descricaoProduto;  // Adiciona a descrição do produto ao agendamento
-          } catch (error) {
-            console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
-          }
+    // Iterar pelos agendamentos e buscar a descrição do produto para cada um
+    for (const agendamento of agendamentos) {
+      if (agendamento.CodigoProduto) {
+        try {
+          const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
+          agendamento.DescricaoProduto = descricaoProduto;  // Adiciona a descrição do produto ao agendamento
+        } catch (error) {
+          console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
       }
 
-      return agendamentos;  // Retorna os agendamentos com os três status
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        console.error('Erro ao buscar agendamentos:', error.message);
-        if (error.response) {
-          console.error('Detalhes do erro:', error.response.data);
+      // **Ajuste importante aqui**: Carregar a observação da portaria
+      if (agendamento.CodigoAgendamento) {
+        try {
+          const dadosPortaria = await getDadosPortaria(token, agendamento.CodigoAgendamento);
+          agendamento.ObservacaoPortaria = dadosPortaria?.ObservacaoPortaria || '';  // Adiciona a observação da portaria
+        } catch (error) {
+          console.error(`Erro ao buscar a observação da portaria para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
-      } else {
-        console.error('Erro desconhecido ao buscar agendamentos:', error);
       }
-      throw error;
     }
-  };
+
+    return agendamentos;  // Retorna os agendamentos com os três status
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      console.error('Erro ao buscar agendamentos:', error.message);
+      if (error.response) {
+        console.error('Detalhes do erro:', error.response.data);
+      }
+    } else {
+      console.error('Erro desconhecido ao buscar agendamentos:', error);
+    }
+    throw error;
+  }
+};
 
 
   export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
@@ -201,6 +211,11 @@ export const getDadosPortaria = async (token: string, codigoAgendamento: number)
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
+      if (error.response?.status === 404) {
+        // Tratamento específico para o erro 404 (dados da portaria não encontrados)
+        return null; // Retorne nulo para indicar que não há dados da portaria
+      }
+      // Aqui você pode manter o log de outros erros, exceto 404
       console.error('Erro ao buscar dados da portaria:', error.message);
       if (error.response) {
         console.error('Detalhes do erro:', error.response.data);
@@ -211,6 +226,8 @@ export const getDadosPortaria = async (token: string, codigoAgendamento: number)
     throw error;
   }
 };
+
+
 
 
   // Função para verificar se os dados do motorista estão corretos

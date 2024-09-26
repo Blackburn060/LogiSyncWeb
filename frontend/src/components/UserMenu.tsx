@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaUserAlt, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { FaUserAlt, FaSignOutAlt } from 'react-icons/fa';
 import iconeUsuario from '../assets/icons/Icon-user-white.webp';
 
 interface User {
