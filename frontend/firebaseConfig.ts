@@ -3,7 +3,7 @@ import { getStorage } from 'firebase/storage';
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_APP_BACKEND_API_URL,
+  apiKey: import.meta.env.VITE_APP_GOOGLE_APIKEY,
   authDomain: "logisync-060.firebaseapp.com",
   projectId: "logisync-060",
   storageBucket: "logisync-060.appspot.com",

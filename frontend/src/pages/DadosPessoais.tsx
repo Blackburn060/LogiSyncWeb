@@ -45,37 +45,39 @@ const DadosPessoais: React.FC = () => {
   }, [fetchUsuario]);
 
   const onSubmit = async (data: any) => {
-    if (token && usuario) {
-      const cleanedCPF = data.CPF.replace(/\D/g, '');
+  if (token && usuario) {
+    data.Email = data.Email.toLowerCase();
 
-      if (cleanedCPF.length <= 11 && !cpfValidator.isValid(cleanedCPF)) {
-        toast.error('CPF inválido!');
+    const cleanedCPF = data.CPF.replace(/\D/g, '');
+
+    if (cleanedCPF.length <= 11 && !cpfValidator.isValid(cleanedCPF)) {
+      toast.error('CPF inválido!');
+      return;
+    } else if (cleanedCPF.length > 11 && !cnpjValidator.isValid(cleanedCPF)) {
+      toast.error('CNPJ inválido!');
+      return;
+    }
+
+    if (data.Email !== usuario.Email) {
+      const emailExists = await checkEmailExists(data.Email, token);
+      if (emailExists) {
+        toast.error('O e-mail informado já está registrado em outra conta! Tente outro e-mail!');
         return;
-      } else if (cleanedCPF.length > 11 && !cnpjValidator.isValid(cleanedCPF)) {
-        toast.error('CNPJ inválido!');
-        return;
-      }
-
-      if (data.Email !== usuario.Email) {
-        const emailExists = await checkEmailExists(data.Email, token);
-        if (emailExists) {
-          toast.error('O e-mail informado já está registrado em outra conta! Tente outro e-mail!');
-          return;
-        }
-      }
-
-      const updatedData = { ...data };
-
-      try {
-        await updateUsuario(token, usuario.CodigoUsuario, updatedData);
-        fetchUsuario();
-        setShowUpdateModal(false);
-        toast.success('Dados atualizados com sucesso!');
-      } catch (error) {
-        toast.error('Erro ao atualizar conta.');
       }
     }
-  };
+
+    const updatedData = { ...data };
+
+    try {
+      await updateUsuario(token, usuario.CodigoUsuario, updatedData);
+      fetchUsuario();
+      setShowUpdateModal(false);
+      toast.success('Dados atualizados com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao atualizar conta.');
+    }
+  }
+};
 
   const handlePasswordUpdate = async () => {
     setPasswordError('');

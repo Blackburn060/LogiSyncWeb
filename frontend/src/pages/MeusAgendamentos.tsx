@@ -7,8 +7,6 @@ import { Navigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import Modal from "react-modal";
 import formatDate from "../../utils/formatDate";
-
-// Importar os componentes de dados
 import DadosPessoais from "../components/DadosPessoais";
 import DadosVeicular from "../components/DadosVeicular";
 import DadosAgendamento from "../components/DadosAgendamento";
@@ -21,10 +19,10 @@ const MeusAgendamentos: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-  const [selectedAgendamento, setSelectedAgendamento] =
-    useState<Agendamento | null>(null);
+  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [produtoNome, setProdutoNome] = useState<string>("");
+  const [observacaoPortaria, setObservacaoPortaria] = useState<string>("");
 
   // Função para buscar o nome do produto com base no CodigoProduto
   const fetchProdutoNome = async (codigoProduto: number | null) => {
@@ -51,9 +49,7 @@ const MeusAgendamentos: React.FC = () => {
           try {
             await refreshAccessToken();
           } catch (err) {
-            toast.error(
-              "Erro ao renovar autenticação. Redirecionando para login."
-            );
+            toast.error("Erro ao renovar autenticação. Redirecionando para login.");
             setAuthChecked(true);
             return;
           }
@@ -64,9 +60,7 @@ const MeusAgendamentos: React.FC = () => {
       }
 
       try {
-        const response = await api.get(
-          `/agendamentos-com-placa?CodigoUsuario=${user?.id}`
-        );
+        const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
         setAgendamentos(response.data);
       } catch (err) {
         toast.error("Erro ao carregar agendamentos.");
@@ -84,6 +78,7 @@ const MeusAgendamentos: React.FC = () => {
     setSelectedAgendamento(agendamento);
     fetchProdutoNome(agendamento.CodigoProduto ?? null);
     setIsDetailModalOpen(true);
+    setObservacaoPortaria(agendamento.Observacao ?? "");
   };
 
   // Função para cancelar o agendamento
@@ -224,100 +219,64 @@ const MeusAgendamentos: React.FC = () => {
                   <p><strong>Horário:</strong> {agendamento.HoraAgendamento}</p>
                   <p><strong>Placa:</strong> {agendamento.Placa}</p>
                   <p><strong>Status:</strong> {agendamento.SituacaoAgendamento}</p>
-                  {agendamento.SituacaoAgendamento === "Pendente" ? (
-                    <button
-                      className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        cancelAgendamento(agendamento);
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                  ) : (
-                    <button
-                      className="font-medium text-gray-400 cursor-not-allowed"
-                      onClick={(e) => e.stopPropagation()}
-                      disabled
-                    >
-                      Cancelar
-                    </button>
-                  )}
                 </div>
               ))
             )}
           </div>
-        </div>
-      )}
 
-      {/* Modal de Detalhes */}
-      {selectedAgendamento && (
-        <Modal
-          isOpen={isDetailModalOpen}
-          onRequestClose={() => setIsDetailModalOpen(false)}
-          shouldCloseOnOverlayClick={true}
-          className="fixed inset-0 flex items-center justify-center z-50"
-          overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onAfterOpen={() => document.body.classList.add("overflow-hidden")}
-          onAfterClose={() => document.body.classList.remove("overflow-hidden")}
-          ariaHideApp={false}
-        >
-          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full h-auto max-h-[90vh] overflow-y-auto">
-            {/* Botão de Fechar com Fundo Vermelho e X */}
-            <button
-              className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center"
-              onClick={() => setIsDetailModalOpen(false)}
+          {/* Modal de Detalhes */}
+          {selectedAgendamento && (
+            <Modal
+              isOpen={isDetailModalOpen}
+              onRequestClose={() => setIsDetailModalOpen(false)}
+              className="modal"
+              overlayClassName="overlay"
             >
-              X
-            </button>
-
-            {/* Título e Status */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center">
-                Detalhes do Agendamento 
-                <span
-                  className={`ml-4 ${
-                    selectedAgendamento?.SituacaoAgendamento === "Pendente"
-                      ? "bg-yellow-400"
-                      : selectedAgendamento?.SituacaoAgendamento === "Cancelado"
-                      ? "bg-red-500"
-                      : "bg-green-500"
-                  } text-white text-sm font-bold py-1 px-4 rounded-full`}
+              <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full h-auto max-h-[90vh] overflow-y-auto">
+                <button
+                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setIsDetailModalOpen(false)}
                 >
-                  {selectedAgendamento?.SituacaoAgendamento}
-                </span>
-              </h2>
-            </div>
+                  &times;
+                </button>
+                <h2 className="text-xl font-bold mb-4">Detalhes do Agendamento</h2>
 
-            {/* Dados Pessoais */}
-            <DadosPessoais usuarioId={Number(user?.id) || 0} />
+                {/* Dados Pessoais */}
+                <DadosPessoais usuarioId={Number(user?.id) || 0} />
 
-            {/* Dados Veicular */}
-            <DadosVeicular codigoVeiculo={selectedAgendamento?.CodigoVeiculo ?? null} />
+                {/* Dados Veicular */}
+                <DadosVeicular codigoVeiculo={selectedAgendamento?.CodigoVeiculo ?? null} />
 
-            {/* Dados Agendamento */}
-            <DadosAgendamento
-              dataAgendamento={selectedAgendamento?.DataAgendamento}
-              horaAgendamento={selectedAgendamento?.HoraAgendamento || "N/A"}
-              produto={produtoNome || "Produto não disponível"}
-              quantidade={selectedAgendamento?.QuantidadeAgendamento ?? null}
-              observacao={selectedAgendamento?.Observacao ?? null}
-            />
+                {/* Dados Agendamento */}
+                <DadosAgendamento
+                  dataAgendamento={selectedAgendamento?.DataAgendamento}
+                  horaAgendamento={selectedAgendamento?.HoraAgendamento || "N/A"}
+                  produto={produtoNome || "Produto não disponível"}
+                  quantidade={selectedAgendamento?.QuantidadeAgendamento ?? null}
+                  observacao={selectedAgendamento?.Observacao ?? null}
+                />
 
-            {/* Dados da Portaria */}
-            <DadosPortaria codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null} dataHoraSaida={""} />
+                {/* Dados da Portaria */}
+                <DadosPortaria
+                  codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
+                  dataHoraSaida={""} // Ajuste conforme necessário
+                  observacaoPortaria={observacaoPortaria}
+                  setObservacaoPortaria={setObservacaoPortaria}
+                />
 
-            {/* Botão de Cancelar */}
-            {selectedAgendamento.SituacaoAgendamento === "Pendente" && (
-              <button
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
-                onClick={() => cancelAgendamento(selectedAgendamento)}
-              >
-                Cancelar Agendamento
-              </button>
-            )}
-          </div>
-        </Modal>
+                {/* Botão de Cancelar */}
+                {selectedAgendamento.SituacaoAgendamento === "Pendente" && (
+                  <button
+                    className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+                    onClick={() => cancelAgendamento(selectedAgendamento)}
+                  >
+                    Cancelar Agendamento
+                  </button>
+                )}
+              </div>
+            </Modal>
+          )}
+        </div>
       )}
     </div>
   );
