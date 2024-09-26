@@ -21,6 +21,7 @@ import Portaria from './pages/portaria';
 import ProtectedRoute from './components/ProtectedRoute';
 import RecuperarSenha from './pages/RecuperarSenha';
 import RedefinirSenha from './pages/RedefinirSenha';
+import GerenciarUsuarios from './pages/GerenciarUsuarios';
 
 const App: React.FC = () => {
   return (
@@ -50,6 +51,7 @@ const App: React.FC = () => {
           <Route path="/gestao/horarios" element={<ProtectedRoute><GerenciarHorarios /></ProtectedRoute>} />
           <Route path="/gestao/safra" element={<ProtectedRoute><GerenciarSafras /></ProtectedRoute>} />
           <Route path="/gestao/portaria" element={<ProtectedRoute><Portaria /></ProtectedRoute>} />
+          <Route path="/gestao/usuarios" element={<ProtectedRoute><GerenciarUsuarios /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </Router>

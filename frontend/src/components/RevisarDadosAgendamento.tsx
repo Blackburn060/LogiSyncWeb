@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { Horario } from '../models/Horario';
-import { getUsuario } from '../services/usuarioService';
+import { getUsuarioById } from '../services/usuarioService';
 import { getVeiculos } from '../services/veiculoService';
 import { getTransportadora } from '../services/transportadoraService';
 import { addAgendamento } from '../services/agendamentoService';
@@ -39,7 +39,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
     const fetchData = async () => {
       if (token && user) {
         try {
-          const usuarioData = await getUsuario(token, Number(user.id));
+          const usuarioData = await getUsuarioById(token, Number(user.id));
           setUsuario(usuarioData);
 
           const veiculosData = await getVeiculos(token);

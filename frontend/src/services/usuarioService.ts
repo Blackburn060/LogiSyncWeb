@@ -3,12 +3,23 @@ import { Usuario } from '../models/Usuario';
 
 const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
-// Função para obter dados de um usuário específico
-export const getUsuario = async (token: string, id: number): Promise<Usuario> => {
+// Função para obter todos os usuários
+export const getAllUsuarios = async (token: string): Promise<Usuario[]> => {
+  const response = await axios.get(`${apiUrl}/usuarios`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+// Função para obter dados de um usuário específico por ID
+export const getUsuarioById = async (token: string, id: number): Promise<Usuario> => {
   const response = await axios.get(`${apiUrl}/usuarios/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
   return response.data;
 };
@@ -17,8 +28,8 @@ export const getUsuario = async (token: string, id: number): Promise<Usuario> =>
 export const updateUsuario = async (token: string, id: number, usuario: Partial<Usuario>): Promise<void> => {
   await axios.put(`${apiUrl}/usuarios/${id}`, usuario, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
 };
 
@@ -42,8 +53,8 @@ export const checkEmailExistsPublic = async (email: string): Promise<{ exists: b
 export const inactivateUsuario = async (token: string, id: number): Promise<void> => {
   await axios.delete(`${apiUrl}/usuarios/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
 };
 
@@ -75,7 +86,7 @@ export const redefinirSenha = async (token: string, id: number, novaSenha: strin
     const response = await axios.post(`${apiUrl}/redefinir-senha`, {
       token,
       id,
-      novaSenha
+      novaSenha,
     });
     return response.data;
   } catch (error) {

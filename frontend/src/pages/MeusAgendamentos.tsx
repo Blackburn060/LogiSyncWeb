@@ -262,6 +262,7 @@ const MeusAgendamentos: React.FC = () => {
                   dataHoraSaida={""} // Ajuste conforme necessário
                   observacaoPortaria={observacaoPortaria}
                   setObservacaoPortaria={setObservacaoPortaria}
+                  isObservacaoEditable={true}  // Aqui define se o campo será editável ou não
                 />
 
                 {/* Botão de Cancelar */}

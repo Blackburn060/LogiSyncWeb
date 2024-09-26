@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import { useForm, Controller } from 'react-hook-form';
-import { getUsuario, updateUsuario, inactivateUsuario, checkEmailExists } from '../services/usuarioService';
+import { getUsuarioById, updateUsuario, inactivateUsuario, checkEmailExists } from '../services/usuarioService';
 import { useAuth } from '../context/AuthContext';
 import { Usuario } from '../models/Usuario';
 import toast, { Toaster } from 'react-hot-toast';
@@ -24,7 +24,7 @@ const DadosPessoais: React.FC = () => {
     setIsLoading(true);
     if (token && user) {
       try {
-        const usuarioData = await getUsuario(token, Number(user.id));
+        const usuarioData = await getUsuarioById(token, Number(user.id));
         if (usuarioData) {
           setUsuario(usuarioData);
           setValue('NomeCompleto', usuarioData.NomeCompleto);
