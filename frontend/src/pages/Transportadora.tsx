@@ -259,7 +259,7 @@ const RegistroTransportadora: React.FC = () => {
                     <div className="flex flex-col justify-center items-center h-full">
                       <p className="text-white text-center mb-4">Nenhuma transportadora vinculada a sua conta</p>
                       <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        className="px-4 py-2 bg-logisync-color-blue-50 text-white rounded shadow-md hover:bg-logisync-color-blue-200 transition duration-300"
                         onClick={() => setShowAddForm(true)}
                       >
                         Adicionar Nova Transportadora

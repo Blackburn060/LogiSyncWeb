@@ -1,6 +1,15 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
+// Função para normalizar as chaves do objeto veiculo para letras minúsculas
+const normalizeKeys = (obj) => {
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key.toLowerCase()] = obj[key];
+        return acc;
+    }, {});
+};
+
+// Obter todos os veículos com filtros opcionais
 const getAllVeiculos = (filters = {}) => {
     return new Promise((resolve, reject) => {
         let sql = 'SELECT * FROM cadastroveiculo WHERE 1=1';
@@ -22,6 +31,8 @@ const getAllVeiculos = (filters = {}) => {
         });
     });
 };
+
+// Obter um veículo pelo seu ID
 const getVeiculoById = (codigoVeiculo) => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM cadastroveiculo WHERE CodigoVeiculo = ?';
@@ -29,17 +40,30 @@ const getVeiculoById = (codigoVeiculo) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(row); // Retorna o veículo específico
+                resolve(row);
             }
         });
     });
 };
+
 // Adicionar um novo veículo
 const addVeiculo = (veiculo) => {
     return new Promise((resolve, reject) => {
+        const normalizedVeiculo = normalizeKeys(veiculo);
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = `INSERT INTO cadastroveiculo (CodigoUsuario, NomeVeiculo, Placa, Marca, ModeloTipo, AnoFabricacao, Cor, CapacidadeCarga, SituacaoVeiculo, Bloqueado, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`;
-        db.run(sql, [veiculo.CodigoUsuario, veiculo.nomeVeiculo, veiculo.placa, veiculo.marca, veiculo.modeloTipo, veiculo.anoFabricacao, veiculo.cor, veiculo.capacidadeCarga, dataGeracao], function(err) {
+
+        db.run(sql, [
+            normalizedVeiculo.codigousuario, 
+            normalizedVeiculo.nomeveiculo, 
+            normalizedVeiculo.placa, 
+            normalizedVeiculo.marca, 
+            normalizedVeiculo.modelotipo, 
+            normalizedVeiculo.anofabricacao, 
+            normalizedVeiculo.cor, 
+            normalizedVeiculo.capacidadecarga, 
+            dataGeracao
+        ], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -57,7 +81,6 @@ const updateVeiculo = (veiculo, id) => {
         let params = [];
         let updates = [];
 
-        // Verifica cada campo e adiciona à lista de updates se não for indefinido
         Object.entries(veiculo).forEach(([key, value]) => {
             if (value !== undefined && !['DataGeracao', 'DataAlteracao'].includes(key)) {
                 updates.push(`${key} = ?`);

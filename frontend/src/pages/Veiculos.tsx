@@ -110,8 +110,17 @@ const Veiculos: React.FC = () => {
               <l-helix size="45" speed="2.5" color="white"></l-helix>
             </div>
           ) : veiculos.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-lg text-white">Nenhum veículo encontrado.</p>
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-lg text-white mb-4">Nenhum veículo encontrado.</p>
+              <button
+                className="px-4 py-2 bg-logisync-color-blue-50 text-white rounded shadow-md hover:bg-logisync-color-blue-200 transition duration-300"
+                onClick={() => {
+                  setSelectedVeiculo({ NomeVeiculo: '', CodigoUsuario: Number(user?.id) });
+                  setShowForm(true);
+                }}
+              >
+                Adicionar Novo Veículo
+              </button>
             </div>
           ) : (
             <>
