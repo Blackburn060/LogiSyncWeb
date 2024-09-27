@@ -19,7 +19,8 @@ const MeusAgendamentos: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
+  const [selectedAgendamento, setSelectedAgendamento] =
+    useState<Agendamento | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [produtoNome, setProdutoNome] = useState<string>("");
   const [observacaoPortaria, setObservacaoPortaria] = useState<string>("");
@@ -49,7 +50,9 @@ const MeusAgendamentos: React.FC = () => {
           try {
             await refreshAccessToken();
           } catch (err) {
-            toast.error("Erro ao renovar autenticação. Redirecionando para login.");
+            toast.error(
+              "Erro ao renovar autenticação. Redirecionando para login."
+            );
             setAuthChecked(true);
             return;
           }
@@ -60,7 +63,9 @@ const MeusAgendamentos: React.FC = () => {
       }
 
       try {
-        const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${user?.id}`);
+        const response = await api.get(
+          `/agendamentos-com-placa?CodigoUsuario=${user?.id}`
+        );
         setAgendamentos(response.data);
       } catch (err) {
         toast.error("Erro ao carregar agendamentos.");
@@ -141,17 +146,30 @@ const MeusAgendamentos: React.FC = () => {
             <table className="w-full text-sm text-left text-white dark:text-white">
               <thead className="sticky top-0 text-md text-white font-extrabold uppercase bg-logisync-color-blue-300 dark:bg-logisync-color-blue-300 dark:text-white dark:font-extrabold border-b dark:border-gray-500 z-10">
                 <tr>
-                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">Data</th>
-                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">Horário</th>
-                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">Placa</th>
-                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">Status</th>
-                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">Ações</th>
+                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">
+                    Data
+                  </th>
+                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">
+                    Horário
+                  </th>
+                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">
+                    Placa
+                  </th>
+                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">
+                    Status
+                  </th>
+                  <th scope="col" className="px-4 py-3 w-1/4 sm:w-auto">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {agendamentos.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-4 text-gray-700 dark:text-gray-300">
+                    <td
+                      colSpan={5}
+                      className="text-center py-4 text-gray-700 dark:text-gray-300"
+                    >
                       Nenhum agendamento encontrado.
                     </td>
                   </tr>
@@ -162,16 +180,28 @@ const MeusAgendamentos: React.FC = () => {
                       className="odd:bg-white even:bg-logisync-color-blue-50 dark:odd:bg-gray-800 dark:even:bg-gray-700 border-b dark:border-gray-500 cursor-pointer hover:bg-logisync-color-blue-100"
                       onClick={() => handleAgendamentoClick(agendamento)}
                     >
-                      <th scope="row" className="px-4 py-4 font-medium whitespace-nowrap">
+                      <th
+                        scope="row"
+                        className="px-4 py-4 font-medium whitespace-nowrap"
+                      >
                         {formatDate(agendamento.DataAgendamento)}
                       </th>
-                      <td scope="row" className="px-4 py-4 font-medium whitespace-nowrap">
+                      <td
+                        scope="row"
+                        className="px-4 py-4 font-medium whitespace-nowrap"
+                      >
                         {agendamento.HoraAgendamento}
                       </td>
-                      <td scope="row" className="px-4 py-4 font-medium whitespace-nowrap">
+                      <td
+                        scope="row"
+                        className="px-4 py-4 font-medium whitespace-nowrap"
+                      >
                         {agendamento.Placa}
                       </td>
-                      <td scope="row" className="px-4 py-4 font-medium whitespace-nowrap">
+                      <td
+                        scope="row"
+                        className="px-4 py-4 font-medium whitespace-nowrap"
+                      >
                         {agendamento.SituacaoAgendamento}
                       </td>
                       <td className="px-4 py-4">
@@ -215,10 +245,19 @@ const MeusAgendamentos: React.FC = () => {
                   className="bg-gray-800 text-white p-4 rounded-lg shadow-md hover:bg-gray-700 cursor-pointer"
                   onClick={() => handleAgendamentoClick(agendamento)}
                 >
-                  <p><strong>Data:</strong> {formatDate(agendamento.DataAgendamento)}</p>
-                  <p><strong>Horário:</strong> {agendamento.HoraAgendamento}</p>
-                  <p><strong>Placa:</strong> {agendamento.Placa}</p>
-                  <p><strong>Status:</strong> {agendamento.SituacaoAgendamento}</p>
+                  <p>
+                    <strong>Data:</strong>{" "}
+                    {formatDate(agendamento.DataAgendamento)}
+                  </p>
+                  <p>
+                    <strong>Horário:</strong> {agendamento.HoraAgendamento}
+                  </p>
+                  <p>
+                    <strong>Placa:</strong> {agendamento.Placa}
+                  </p>
+                  <p>
+                    <strong>Status:</strong> {agendamento.SituacaoAgendamento}
+                  </p>
                 </div>
               ))
             )}
@@ -239,30 +278,43 @@ const MeusAgendamentos: React.FC = () => {
                 >
                   &times;
                 </button>
-                <h2 className="text-xl font-bold mb-4">Detalhes do Agendamento</h2>
+                <h2 className="text-xl font-bold mb-4">
+                  Detalhes do Agendamento
+                </h2>
 
                 {/* Dados Pessoais */}
                 <DadosPessoais usuarioId={Number(user?.id) || 0} />
 
                 {/* Dados Veicular */}
-                <DadosVeicular codigoVeiculo={selectedAgendamento?.CodigoVeiculo ?? null} />
+                <DadosVeicular
+                  codigoVeiculo={selectedAgendamento?.CodigoVeiculo ?? null}
+                />
 
                 {/* Dados Agendamento */}
                 <DadosAgendamento
                   dataAgendamento={selectedAgendamento?.DataAgendamento}
-                  horaAgendamento={selectedAgendamento?.HoraAgendamento || "N/A"}
+                  horaAgendamento={
+                    selectedAgendamento?.HoraAgendamento || "N/A"
+                  }
                   produto={produtoNome || "Produto não disponível"}
-                  quantidade={selectedAgendamento?.QuantidadeAgendamento ?? null}
+                  quantidade={
+                    selectedAgendamento?.QuantidadeAgendamento ?? null
+                  }
                   observacao={selectedAgendamento?.Observacao ?? null}
                 />
 
                 {/* Dados da Portaria */}
                 <DadosPortaria
-                  codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
+                  codigoAgendamento={
+                    selectedAgendamento?.CodigoAgendamento ?? null
+                  }
                   dataHoraSaida={""} // Ajuste conforme necessário
                   observacaoPortaria={observacaoPortaria}
                   setObservacaoPortaria={setObservacaoPortaria}
-                  isObservacaoEditable={true}  // Aqui define se o campo será editável ou não
+                  isObservacaoEditable={true} // Aqui define se o campo será editável ou não
+                  situacaoAgendamento={
+                    selectedAgendamento?.SituacaoAgendamento || "N/A"
+                  } // Adiciona o valor para a prop
                 />
 
                 {/* Botão de Cancelar */}

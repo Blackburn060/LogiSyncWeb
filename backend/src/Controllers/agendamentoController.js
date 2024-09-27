@@ -114,6 +114,9 @@ const atualizarAgendamento = async (req, res) => {
     const agendamentoId = req.params.id;
     const changes = req.body;
 
+    console.log("Atualizando agendamento ID:", agendamentoId);  // Log para verificar ID
+    console.log("Dados recebidos para atualizar:", changes);     // Log para verificar os dados recebidos
+
     try {
         const updated = await agendamentoModel.updateAgendamento(changes, agendamentoId);
         if (updated) {
@@ -125,6 +128,7 @@ const atualizarAgendamento = async (req, res) => {
         res.status(500).send({ message: 'Erro ao atualizar agendamento: ' + error.message });
     }
 };
+
 
 // Cancelar agendamento
 const cancelarAgendamento = async (req, res) => {

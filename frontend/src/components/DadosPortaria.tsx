@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/axiosConfig";
 import { AxiosError } from "axios";  // Importa AxiosError para definir o tipo do erro
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";  // Importa o locale para PT-BR
 
 interface DadosPortariaProps {
   codigoAgendamento: number | null;
@@ -8,6 +10,7 @@ interface DadosPortariaProps {
   observacaoPortaria: string;
   setObservacaoPortaria: React.Dispatch<React.SetStateAction<string>>;
   isObservacaoEditable: boolean; // Prop para controlar se a observação é editável
+  situacaoAgendamento: string; // Status do agendamento
 }
 
 const DadosPortaria: React.FC<DadosPortariaProps> = ({ 
@@ -15,14 +18,22 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
   dataHoraSaida, 
   observacaoPortaria, 
   setObservacaoPortaria,
-  isObservacaoEditable // Nova prop recebida
+  isObservacaoEditable,
+  situacaoAgendamento // Status do agendamento
 }) => {
   const [portariaData, setPortariaData] = useState({
     dataChegada: "N/A",
     observacao: "",
+    motivoRecusa: "", // Adiciona o motivo da recusa aqui
   });
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const formatarData = (dataString: string) => {
+    if (!dataString || dataString === "N/A") return "N/A";
+    const data = new Date(dataString);
+    return format(data, "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -32,21 +43,30 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
           const response = await api.get(`/portarias/${codigoAgendamento}`);
           if (isMounted) {
             setPortariaData({
-              dataChegada: response.data.DataHoraEntrada || "N/A",
-              observacao: response.data.ObservacaoPortaria || "Nenhuma observação disponível", // Carrega a observação da portaria
+              dataChegada: formatarData(response.data.DataHoraEntrada) || "N/A",
+              observacao: response.data.ObservacaoPortaria || "Nenhuma observação disponível",
+              motivoRecusa: response.data.MotivoRecusa || "Nenhum motivo de recusa disponível", // Adiciona o motivo da recusa
             });
 
-            // Atualiza o estado da observação principal
-            setObservacaoPortaria(response.data.ObservacaoPortaria || "Nenhuma observação disponível"); 
+            // Se o status for "Reprovado", exibe o MotivoRecusa em vez de ObservacaoPortaria
+            if (situacaoAgendamento === "Reprovado") {
+              setObservacaoPortaria(response.data.MotivoRecusa || "Nenhum motivo de recusa disponível");
+            } else {
+              setObservacaoPortaria(response.data.ObservacaoPortaria || "Nenhuma observação disponível");
+            }
+
             setErrorMessage(null); 
           }
         } catch (error: unknown) {
           if (error instanceof AxiosError) {
             if (error.response?.status === 404) {
-              // Se o erro for 404, significa que os dados não foram encontrados (normal na sua aplicação)
-              setPortariaData({ dataChegada: "N/A", observacao: "Nenhuma observação disponível" });
+              setPortariaData({ 
+                dataChegada: "N/A", 
+                observacao: "Nenhuma observação disponível", 
+                motivoRecusa: "Nenhum motivo de recusa disponível" 
+              });
               setObservacaoPortaria("Nenhuma observação disponível");
-              setErrorMessage(null); // Não queremos mostrar mensagem de erro neste caso
+              setErrorMessage(null); 
             } else {
               setErrorMessage("Erro ao carregar dados da portaria.");
             }
@@ -66,7 +86,7 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [codigoAgendamento, setObservacaoPortaria]); // Incluí setObservacaoPortaria no array de dependências
+  }, [codigoAgendamento, situacaoAgendamento, setObservacaoPortaria]);
 
   return (
     <div className="border p-4 rounded-lg mb-4">
@@ -90,7 +110,7 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
             <input
               type="text"
               className="border w-full px-2 py-1 rounded-md"
-              value={dataHoraSaida || "N/A"}
+              value={formatarData(dataHoraSaida) || "N/A"}
               readOnly
               placeholder="Data de Saída"
             />
@@ -99,7 +119,7 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
             <label className="block font-semibold">Observação</label>
             <textarea
               className="border w-full px-2 py-1 rounded-md"
-              value={observacaoPortaria} // Usando observacaoPortaria
+              value={observacaoPortaria} // Usando observacaoPortaria ou motivoRecusa
               onChange={(e) => setObservacaoPortaria(e.target.value)} // Permitir que a observação seja atualizada
               placeholder="Insira uma observação"
               disabled={!isObservacaoEditable} // Desabilita o campo se não for editável

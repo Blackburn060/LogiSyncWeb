@@ -22,22 +22,27 @@ const buscarPortariaPorAgendamento = async (req, res) => {
 };
 const adicionarPortaria = async (req, res) => {
     try {
-        const id = await portariaModel.addPortaria(req.body);
-        res.status(201).send({ id: id, message: "Dados da portaria adicionados com sucesso" });
+      const id = await portariaModel.addPortaria(req.body);
+      res.status(201).send({ id: id, message: "Dados da portaria adicionados com sucesso" });
     } catch (error) {
-        res.status(500).send({ message: "Erro ao adicionar dados da portaria: " + error.message });
+      res.status(500).send({ message: "Erro ao adicionar dados da portaria: " + error.message });
     }
-};
-
-const atualizarPortaria = async (req, res) => {
+  };
+  
+  const atualizarPortaria = async (req, res) => {
     try {
-      const { id } = req.params;  // Pega o ID da portaria da rota
-      const { DataHoraSaida } = req.body;  // Recebe a DataHoraSaida do payload
+      const { id } = req.params;  // ID do agendamento
+      const { DataHoraSaida, MotivoRecusa } = req.body;  // Recebendo DataHoraSaida e MotivoRecusa no corpo da requisição
   
-      // Atualiza a portaria no banco de dados
-      const result = await portariaModel.updatePortaria(id, { DataHoraSaida });
+      // Verifica se o ID foi fornecido
+      if (!id) {
+        return res.status(400).json({ error: "ID não fornecido." });
+      }
   
-      if (result) {
+      // Atualiza os campos de DataHoraSaida e MotivoRecusa no banco de dados
+      const result = await portariaModel.updatePortaria(id, { DataHoraSaida, MotivoRecusa });
+  
+      if (result > 0) {
         res.json({ message: "Portaria atualizada com sucesso", data: result });
       } else {
         res.status(404).json({ message: "Portaria não encontrada" });

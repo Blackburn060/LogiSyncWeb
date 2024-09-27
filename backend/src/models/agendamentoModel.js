@@ -154,16 +154,28 @@ const updateAgendamento = (agendamento, id) => {
             SET Observacao = ?, UsuarioAprovacao = ?, MotivoRecusa = ?, SituacaoAgendamento = ?, TipoAgendamento = ?, DiaTodo = ? 
             WHERE CodigoAgendamento = ?
         `;
+
+        // Garantindo que valores padrão sejam definidos, caso algum campo esteja faltando
+        const observacao = agendamento.Observacao || 'N/A';  // Define um valor padrão, se estiver null ou undefined
+        const usuarioAprovacao = agendamento.UsuarioAprovacao || null;
+        const motivoRecusa = agendamento.MotivoRecusa || null;
+        const situacaoAgendamento = agendamento.SituacaoAgendamento || 'Pendente';
+        const tipoAgendamento = agendamento.TipoAgendamento || null;
+        const diaTodo = agendamento.DiaTodo || 0;
+
+        console.log("SQL Parameters:", observacao, usuarioAprovacao, motivoRecusa, situacaoAgendamento, tipoAgendamento, diaTodo);  // Verifique os parâmetros
+
         db.run(sql, [
-            agendamento.Observacao, 
-            agendamento.UsuarioAprovacao, 
-            agendamento.MotivoRecusa, 
-            agendamento.SituacaoAgendamento, 
-            agendamento.TipoAgendamento, 
-            agendamento.DiaTodo,  // Atualizando DiaTodo
+            observacao, 
+            usuarioAprovacao, 
+            motivoRecusa, 
+            situacaoAgendamento, 
+            tipoAgendamento, 
+            diaTodo,  // Atualizando DiaTodo
             id
         ], function(err) {
             if (err) {
+                console.error("Erro ao atualizar agendamento:", err);
                 reject(err);
             } else {
                 resolve(this.changes);
@@ -171,6 +183,7 @@ const updateAgendamento = (agendamento, id) => {
         });
     });
 };
+
 
 // Deletar um agendamento
 const deleteAgendamento = (id) => {
