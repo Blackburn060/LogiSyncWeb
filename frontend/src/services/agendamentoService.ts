@@ -134,10 +134,11 @@ export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
 };
 
 // Função para atualizar o status do agendamento no banco de dados
+// Função para atualizar o status do agendamento no banco de dados
 export const updateAgendamentoStatus = async (
   id: number, 
   data: Partial<Agendamento>,
-  token: string // Passa o token como parâmetro
+  token: string
 ) => {
   try {
     // Decodificando o token para obter o ID do usuário
@@ -148,10 +149,13 @@ export const updateAgendamentoStatus = async (
       throw new Error('ID do usuário não encontrado no token');
     }
 
-    // Atualizando o status do agendamento
+    // Verifique se o TipoAgendamento está sendo enviado corretamente
+    console.log("TipoAgendamento enviado:", data.TipoAgendamento);
+
+    // Atualizando o status do agendamento com o tipo de agendamento
     const response = await api.put(`/agendamentos/${id}`, {
       ...data,
-      UsuarioAprovacao: usuarioId, // Usando o campo 'id' do token
+      UsuarioAprovacao: usuarioId, // Registrando o usuário que aprovou ou rejeitou o agendamento
     }, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -164,6 +168,8 @@ export const updateAgendamentoStatus = async (
     throw error;
   }
 };
+
+
 
 // Função para autorizar agendamentos
 export const finalizarAgendamento = async (
