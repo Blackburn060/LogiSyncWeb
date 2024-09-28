@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
           buildkitd-flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
@@ -33,7 +33,7 @@ jobs:
           registry: ghcr.io
 
       - name: Build and push frontend homologation Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
@@ -46,7 +46,7 @@ jobs:
           VITE_APP_GOOGLE_APIKEY: ${{ secrets.VITE_APP_GOOGLE_APIKEY }}
 
       - name: Build and push backend homologation Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./backend
           push: true
@@ -63,10 +63,10 @@ jobs:
     needs: build-and-push
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Azure CLI
-        uses: azure/cli@v1
+        uses: azure/cli@v2
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
@@ -74,7 +74,7 @@ jobs:
             az webapp config container set --name logisync-homologation-frontend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-frontend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
 
       - name: Restart Azure App Service for Frontend
-        uses: azure/cli@v1
+        uses: azure/cli@v2
         with:
           inlineScript: |
             az webapp restart --name logisync-homologation-frontend --resource-group LogiSync
@@ -84,10 +84,10 @@ jobs:
     needs: build-and-push
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Azure CLI
-        uses: azure/cli@v1
+        uses: azure/cli@v2
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
@@ -95,7 +95,7 @@ jobs:
             az webapp config container set --name logisync-homologation-backend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-homologation-backend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
 
       - name: Restart Azure App Service for Backend
-        uses: azure/cli@v1
+        uses: azure/cli@v2
         with:
           inlineScript: |
             az webapp restart --name logisync-homologation-backend --resource-group LogiSync
