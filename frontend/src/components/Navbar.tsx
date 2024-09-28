@@ -11,7 +11,7 @@ interface NavbarProps {
   showRegister?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
+const Navbar: React.FC<NavbarProps> = ({ showLogin = true, showRegister = true }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -54,54 +54,54 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
     if (user?.tipousuario === 'motorista') {
       return (
         <>
-          <Link to="/calendario" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/calendario') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaCalendarAlt className="mr-2" /> Calendário
+          <Link to="/calendario" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/calendario') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaCalendarAlt className="mr-1 md:mr-2" /> Calendário
           </Link>
-          <Link to="/agendamentos" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/agendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaClock className="mr-2" /> Agendamentos
+          <Link to="/agendamentos" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/agendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaClock className="mr-1 md:mr-2" /> Agendamentos
           </Link>
-          <Link to="/veiculos" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/veiculos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaTruck className="mr-2" /> Veículos
+          <Link to="/veiculos" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/veiculos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaTruck className="mr-1 md:mr-2" /> Veículos
           </Link>
-          <Link to="/transportadora" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/transportadora') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaBuilding className="mr-2" /> Transportadora
+          <Link to="/transportadora" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/transportadora') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaBuilding className="mr-1 md:mr-2" /> Transportadora
           </Link>
         </>
       );
     } else {
       return (
         <>
-          <Link to="/gestao/home" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/home') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaHome className="mr-2" /> Início
+          <Link to="/gestao/home" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/home') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaHome className="mr-1 md:mr-2" /> Início
           </Link>
-          <Link to="/gestao/autorizarAgendamentos" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/autorizarAgendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaCalendarAlt className="mr-2" /> Agendamentos
+          <Link to="/gestao/autorizarAgendamentos" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/autorizarAgendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaCalendarAlt className="mr-1 md:mr-2" /> Agendamentos
           </Link>
-          <Link to="/gestao/portaria" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/portaria') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaBuilding className="mr-2" /> Portaria
+          <Link to="/gestao/portaria" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/portaria') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaBuilding className="mr-1 md:mr-2" /> Portaria
           </Link>
-          <Link to="/gestao/patio" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/patio') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaTruck className="mr-2" /> Gestão de Pátio
+          <Link to="/gestao/patio" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/patio') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaTruck className="mr-1 md:mr-2" /> Gestão de Pátio
           </Link>
-          <Link to="/gestao/relatorios" className={`flex items-center px-4 py-2 rounded-lg transition duration-300 ${isActive('/gestao/relatorios') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaChartLine className="mr-2" /> Relatórios
+          <Link to="/gestao/relatorios" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/relatorios') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+            <FaChartLine className="mr-1 md:mr-2" /> Relatórios
           </Link>
           <div onClick={toggleDropdown} className="relative cursor-pointer">
             <div className="hover:text-gray-300 flex items-center">
-              <FaCog className="mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <FaCog className="mr-1 md:mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </div>
             <div className={`absolute mt-2 py-2 w-40 bg-white rounded-lg shadow-xl z-20 ${isDropdownOpen ? 'block' : 'hidden'}`}>
-              <Link to="/gestao/usuarios" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/usuarios') ? 'bg-gray-200' : ''}`}>
-                <FaUsers className="mr-2" /> Usuários
+              <Link to="/gestao/usuarios" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/usuarios') ? 'bg-gray-200' : ''}`}>
+                <FaUsers className="mr-1 md:mr-2" /> Usuários
               </Link>
-              <Link to="/gestao/produtos" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/produtos') ? 'bg-gray-200' : ''}`}>
-                <FaBoxOpen className="mr-2" /> Produtos
+              <Link to="/gestao/produtos" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/produtos') ? 'bg-gray-200' : ''}`}>
+                <FaBoxOpen className="mr-1 md:mr-2" /> Produtos
               </Link>
-              <Link to="/gestao/horarios" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/horarios') ? 'bg-gray-200' : ''}`}>
-                <FaClock className="mr-2" /> Horários
+              <Link to="/gestao/horarios" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/horarios') ? 'bg-gray-200' : ''}`}>
+                <FaClock className="mr-1 md:mr-2" /> Horários
               </Link>
-              <Link to="/gestao/safra" className={`px-4 py-2 text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/safra') ? 'bg-gray-200' : ''}`}>
-                <FaSeedling className="mr-2" /> Safra
+              <Link to="/gestao/safra" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/safra') ? 'bg-gray-200' : ''}`}>
+                <FaSeedling className="mr-1 md:mr-2" /> Safra
               </Link>
             </div>
           </div>
@@ -111,7 +111,7 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
   };
 
   const renderAuthLinks = () => (
-    <>
+    <div className="flex items-center space-x-4 md:space-x-6 text-white text-sm md:text-base font-bold">
       {showLogin && (
         <Link to="/login" className="hover:text-gray-300 flex items-center">
           Login
@@ -122,34 +122,34 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
           Cadastrar-se
         </Link>
       )}
-    </>
+    </div>
   );
 
   return (
     <nav className="bg-logisync-color-blue-400 shadow-md w-full z-10">
-      <div className="flex justify-between items-center px-4 py-2">
+      <div className="flex justify-between items-center px-2 md:px-4 py-2">
         <div className="flex items-center">
           <img
             src={iconeMenu}
             alt="Menu Icon"
-            className="w-11 cursor-pointer min-[1410px]:hidden object-contain"
+            className="w-8 md:w-11 cursor-pointer min-[1410px]:hidden object-contain"
             onClick={toggleMenu}
           />
           <Link to={user?.tipousuario === 'motorista' ? "/calendario" : "/gestao/home"}>
-            <img src={logo} alt="LogiSync Logo" className="w-16 ml-2 object-contain" />
+            <img src={logo} alt="LogiSync Logo" className="w-12 md:w-16 ml-2 object-contain" />
           </Link>
-          <span className="text-white font-bold text-xl ml-4">LogiSync</span>
+          <span className="text-white font-bold text-lg md:text-xl ml-2 md:ml-4">LogiSync</span>
         </div>
-        <div className="hidden min-[1410px]:flex items-center space-x-6 text-white font-bold text-xl">
-          {user ? renderNavLinks() : renderAuthLinks()}
+        <div className="hidden min-[1410px]:flex items-center space-x-4 md:space-x-6 text-white text-sm md:text-base font-bold">
+          {user ? renderNavLinks() : null}
         </div>
         <div className='flex items-center'>
           {user && (
             <div className="hidden min-[1410px]:flex items-center">
-              <span className="text-white font-bold text-xl mr-3">Olá, {user.nomecompleto}</span>
+              <span className="text-white font-bold text-sm md:text-base mr-2 md:mr-3">Olá, {user.nomecompleto}</span>
             </div>
           )}
-          {user && <UserMenu logout={logout} user={user} />}
+          {user ? <UserMenu logout={logout} user={user} /> : renderAuthLinks()}
         </div>
       </div>
       {/* Sidebar menu */}
@@ -158,13 +158,13 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin, showRegister }) => {
       />
       <div
         ref={menuRef}
-        className={`fixed top-0 left-0 w-64 h-full bg-logisync-color-blue-400 z-30 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 w-56 md:w-64 h-full bg-logisync-color-blue-400 z-30 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex justify-between items-center p-4">
-          <span className="text-white font-bold text-xl">Menu</span>
+          <span className="text-white font-bold text-lg md:text-xl">Menu</span>
           <button onClick={toggleMenu} className="text-white text-2xl">×</button>
         </div>
-        <nav className="flex flex-col p-4 space-y-2 font-bold text-xl items-start text-white">
+        <nav className="flex flex-col p-4 space-y-2 font-bold text-sm md:text-base items-start text-white">
           {user ? renderNavLinks() : renderAuthLinks()}
         </nav>
       </div>
