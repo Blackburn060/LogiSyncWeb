@@ -19,7 +19,6 @@ import DadosPortaria from "../components/DadosPortaria";
 import "react-datepicker/dist/react-datepicker.css"; // Importa o CSS do Datepicker
 import DatePicker from "react-datepicker"; // Importa o componente DatePicker
 import { getDadosPortaria } from "../services/portariaService";
-import api from '../services/axiosConfig'; // Certifique-se de que o caminho do arquivo está correto
 
 // Aqui está o seu ícone personalizado
 export function IcRoundRefresh(props: React.SVGProps<SVGSVGElement>) {
@@ -56,29 +55,29 @@ export function IcOutlineCalendarMonth(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-// Função para controlar a rolagem da página quando o modal estiver aberto
+// Função para controlar a rolagem da página quando qualquer modal estiver aberto
 const toggleBodyScroll = (isModalOpen: boolean) => {
   if (isModalOpen) {
-    document.body.style.overflow = "hidden"; // Impede a rolagem
+    document.body.style.overflow = "hidden"; // Impede a rolagem da página
   } else {
-    document.body.style.overflow = ""; // Restaura a rolagem
+    document.body.style.overflow = ""; // Restaura a rolagem da página
   }
 };
 
 // Função que retorna a cor de fundo de acordo com o status do agendamento
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'Confirmado':
-        return 'bg-green-500';
-    case 'Reprovado':
-        return 'bg-orange-500';
-    case 'Andamento':
-        return 'bg-yellow-500';
-    case 'Finalizado':
-        return 'bg-gray-500';
+    case "Confirmado":
+      return "bg-green-500";
+    case "Reprovado":
+      return "bg-orange-500";
+    case "Andamento":
+      return "bg-yellow-500";
+    case "Finalizado":
+      return "bg-gray-500";
     default:
-        return 'bg-orange-500';
-}
+      return "bg-orange-500";
+  }
 };
 
 const Portaria: React.FC = () => {
@@ -99,9 +98,10 @@ const Portaria: React.FC = () => {
   const daysToShow = 7;
 
   useEffect(() => {
-    toggleBodyScroll(isModalOpen || isRecusaModalOpen);
-    return () => toggleBodyScroll(false);
-  }, [isModalOpen, isRecusaModalOpen]);
+    // O scroll será bloqueado se qualquer um dos modais estiver aberto
+    toggleBodyScroll(isModalOpen || isRecusaModalOpen || isCalendarModalOpen);
+    return () => toggleBodyScroll(false); // Certifique-se de limpar quando o componente desmontar
+  }, [isModalOpen, isRecusaModalOpen, isCalendarModalOpen]);
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
@@ -157,17 +157,15 @@ const Portaria: React.FC = () => {
   const handleFinalizarAgendamento = async (agendamento: Agendamento) => {
     try {
       const dataHoraSaida = new Date().toISOString();
-      console.log("Atualizando agendamento com DataHoraSaida:", dataHoraSaida);
-  
-      const response = await finalizarAgendamento(
+
+      // Chama o service para finalizar o agendamento
+      await finalizarAgendamento(
         token!,
         agendamento.CodigoAgendamento!,
         agendamento.TipoAgendamento!,
-        agendamento.Observacao ?? "N/A" // Passe a observação do agendamento (ou "N/A" se estiver vazia)
+        agendamento.Observacao ?? "Sem observação" // Passe a observação do agendamento (ou "Sem observação" se estiver vazia)
       );
-  
-      console.log("Resposta da API:", response);
-  
+
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
@@ -175,7 +173,7 @@ const Portaria: React.FC = () => {
             : a
         )
       );
-  
+
       setSelectedAgendamento((prevAgendamento) =>
         prevAgendamento
           ? {
@@ -187,7 +185,7 @@ const Portaria: React.FC = () => {
             }
           : null
       );
-  
+
       handleCloseModal();
       toast.success("Agendamento finalizado com sucesso!");
     } catch (error) {
@@ -195,16 +193,11 @@ const Portaria: React.FC = () => {
       console.error("Erro ao finalizar o agendamento:", error);
     }
   };
-  
-  
 
   const handleAprovarAgendamento = async (agendamento: Agendamento) => {
     try {
       const usuarioId = Number(user!.id);
-      
-      // Verifica se a observação do agendamento já existe e garante que não seja nula
-      const observacaoAgendamento = agendamento.Observacao || "Observação não fornecida";
-  
+
       // Aprovar o agendamento e enviar a observação da portaria
       await aprovarAgendamento(
         token!,
@@ -213,32 +206,17 @@ const Portaria: React.FC = () => {
         usuarioId,
         observacaoPortaria // Observação da portaria passada aqui
       );
-  
-      // Aqui, atualize também a observação do agendamento
-      await api.put(
-        `/agendamentos/${agendamento.CodigoAgendamento}`,
-        {
-          Observacao: observacaoAgendamento, // Garante que a observação seja atualizada corretamente
-          SituacaoAgendamento: "Andamento",
-          TipoAgendamento: agendamento.TipoAgendamento,  // Preserve o tipo do agendamento
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
+
       toast.success("Agendamento aprovado com sucesso!");
       handleCloseModal();
-  
+
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
             ? {
                 ...a,
                 SituacaoAgendamento: "Andamento",
-                Observacao: observacaoAgendamento, // Atualiza também a observação localmente
+                Observacao: agendamento.Observacao || "Sem observação", // Atualiza também a observação localmente
               }
             : a
         )
@@ -248,22 +226,21 @@ const Portaria: React.FC = () => {
       console.error("Erro ao aprovar o agendamento:", error);
     }
   };
-  
-  
+
   const handleRecusarAgendamento = async (agendamento: Agendamento | null) => {
     if (!agendamento) {
       toast.error("Nenhum agendamento selecionado.");
       return;
     }
-  
+
     try {
       const usuarioId = Number(user!.id);
-  
+
       if (!motivoRecusa) {
         toast.error("Motivo de recusa é necessário.");
         return;
       }
-  
+
       await recusarAgendamento(
         token!,
         agendamento.CodigoAgendamento!,
@@ -271,11 +248,11 @@ const Portaria: React.FC = () => {
         usuarioId,
         agendamento.TipoAgendamento!
       );
-  
+
       toast.success("Agendamento recusado com sucesso!");
       handleCloseRecusaModal();
       handleCloseModal();
-  
+
       // Atualizar o estado do agendamento com "Reprovado" em vez de "Recusado"
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
@@ -293,7 +270,6 @@ const Portaria: React.FC = () => {
       console.error("Erro ao recusar o agendamento:", error);
     }
   };
-  
 
   const handleOpenModal = async (agendamento: Agendamento) => {
     setSelectedAgendamento(agendamento);
@@ -379,9 +355,6 @@ const Portaria: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
       <Toaster />
-      <div className="text-balck text-left font-bold text-lg py-1 ml-12">
-      PORTARIA
-      </div>
       <div className="container mx-auto p-4">
         {/* Navegação entre semanas */}
         <div className="flex justify-between items-center mb-6">
@@ -607,18 +580,22 @@ const Portaria: React.FC = () => {
               quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
               observacao={selectedAgendamento?.Observacao ?? null}
               arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
+              safra={selectedAgendamento?.AnoSafra ?? "N/A"} // Exibe o AnoSafra diretamente
             />
 
             {/* Utilizando o campo de observação da portaria */}
             <DadosPortaria
-  codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
-  dataHoraSaida={selectedAgendamento?.DadosPortaria?.DataHoraSaida ?? "N/A"}
-  observacaoPortaria={observacaoPortaria}
-  setObservacaoPortaria={setObservacaoPortaria}
-  isObservacaoEditable={selectedAgendamento.SituacaoAgendamento === "Confirmado"}
-  situacaoAgendamento={selectedAgendamento.SituacaoAgendamento} // Passa o status do agendamento
-/>
-
+              codigoAgendamento={selectedAgendamento?.CodigoAgendamento ?? null}
+              dataHoraSaida={
+                selectedAgendamento?.DadosPortaria?.DataHoraSaida ?? "N/A"
+              }
+              observacaoPortaria={observacaoPortaria}
+              setObservacaoPortaria={setObservacaoPortaria}
+              isObservacaoEditable={
+                selectedAgendamento.SituacaoAgendamento === "Confirmado"
+              }
+              situacaoAgendamento={selectedAgendamento.SituacaoAgendamento} // Passa o status do agendamento
+            />
 
             <div className="flex justify-between mt-4 space-x-4">
               {selectedAgendamento.SituacaoAgendamento === "Confirmado" && (

@@ -129,7 +129,21 @@ const atualizarAgendamento = async (req, res) => {
     }
 };
 
-
+const buscarAgendamentoPorId = async (req, res) => {
+    const agendamentoId = req.params.id;
+  
+    try {
+      const agendamento = await agendamentoModel.getAgendamentoById(agendamentoId);
+      if (agendamento) {
+        res.json(agendamento);
+      } else {
+        res.status(404).send({ message: 'Agendamento não encontrado.' });
+      }
+    } catch (error) {
+      res.status(500).send({ message: 'Erro ao buscar agendamento: ' + error.message });
+    }
+  };
+  
 // Cancelar agendamento
 const cancelarAgendamento = async (req, res) => {
     try {
@@ -199,6 +213,7 @@ module.exports = {
     listarAgendamentosComPlaca,
     aprovarAgendamento,
     adicionarAgendamento,
+    buscarAgendamentoPorId,
     atualizarAgendamento,
     cancelarAgendamento,
     deletarAgendamento,

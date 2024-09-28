@@ -12,7 +12,7 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
     });
     const agendamentos = response.data;
 
-    // Iterar pelos agendamentos e buscar a descrição do produto para cada um
+    // Iterar pelos agendamentos e buscar os dados adicionais
     for (const agendamento of agendamentos) {
       if (agendamento.CodigoProduto) {
         try {
@@ -20,6 +20,16 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
           agendamento.DescricaoProduto = descricaoProduto;  // Adiciona a descrição do produto ao agendamento
         } catch (error) {
           console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
+        }
+      }
+
+      // Buscar AnoSafra associado ao CodigoSafra
+      if (agendamento.CodigoSafra) {
+        try {
+          const anoSafra = await getAnoSafraByCodigo(agendamento.CodigoSafra, token);
+          agendamento.AnoSafra = anoSafra;  // Adiciona o AnoSafra ao agendamento
+        } catch (error) {
+          console.error(`Erro ao buscar a safra para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
       }
 
@@ -49,6 +59,7 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
 };
 
 
+
   export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
     try {
       const response = await api.get(`/produtos/${codigoProduto}`, {
@@ -70,17 +81,27 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
     observacao: string // Adicione a observação como argumento
   ): Promise<void> => {
     try {
+      // Obter os dados atuais do agendamento para preservar os valores existentes
+      const agendamentoAtual = await api.get(`/agendamentos/${agendamentoId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const { Observacao, UsuarioAprovacao } = agendamentoAtual.data; // Pegue o valor atual da observação e do usuário
+  
       // Define a DataHoraSaida como o horário atual
       const dataHoraSaida = new Date().toISOString();
   
-      // Atualizar o status do agendamento para "Finalizado", preservando a observação existente
+      // Atualizar o status do agendamento para "Finalizado", preservando a observação e outros dados existentes
       await api.put(
         `/agendamentos/${agendamentoId}`,
         {
           SituacaoAgendamento: "Finalizado",
           TipoAgendamento: tipoAgendamento,
           DataHoraSaida: dataHoraSaida, // Inclui a data/hora de saída na atualização
-          Observacao: observacao // Inclui a observação atualizada ou existente
+          Observacao: Observacao || observacao || "Sem observação", // Inclui a observação atualizada ou existente
+          UsuarioAprovacao: UsuarioAprovacao, // Preserva o valor do UsuarioAprovacao
         },
         {
           headers: {
@@ -93,7 +114,7 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
       await api.put(
         `/portarias/${agendamentoId}`, // Associa o agendamento à portaria
         {
-          DataHoraSaida: dataHoraSaida // Envia a data/hora de saída para a portaria
+          DataHoraSaida: dataHoraSaida, // Envia a data/hora de saída para a portaria
         },
         {
           headers: {
@@ -108,6 +129,7 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
       throw error;
     }
   };
+  
   
   
 // Função para atualizar a DataHoraSaida na portaria
@@ -134,55 +156,65 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
 
 
 
-  // Função para aprovar agendamento e preencher o campo DataHoraEntrada
-  export const aprovarAgendamento = async (
-    token: string,
-    agendamentoId: number,
-    tipoAgendamento: string,
-    usuarioId: number,
-    observacaoPortaria: string // Observação da portaria passada
-  ) => {
-    try {
-      // Atualizar o agendamento para "Andamento"
-      await api.put(
-        `/agendamentos/${agendamentoId}`,
-        {
-          SituacaoAgendamento: "Andamento", 
-          DataHoraEntrada: new Date().toISOString(), 
-          TipoAgendamento: tipoAgendamento,
+// Função para aprovar agendamento e preencher o campo DataHoraEntrada
+export const aprovarAgendamento = async (
+  token: string,
+  agendamentoId: number,
+  tipoAgendamento: string,
+  usuarioId: number,
+  observacaoPortaria: string // Observação da portaria passada
+) => {
+  try {
+    // Obter os dados atuais do agendamento para preservar os valores existentes
+    const agendamentoAtual = await api.get(`/agendamentos/${agendamentoId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const { Observacao, UsuarioAprovacao } = agendamentoAtual.data; // Pegue o valor atual da observação e do usuário
+
+    // Atualizar o agendamento para "Andamento", preservando `UsuarioAprovacao` e `Observacao`
+    await api.put(
+      `/agendamentos/${agendamentoId}`,
+      {
+        SituacaoAgendamento: "Andamento", 
+        DataHoraEntrada: new Date().toISOString(),
+        TipoAgendamento: tipoAgendamento,
+        UsuarioAprovacao: UsuarioAprovacao || usuarioId, // Preserve ou use o novo valor
+        Observacao: Observacao || "Sem observação", // Preserve o valor da observação existente
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      // Salvar a observação da portaria na tabela de portaria
-      await api.post(
-        `/portarias`, 
-        {
-          CodigoAgendamento: agendamentoId,
-          DataHoraEntrada: new Date().toISOString(),
-          UsuarioAprovacao: usuarioId,
-          ObservacaoPortaria: observacaoPortaria || "Aprovado pela portaria",
+      }
+    );
+
+    // Salvar a observação da portaria na tabela de portaria
+    await api.post(
+      `/portarias`, 
+      {
+        CodigoAgendamento: agendamentoId,
+        DataHoraEntrada: new Date().toISOString(),
+        UsuarioAprovacao: usuarioId,
+        ObservacaoPortaria: observacaoPortaria || "Aprovado pela portaria",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      return { message: "Agendamento aprovado com sucesso" };
-    } catch (error: unknown) {
-      console.error("Erro ao aprovar agendamento:", error);
-      throw error;
-    }
-  };
-  
-  
-  // Função para recusar agendamento e alterar o status para "Recusado"
+      }
+    );
+
+    return { message: "Agendamento aprovado com sucesso" };
+  } catch (error: unknown) {
+    console.error("Erro ao aprovar agendamento:", error);
+    throw error;
+  }
+};
+
+
   // Função para recusar agendamento e enviar o MotivoRecusa para a tabela de portaria
   export const recusarAgendamento = async (
     token: string,
@@ -192,14 +224,24 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
     tipoAgendamento: string
   ): Promise<{ message: string }> => {
     try {
-      // Atualiza o agendamento, ajustando o motivo de recusa
+      // Obter os dados atuais do agendamento para preservar os valores existentes
+      const agendamentoAtual = await api.get(`/agendamentos/${agendamentoId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const { Observacao, UsuarioAprovacao } = agendamentoAtual.data; // Pegue o valor atual da observação e do usuário
+      
+      // Atualizar apenas os campos necessários no agendamento, preservando `UsuarioAprovacao` e `Observacao`
       await api.put(
-        `/agendamentos/${agendamentoId}`, // Certifique-se de que essa rota esteja correta
+        `/agendamentos/${agendamentoId}`,
         {
           SituacaoAgendamento: "Reprovado",
-          MotivoRecusa: motivoRecusa,
-          TipoAgendamento: tipoAgendamento, // Certifique-se de que o tipo de agendamento esteja correto
-          UsuarioAprovacao: usuarioId, // Quem está recusando o agendamento
+          MotivoRecusa: motivoRecusa, // Enviar motivo da recusa apenas para `agendamentos`
+          TipoAgendamento: tipoAgendamento,
+          Observacao: Observacao || "Sem observação", // Preservar o valor da observação existente
+          UsuarioAprovacao: UsuarioAprovacao, // Não modificar o valor do `UsuarioAprovacao`, apenas preservá-lo
         },
         {
           headers: {
@@ -208,15 +250,15 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
         }
       );
   
-      // Agora, insira os dados da portaria, caso seja necessário
+      // Agora, insira os dados na tabela de `portaria`, alterando o `UsuarioAprovacao` e `MotivoRecusa` lá
       await api.post(
-        `/portarias`, // Usando POST para criar um novo registro na portaria
+        `/portarias`,
         {
           CodigoAgendamento: agendamentoId, // ID do agendamento vinculado
           DataHoraEntrada: new Date().toISOString(), // Hora atual
-          UsuarioAprovacao: usuarioId, // Usuário que realizou a recusa
+          UsuarioAprovacao: usuarioId, // Apenas aqui alteramos o usuário que fez a recusa
           MotivoRecusa: motivoRecusa, // Motivo da recusa
-          ObservacaoPortaria: `Recusado: ${motivoRecusa}`, // Observação explicando a recusa
+          ObservacaoPortaria: "Recusado", // Deixe a observação simples e não duplicada com `MotivoRecusa`
         },
         {
           headers: {
@@ -239,7 +281,7 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
     }
   };
   
-
+  
   
 // Função para buscar os dados da portaria relacionados a um agendamento
 export const getDadosPortaria = async (token: string, codigoAgendamento: number) => {
@@ -264,6 +306,19 @@ export const getDadosPortaria = async (token: string, codigoAgendamento: number)
     } else {
       console.error('Erro desconhecido ao buscar dados da portaria:', error);
     }
+    throw error;
+  }
+};
+export const getAnoSafraByCodigo = async (codigoSafra: number, token: string) => {
+  try {
+    const response = await api.get(`/safras/${codigoSafra}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.AnoSafra; // Retorna o AnoSafra
+  } catch (error) {
+    console.error(`Erro ao buscar AnoSafra para o código ${codigoSafra}:`, error);
     throw error;
   }
 };

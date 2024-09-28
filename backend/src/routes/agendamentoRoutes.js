@@ -14,5 +14,6 @@ router.get('/agendamentos/indisponibilidades', authMiddleware, agendamentoContro
 router.delete('/agendamentos/indisponibilidade/:id', authMiddleware, agendamentoController.deletarIndisponibilidade); 
 router.get('/agendamentos-por-data', authMiddleware, agendamentoController.listarAgendamentosPorData);
 router.get('/agendamentos/status', authMiddleware, agendamentoController.listarAgendamentosPorStatus);
+router.get('/agendamentos/:id', authMiddleware, agendamentoController.buscarAgendamentoPorId);
 
 module.exports = router;

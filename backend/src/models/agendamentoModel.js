@@ -183,7 +183,19 @@ const updateAgendamento = (agendamento, id) => {
         });
     });
 };
-
+const getAgendamentoById = (id) => {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM agendamentos WHERE CodigoAgendamento = ?';
+      db.get(sql, [id], (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row);
+        }
+      });
+    });
+  };
+  
 
 // Deletar um agendamento
 const deleteAgendamento = (id) => {
@@ -261,6 +273,7 @@ module.exports = {
     addAgendamento,
     updateStatusAgendamento,
     getAgendamentosPorStatus,
+    getAgendamentoById,
     updateAgendamento,
     getAllAgendamentosWithPlaca,
     deleteAgendamento,

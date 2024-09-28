@@ -32,6 +32,7 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
 };
 
 // Função para buscar agendamentos
+// Função para buscar agendamentos
 export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
   try {
     const response = await api.get('/agendamentos', {
@@ -42,20 +43,31 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
 
     const agendamentos = response.data;
 
-    console.log('Agendamentos recebidos:', agendamentos);  // Verifica se o CódigoProduto está presente
+    console.log('Agendamentos recebidos:', agendamentos);
 
-    // Iterar pelos agendamentos e buscar a descrição do produto para cada um
+    // Iterar pelos agendamentos e buscar a descrição do produto e o AnoSafra para cada um
     for (const agendamento of agendamentos) {
       if (agendamento.CodigoProduto) {
         try {
           const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
           console.log(`Produto encontrado: ${descricaoProduto} para agendamento ${agendamento.CodigoAgendamento}`);
-          agendamento.DescricaoProduto = descricaoProduto;  // Adiciona a descrição do produto ao agendamento
+          agendamento.DescricaoProduto = descricaoProduto; // Adiciona a descrição do produto ao agendamento
         } catch (error) {
           console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
       } else {
         console.log(`Agendamento ${agendamento.CodigoAgendamento} não possui CodigoProduto.`);
+      }
+
+      // Adicionar a busca pelo AnoSafra se o CodigoSafra estiver presente
+      if (agendamento.CodigoSafra) {
+        try {
+          const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
+          console.log(`Ano da safra encontrado: ${anoSafra} para agendamento ${agendamento.CodigoAgendamento}`);
+          agendamento.AnoSafra = anoSafra; // Adiciona o AnoSafra ao agendamento
+        } catch (error) {
+          console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
+        }
       }
     }
 
@@ -65,6 +77,7 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
     throw error;
   }
 };
+
 
 // Função para adicionar um novo agendamento
 export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
