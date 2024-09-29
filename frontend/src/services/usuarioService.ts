@@ -94,3 +94,21 @@ export const redefinirSenha = async (token: string, id: number, novaSenha: strin
     throw error;
   }
 };
+
+// Função para resetar a senha de múltiplos usuários
+export const resetarSenhaUsuario = async (token: string, userIds: number[]): Promise<void> => {
+  try {
+    await axios.post(
+      `${apiUrl}/resetar-senha-usuario`,
+      { userIds },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Erro ao resetar a senha dos usuários:", error);
+    throw error;
+  }
+};

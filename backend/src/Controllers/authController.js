@@ -2,7 +2,10 @@ const jwt = require("jsonwebtoken");
 const AuthService = require("../services/authService");
 const { refreshSecret } = require("../Config/jwtConfig");
 const User = require("../models/userModel");
-const { enviarEmailRecuperacaoSenha } = require("../utils/emailService");
+const {
+  enviarEmailRecuperacaoSenha,
+  enviarEmailSenhaTemporaria,
+} = require("../utils/emailService");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
@@ -62,11 +65,9 @@ class AuthController {
         await enviarEmailRecuperacaoSenha(user.Email, resetLink);
       }
 
-      res
-        .status(200)
-        .json({
-          message: "Se o e-mail existir, um link de recuperação foi enviado.",
-        });
+      res.status(200).json({
+        message: "Se o e-mail existir, um link de recuperação foi enviado.",
+      });
     } catch (error) {
       res.status(500).json({ message: "Erro ao processar a solicitação." });
     }
@@ -93,6 +94,42 @@ class AuthController {
       res.status(200).json({ message: "Senha redefinida com sucesso." });
     } catch (error) {
       res.status(500).json({ message: "Erro ao redefinir a senha." });
+    }
+  }
+
+  // Função que o admin usa para redefinir a senha de múltiplos usuários
+  static async resetarSenhaUsuario(req, res) {
+    const { userIds } = req.body;
+
+    try {
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ message: "Nenhum usuário selecionado." });
+      }
+
+      for (const userId of userIds) {
+        const user = await User.getUserById(userId);
+        if (!user) {
+          console.error(`Usuário com ID ${userId} não encontrado.`);
+          continue;
+        }
+
+        const senhaTemporaria = crypto.randomBytes(8).toString("hex");
+
+        const hashedPassword = await bcrypt.hash(senhaTemporaria, 10);
+
+        await User.updatePassword(user.CodigoUsuario, hashedPassword);
+
+        await enviarEmailSenhaTemporaria(user.Email, senhaTemporaria);
+      }
+
+      return res
+        .status(200)
+        .json({
+          message: "Senhas temporárias enviadas para os e-mails dos usuários.",
+        });
+    } catch (error) {
+      console.error("Erro ao resetar senha dos usuários:", error);
+      res.status(500).json({ message: "Erro ao processar a solicitação." });
     }
   }
 }

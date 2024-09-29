@@ -8,4 +8,5 @@ export interface Usuario {
   CodigoTransportadora?: number;
   TipoUsuario: string;
   SituacaoUsuario: number;
+  UsuarioAlteracao?: string;
 }

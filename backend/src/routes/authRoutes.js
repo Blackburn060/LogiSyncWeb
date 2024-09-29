@@ -9,5 +9,6 @@ router.post('/refresh-token', AuthController.refreshToken);
 
 router.post('/recuperar-senha', AuthController.recuperarSenha);
 router.post('/redefinir-senha', AuthController.redefinirSenha);
+router.post('/resetar-senha-usuario', AuthController.resetarSenhaUsuario);
 
 module.exports = router;
