@@ -4,6 +4,6 @@ export interface Produto {
     Categoria: string;
     SituacaoProduto: number;
     DataGeracao: string;
-    DataAlteracao?: string;  
+    DataAlteracao?: string;
+    UsuarioAlteracao?: string;
   }
-  

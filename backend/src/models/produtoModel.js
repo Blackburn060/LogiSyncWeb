@@ -23,12 +23,13 @@ const getAllProdutos = (filters = {}) => {
         });
     });
 };
+
 // Adicionar um novo produto
 const addProduto = (produto) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
-        const sql = `INSERT INTO cadastroprodutos (DescricaoProduto, Categoria, SituacaoProduto, DataGeracao) VALUES (?, ?, ?, ?)`;
-        db.run(sql, [produto.DescricaoProduto, produto.Categoria, produto.SituacaoProduto, dataGeracao], function(err) {
+        const sql = `INSERT INTO cadastroprodutos (DescricaoProduto, Categoria, SituacaoProduto, DataGeracao, UsuarioAlteracao) VALUES (?, ?, ?, ?, ?)`;
+        db.run(sql, [produto.DescricaoProduto, produto.Categoria, produto.SituacaoProduto, dataGeracao, produto.UsuarioAlteracao], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -37,6 +38,7 @@ const addProduto = (produto) => {
         });
     });
 };
+
 const getProdutoById = (codigoProduto) => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM cadastroprodutos WHERE CodigoProduto = ?';
@@ -65,9 +67,10 @@ const updateProduto = (produto, id) => {
             }
         });
 
+        // Add update timestamp and user who made the update
         if (updates.length > 0) {
-            updates.push('DataAlteracao = ?');
-            params.push(dataAlteracao);
+            updates.push('DataAlteracao = ?', 'UsuarioAlteracao = ?');
+            params.push(dataAlteracao, produto.UsuarioAlteracao);
         } else {
             reject(new Error("No fields to update"));
             return;
@@ -83,13 +86,12 @@ const updateProduto = (produto, id) => {
     });
 };
 
-
-// Deletar um produto
-const deleteProduto = (id) => {
+// Deletar um produto (soft delete)
+const deleteProduto = (id, UsuarioAlteracao) => {
     return new Promise((resolve, reject) => {
         const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
-        const sql = 'UPDATE cadastroprodutos SET SituacaoProduto = 0, DataAlteracao = ? WHERE CodigoProduto = ?';
-        db.run(sql, [dataAlteracao, id], function(err) {
+        const sql = 'UPDATE cadastroprodutos SET SituacaoProduto = 0, DataAlteracao = ?, UsuarioAlteracao = ? WHERE CodigoProduto = ?';
+        db.run(sql, [dataAlteracao, UsuarioAlteracao, id], function(err) {
             if (err) {
                 reject(err);
             } else {
