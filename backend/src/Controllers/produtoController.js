@@ -17,6 +17,20 @@ const adicionarProduto = async (req, res) => {
         res.status(500).send({ message: "Erro ao adicionar produto: " + error.message });
     }
 };
+const getProdutoById = async (req, res) => {
+    try {
+        const { id } = req.params;  // Captura o ID da URL
+        const produto = await produtoModel.getProdutoById(id);  // Chama o model para buscar o produto
+
+        if (!produto) {
+            return res.status(404).send({ message: "Produto não encontrado." });
+        }
+
+        res.json(produto);  // Retorna o produto encontrado
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao buscar produto: " + error.message });
+    }
+};
 
 const atualizarProduto = async (req, res) => {
     try {
@@ -48,5 +62,6 @@ module.exports = {
     listarProdutos,
     adicionarProduto,
     atualizarProduto,
+    getProdutoById,
     deletarProduto
 };

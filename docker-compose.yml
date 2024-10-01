@@ -3,6 +3,14 @@ services:
     build:
       context: ./frontend
     ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - REACT_APP_FRONTEND_URL=${REACT_APP_FRONTEND_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
       - "3000:80"
 
   backend:
@@ -12,3 +20,6 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
+      - VITE_APP_BACKEND_API_URL=${VITE_APP_BACKEND_API_URL}
+      - VITE_APP_GOOGLE_APIKEY=${VITE_APP_GOOGLE_APIKEY}
+

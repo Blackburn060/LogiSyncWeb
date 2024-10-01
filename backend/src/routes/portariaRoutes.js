@@ -7,5 +7,6 @@ router.get('/portarias',authMiddleware, portariaController.listarPortarias);
 router.post('/portarias',authMiddleware, portariaController.adicionarPortaria);
 router.put('/portarias/:id',authMiddleware, portariaController.atualizarPortaria);
 router.delete('/portarias/:id',authMiddleware, portariaController.deletarPortaria);
+router.get('/portarias/:CodigoAgendamento', authMiddleware, portariaController.buscarPortariaPorAgendamento);
 
 module.exports = router;

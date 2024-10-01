@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const horarioController = require('../Controllers/horarioController');
-const authMiddleware = require('../middleware/authMiddleware');
+const HorarioController = require('../Controllers/horarioController');
 
-router.get('/horarios',authMiddleware, horarioController.listarHorarios);
-router.post('/horarios',authMiddleware, horarioController.adicionarHorario);
-router.put('/horarios/:id',authMiddleware, horarioController.atualizarHorario);
-router.delete('/horarios/:id',authMiddleware, horarioController.deletarHorario);
+router.get('/horarios', HorarioController.getHorarios);
+router.get('/horarios-disponiveis', HorarioController.getHorariosDisponiveisPorData);
+router.put('/horarios/:id', HorarioController.updateHorario);
 
 module.exports = router;

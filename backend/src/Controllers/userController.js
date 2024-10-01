@@ -1,10 +1,10 @@
 const userModel = require('../models/userModel');
-const { hashPassword, verifyPassword } = require('../auth');
+const bcrypt = require("bcrypt");
 
 // Listar todos os usuários
 const listarUsuarios = async (req, res) => {
     try {
-        const filters = req.query;  
+        const filters = req.query;
         const usuarios = await userModel.getAllUsers(filters);
         res.json(usuarios);
     } catch (error) {
@@ -12,20 +12,40 @@ const listarUsuarios = async (req, res) => {
     }
 };
 
+// Listar um usuário pelo ID
+const listarUsuario = async (req, res) => {
+    try {
+        const usuario = await userModel.getUserById(req.params.id);
+        if (usuario) {
+            res.json(usuario);
+        } else {
+            res.status(404).send({ message: "Usuário não encontrado" });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao buscar usuário: " + error.message });
+    }
+};
+
 // Adicionar um usuário
 const adicionarUsuario = async (req, res) => {
-    const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular } = req.body;
+    const { nomeCompleto, email, senha, tipoUsuario, codigoTransportadora, numeroCelular, cpf } = req.body;
 
     try {
-        const hashedPassword = await hashPassword(senha);
+        const existingUser = await userModel.findUserByEmail(email.toLowerCase());
+        if (existingUser) {
+            return res.status(400).send({ message: 'E-mail já está em uso.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(senha, 10);
         const user = {
-            NomeCompleto: nomeCompleto,
-            Email: email,
-            Senha: hashedPassword,
-            TipoUsuario: tipoUsuario,
-            CodigoTransportadora: codigoTransportadora || null,
-            SituacaoUsuario: 1,
-            NumeroCelular: numeroCelular || null
+            nomeCompleto: nomeCompleto,
+            email: email.toLowerCase(),
+            senha: hashedPassword,
+            tipoUsuario: tipoUsuario,
+            codigoTransportadora: codigoTransportadora || null,
+            situacaoUsuario: 1,
+            numeroCelular: numeroCelular || null,
+            cpf: cpf || null
         };
 
         const userId = await userModel.addUser(user);
@@ -37,29 +57,41 @@ const adicionarUsuario = async (req, res) => {
 
 // Atualizar um usuário
 const atualizarUsuario = async (req, res) => {
-    const userId = req.params.id;
-    const changes = req.body;
+    const user = req.body;
 
-    // Verifique se a senha está sendo atualizada e hashe-a se necessário
-    if (changes.senha) {
-        try {
-            changes.Senha = await hashPassword(changes.senha);
-            delete changes.senha; // Remova a chave `senha` para evitar duplicação
-        } catch (error) {
-            return res.status(500).send({ message: "Erro ao hashear senha: " + error.message });
-        }
+    // Verifique se há campos para atualizar
+    if (Object.keys(user).length === 0) {
+        return res.status(400).send({ message: 'Nenhum dado para atualizar' });
     }
 
     try {
-        const updated = await userModel.updateUser(changes, userId);
-        if (updated) {
-            res.send({ message: "Usuário atualizado com sucesso." });
+        const changes = await userModel.updateUser(user, req.params.id);
+        if (changes > 0) {
+            res.send({ message: "Usuário atualizado com sucesso" });
         } else {
-            res.status(404).send({ message: "Usuário não encontrado." });
+            res.status(400).send({ message: "Nenhuma alteração foi realizada" });
         }
     } catch (error) {
-        console.error("Erro na atualização:", error);
+        console.error('Erro ao atualizar usuário:', error);
         res.status(500).send({ message: "Erro ao atualizar usuário: " + error.message });
+    }
+};
+
+
+
+// Verificar se o e-mail já existe e retornar se a conta está ativa ou não
+const verificarEmailExistente = async (req, res) => {
+    const { email } = req.query;
+    try {
+        const user = await userModel.findUserByEmail(email.toLowerCase());
+        if (user) {
+            // Verifica se o usuário existe e se está ativo (SituacaoUsuario = 1)
+            res.json({ exists: true, active: user.SituacaoUsuario === 1 });
+        } else {
+            res.json({ exists: false, active: false });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao verificar e-mail: " + error.message });
     }
 };
 
@@ -77,9 +109,40 @@ const deletarUsuario = async (req, res) => {
     }
 };
 
+// Adicionar um usuário sem autenticação
+const adicionarUsuarioPublic = async (req, res) => {
+    const { nomeCompleto, email, senha, tipoUsuario, numeroCelular, cpf } = req.body;
+
+    try {
+        const existingUser = await userModel.findUserByEmail(email.toLowerCase());
+        if (existingUser) {
+            return res.status(400).send({ message: 'E-mail já está em uso.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(senha, 10);
+        const user = {
+            nomeCompleto: nomeCompleto,
+            email: email.toLowerCase(),
+            senha: hashedPassword,
+            tipoUsuario: 'motorista',
+            situacaoUsuario: 1,
+            numeroCelular: numeroCelular || null,
+            cpf: cpf || null
+        };
+
+        const userId = await userModel.addUser(user);
+        res.status(201).send({ id: userId, message: "Usuário registrado com sucesso" });
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao registrar usuário: " + error.message });
+    }
+};
+
 module.exports = {
     listarUsuarios,
     adicionarUsuario,
+    listarUsuario, 
+    verificarEmailExistente,
     atualizarUsuario,
-    deletarUsuario
+    deletarUsuario,
+    adicionarUsuarioPublic
 };

@@ -11,7 +11,7 @@ const getAllSafras = (filters = {}) => {
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined) {
                 sql += ` AND ${key} = ?`;
-                params.push(filters[key]);  // Usa = para busca exata
+                params.push(filters[key]);
             }
         });
 
@@ -28,9 +28,9 @@ const getAllSafras = (filters = {}) => {
 // Adicionar uma nova safra
 const addSafra = (safra) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        const sql = `INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao) VALUES (?, ?, ?)`;
-        db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao], function(err) {
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
+        const sql = `INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao, CodigoUsuario) VALUES (?, ?, ?, ?)`;
+        db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao, safra.CodigoUsuario], function(err) {
             if (err) {
                 reject(err);
             } else {
@@ -40,10 +40,9 @@ const addSafra = (safra) => {
     });
 };
 
-// Atualizar uma safra
 const updateSafra = (safra, id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastrosafra SET ';
         let params = [];
         let updates = [];
@@ -76,7 +75,7 @@ const updateSafra = (safra, id) => {
 // Deletar uma safra
 const deleteSafra = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastrosafra SET SituacaoSafra = 0, DataAlteracao = ? WHERE CodigoSafra = ?';
         db.run(sql,[dataAlteracao, id], function(err) {
             if (err) {
@@ -87,9 +86,22 @@ const deleteSafra = (id) => {
         });
     });
 };
+const getSafraById = (codigoSafra) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM cadastrosafra WHERE CodigoSafra = ?';
+        db.get(sql, [codigoSafra], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);  // Retorna a linha correspondente à safra
+            }
+        });
+    });
+};
 
 module.exports = {
     getAllSafras,
+    getSafraById,
     addSafra,
     updateSafra,
     deleteSafra

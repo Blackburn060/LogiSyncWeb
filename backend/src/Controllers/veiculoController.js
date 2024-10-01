@@ -2,11 +2,24 @@ const veiculoModel = require('../models/veiculoModel');
 
 const listarVeiculos = async (req, res) => {
     try {
-        const filters = req.query;
-        const veiculos = await veiculoModel.getAllVeiculos(filters);
+        const userId = req.user.id; 
+        const veiculos = await veiculoModel.getAllVeiculos({ CodigoUsuario: userId });
         res.json(veiculos);
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar veículos: " + error.message });
+    }
+};
+const obterVeiculoPorId = async (req, res) => {
+    const veiculoId = req.params.id; // Pega o ID do veículo da URL
+    try {
+        const veiculos = await veiculoModel.getAllVeiculos({ CodigoVeiculo: veiculoId });
+        if (veiculos.length > 0) {
+            res.status(200).json(veiculos[0]); // Retorna o primeiro veículo encontrado
+        } else {
+            res.status(404).json({ message: "Veículo não encontrado" });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Erro ao buscar veículo: " + error.message });
     }
 };
 
@@ -48,9 +61,44 @@ const deletarVeiculo = async (req, res) => {
     }
 };
 
+const adicionarVeiculoPublic = async (req, res) => {
+    try {
+        const { CodigoUsuario, nomeVeiculo, placa, marca, modeloTipo, anoFabricacao, cor, capacidadeCarga } = req.body;
+
+        // Validação de campos obrigatórios
+        if (!CodigoUsuario || !nomeVeiculo || !placa || !marca || !modeloTipo || !anoFabricacao || !cor || !capacidadeCarga) {
+            return res.status(400).send({ message: "Campos obrigatórios ausentes" });
+        }
+
+        // Adicionar o veículo
+        const novoVeiculoId = await veiculoModel.addVeiculo({
+            CodigoUsuario,
+            nomeVeiculo,
+            placa,
+            marca,
+            modeloTipo,
+            anoFabricacao,
+            cor,
+            capacidadeCarga,
+            Bloqueado: 1
+        });
+
+        return res.status(201).send({
+            id: novoVeiculoId,
+            message: "Veículo adicionado com sucesso"
+        });
+    } catch (error) {
+        console.error('Erro ao adicionar veículo:', error);
+        return res.status(500).send({ message: "Erro ao adicionar veículo: " + error.message });
+    }
+};
+
+
 module.exports = {
     listarVeiculos,
     adicionarVeiculo,
+    obterVeiculoPorId,
     atualizarVeiculo,
-    deletarVeiculo
+    deletarVeiculo,
+    adicionarVeiculoPublic
 };

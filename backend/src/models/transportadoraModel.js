@@ -1,17 +1,17 @@
 const db = require('../Config/database');
 const moment = require('moment-timezone');
 
-// Buscar todas as transportadoras
+// Buscar todas as transportadoras ativas
 const getAllTransportadoras = (filters = {}) => {
     return new Promise((resolve, reject) => {
-        let sql = 'SELECT * FROM cadastrotransportadora WHERE 1=1';
+        let sql = 'SELECT * FROM cadastrotransportadora WHERE SituacaoTransportadora = 1';
         let params = [];
 
         // Adiciona condições SQL com base nos filtros passados
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined && filters[key] !== '') {
                 sql += ` AND ${key} LIKE ?`;
-                params.push(`%${filters[key]}%`);  // Usa LIKE para busca parcial
+                params.push(`%${filters[key]}%`);
             }
         });
 
@@ -25,27 +25,67 @@ const getAllTransportadoras = (filters = {}) => {
     });
 };
 
-// Adicionar uma nova transportadora
-const addTransportadora = (transportadora) => {
-    console.log("Recebendo para adição:", transportadora); // Isto mostrará os dados recebidos
+// Buscar transportadora por ID, apenas se estiver ativa
+const getTransportadoraById = (id) => {
     return new Promise((resolve, reject) => {
-        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-        const sql = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
-        db.run(sql, [transportadora.Nome, transportadora.NomeFantasia, transportadora.CNPJ, transportadora.SituacaoTransportadora, dataGeracao], function(err) {
+        const sql = 'SELECT * FROM cadastrotransportadora WHERE CodigoTransportadora = ? AND SituacaoTransportadora = 1';
+        db.get(sql, [id], (err, row) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(this.lastID);
+                resolve(row);
             }
         });
     });
 };
 
 
+// Adicionar uma nova transportadora
+const addTransportadora = (transportadora, userId) => {
+    return new Promise((resolve, reject) => {
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
+        const sqlInsert = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
+
+        db.run(sqlInsert, [transportadora.nomeEmpresa, transportadora.nomeFantasia, transportadora.cnpj, 1, dataGeracao], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                const newCodigoTransportadora = this.lastID; 
+                if (!newCodigoTransportadora) {
+                    reject(new Error('Falha ao obter o CodigoTransportadora após a inserção'));
+                } else {
+                    
+                    const sqlUpdateUser = 'UPDATE cadastrousuarios SET CodigoTransportadora = ?, DataAlteracao = ? WHERE CodigoUsuario = ?';
+                    const dataAlteracao = dataGeracao;
+
+                    db.run(sqlUpdateUser, [newCodigoTransportadora, dataAlteracao, userId], function(err) {
+                        if (err) {
+                            reject(err);
+                        } else {
+
+                            resolve({
+                                CodigoTransportadora: newCodigoTransportadora,
+                                nomeEmpresa: transportadora.nomeEmpresa,
+                                nomeFantasia: transportadora.nomeFantasia,
+                                cnpj: transportadora.cnpj,
+                                SituacaoTransportadora: 1,
+                                DataGeracao: dataGeracao
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    });
+};
+
+  
+
+
 // Atualizar uma transportadora
 const updateTransportadora = (transportadora, id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         let sql = 'UPDATE cadastrotransportadora SET ';
         let params = [];
         let updates = [];
@@ -62,7 +102,6 @@ const updateTransportadora = (transportadora, id) => {
             updates.push('NomeFantasia = ?');
             params.push(transportadora.NomeFantasia);
         }
-        
 
         updates.push('DataAlteracao = ?');
         params.push(dataAlteracao);
@@ -81,11 +120,10 @@ const updateTransportadora = (transportadora, id) => {
     });
 };
 
-
 // Deletar uma transportadora
 const deleteTransportadora = (id) => {
     return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sql = 'UPDATE cadastrotransportadora SET SituacaoTransportadora = 0, DataAlteracao = ? WHERE CodigoTransportadora = ?';
         db.run(sql, [dataAlteracao, id], function(err) {
             if (err) {
@@ -101,5 +139,6 @@ module.exports = {
     getAllTransportadoras,
     addTransportadora,
     updateTransportadora,
-    deleteTransportadora
+    deleteTransportadora,
+    getTransportadoraById 
 };

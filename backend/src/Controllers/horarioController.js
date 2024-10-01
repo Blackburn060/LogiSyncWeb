@@ -1,52 +1,56 @@
-const horarioModel = require('../models/horarioModel');
+const HorarioModel = require('../models/horarioModel');
 
-const listarHorarios = async (req, res) => {
+// Função para obter todos os horários
+const getHorarios = async (req, res) => {
     try {
-        const filters = req.query;
-        const horarios = await horarioModel.getAllHorarios(filters);
+        const horarios = await HorarioModel.getHorarios();
         res.json(horarios);
-    } catch (error) {
-        res.status(500).send({ message: "Erro ao buscar horários: " + error.message });
-    }
-};
-const adicionarHorario = async (req, res) => {
-    try {
-        const id = await horarioModel.addHorario(req.body);
-        res.status(201).send({ id: id, message: "Horário adicionado com sucesso" });
-    } catch (error) {
-        res.status(500).send({ message: "Erro ao adicionar horário: " + error.message });
+    } catch (err) {
+        console.error('Erro ao buscar horários:', err);
+        res.status(500).send({ message: 'Erro ao buscar horários.' });
     }
 };
 
-const atualizarHorario = async (req, res) => {
+// Função para buscar horários disponíveis em uma data específica e tipo de agendamento
+const getHorariosDisponiveisPorData = async (req, res) => {
+    const { data, TipoAgendamento } = req.query;
+
+    if (!data || !TipoAgendamento) {
+        return res.status(400).send({ message: 'Data e tipo de agendamento são obrigatórios.' });
+    }
+
     try {
-        const changes = await horarioModel.updateHorario(req.body, req.params.id);
-        if (changes) {
-            res.send({ message: "Horário atualizado com sucesso" });
-        } else {
-            res.status(404).send({ message: "Horário não encontrado" });
-        }
-    } catch (error) {
-        res.status(500).send({ message: "Erro ao atualizar horário: " + error.message });
+        const horariosDisponiveis = await HorarioModel.getHorariosDisponiveisPorData(data, TipoAgendamento);
+        res.json(horariosDisponiveis);
+    } catch (err) {
+        console.error('Erro ao buscar horários disponíveis:', err);
+        res.status(500).send({ message: 'Erro ao buscar horários disponíveis.' });
     }
 };
 
-const deletarHorario = async (req, res) => {
+// Função para atualizar um horário completo
+const updateHorario = async (req, res) => {
+    const { id } = req.params;
+    const { horarioInicio, horarioFim, intervaloCarga, intervaloDescarga } = req.body;
+
+    if (!horarioInicio || !horarioFim || intervaloCarga == null || intervaloDescarga == null) {
+        return res.status(400).send({ message: 'Todos os campos são obrigatórios.' });
+    }
+
     try {
-        const changes = await horarioModel.deleteHorario(req.params.id);
-        if (changes) {
-            res.send({ message: "Horário deletado com sucesso" });
-        } else {
-            res.status(404).send({ message: "Horário não encontrado" });
+        const result = await HorarioModel.updateHorario(id, { horarioInicio, horarioFim, intervaloCarga, intervaloDescarga });
+        if (result.changes === 0) {
+            return res.status(404).send({ message: 'Horário não encontrado.' });
         }
-    } catch (error) {
-        res.status(500).send({ message: "Erro ao deletar horário: " + error.message });
+        res.send({ message: 'Horário atualizado com sucesso.', details: result });
+    } catch (err) {
+        console.error('Erro ao atualizar horário:', err);
+        res.status(500).send({ message: 'Erro ao atualizar horário.' });
     }
 };
 
 module.exports = {
-    listarHorarios,
-    adicionarHorario,
-    atualizarHorario,
-    deletarHorario
+    getHorarios,
+    getHorariosDisponiveisPorData,
+    updateHorario,
 };

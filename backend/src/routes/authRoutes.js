@@ -1,7 +1,14 @@
 const express = require('express');
-const router = express.Router();
-const authController = require('../Controllers/authController');
+const AuthController = require('../Controllers/authController');
 
-router.post('/login', authController.login);
+const router = express.Router();
+
+router.post('/login', AuthController.login);
+router.post('/registro', AuthController.registro);
+router.post('/refresh-token', AuthController.refreshToken);
+
+router.post('/recuperar-senha', AuthController.recuperarSenha);
+router.post('/redefinir-senha', AuthController.redefinirSenha);
+router.post('/resetar-senha-usuario', AuthController.resetarSenhaUsuario);
 
 module.exports = router;
