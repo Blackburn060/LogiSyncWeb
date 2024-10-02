@@ -3,7 +3,6 @@ import { getSafras, addSafra, updateSafra } from '../services/safraService';
 import { Safra } from '../models/Safra';
 import Navbar from '../components/Navbar';
 import toast, { Toaster } from 'react-hot-toast';
-import { ClipLoader } from 'react-spinners';
 import { useAuth } from '../context/AuthContext';
 
 const GerenciarSafras: React.FC = () => {

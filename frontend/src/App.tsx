@@ -23,6 +23,7 @@ import RecuperarSenha from './pages/RecuperarSenha';
 import RedefinirSenha from './pages/RedefinirSenha';
 import GerenciarUsuarios from './pages/GerenciarUsuarios';
 import GerenciarProdutos from './pages/GerenciarProdutos';
+import GestaoPatio from './pages/GestaoPatio';
 
 const App: React.FC = () => {
   return (
@@ -54,6 +55,8 @@ const App: React.FC = () => {
           <Route path="/gestao/portaria" element={<ProtectedRoute><Portaria /></ProtectedRoute>} />
           <Route path="/gestao/usuarios" element={<ProtectedRoute><GerenciarUsuarios /></ProtectedRoute>} />
           <Route path="/gestao/produtos" element={<ProtectedRoute><GerenciarProdutos /></ProtectedRoute>} />
+          <Route path="/gestao/patio" element={<ProtectedRoute><GestaoPatio /></ProtectedRoute>} />
+
         </Routes>
       </AuthProvider>
     </Router>

@@ -42,6 +42,7 @@ const getAllAgendamentos = (filters = {}) => {
       });
     });
   };
+
 // Função para listar os agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
 const getAgendamentosPorStatus = () => {
     return new Promise((resolve, reject) => {
