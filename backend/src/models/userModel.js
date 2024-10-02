@@ -2,6 +2,14 @@ const db = require('../Config/database');
 const moment = require('moment-timezone');
 const bcrypt = require('bcrypt');
 
+// Função para normalizar as chaves do objeto veiculo para letras minúsculas
+const normalizeKeys = (obj) => {
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key.toLowerCase()] = obj[key];
+        return acc;
+    }, {});
+};
+
 // Função para buscar todos os usuários com filtros dinâmicos
 const getAllUsers = (filters = {}) => {
     return new Promise((resolve, reject) => {
@@ -40,10 +48,11 @@ const getUserById = (id) => {
 // Função para adicionar um novo usuário com DataGeracao formatada
 const addUser = (user) => {
     return new Promise((resolve, reject) => {
+        const normalizedUsuario = normalizeKeys(user);
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
 
-        const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, DataGeracao, CPF) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        db.run(sql, [user.nomeCompleto, user.codigoTransportadora, user.email, user.senha, user.tipoUsuario, 1, user.numeroCelular, dataGeracao, user.cpf], function(err) {
+        const sql = `INSERT INTO cadastrousuarios (NomeCompleto, CodigoTransportadora, Email, Senha, TipoUsuario, SituacaoUsuario, NumeroCelular, CPF, DataGeracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [normalizedUsuario.nomecompleto, normalizedUsuario.codigotransportadora, normalizedUsuario.email, normalizedUsuario.senha, normalizedUsuario.tipousuario, 1, normalizedUsuario.numerocelular, normalizedUsuario.cpf, dataGeracao], function(err) {
             if (err) {
                 reject(err);
             } else {

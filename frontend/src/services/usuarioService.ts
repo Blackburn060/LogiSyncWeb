@@ -24,6 +24,15 @@ export const getUsuarioById = async (token: string, id: number): Promise<Usuario
   return response.data;
 };
 
+// Função para adicionar um novo usuário
+export const addUsuario = async (token: string, usuario: Partial<Usuario>): Promise<void> => {
+  await axios.post(`${apiUrl}/usuarios`, usuario, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 // Função para atualizar um usuário
 export const updateUsuario = async (token: string, id: number, usuario: Partial<Usuario>): Promise<void> => {
   await axios.put(`${apiUrl}/usuarios/${id}`, usuario, {

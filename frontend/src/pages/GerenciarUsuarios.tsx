@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllUsuarios, updateUsuario, checkEmailExists, resetarSenhaUsuario } from '../services/usuarioService';
+import { getAllUsuarios, updateUsuario, checkEmailExists, resetarSenhaUsuario, addUsuario } from '../services/usuarioService';
 import { Usuario } from '../models/Usuario';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +10,18 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import toast, { Toaster } from 'react-hot-toast';
 import Modal from 'react-modal';
 import { FaSpinner } from 'react-icons/fa';
+import Cleave from 'cleave.js/react';
+
+// Função para gerar uma senha aleatória
+const generateRandomPassword = () => {
+    const length = 8;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0, n = charset.length; i < length; ++i) {
+        password += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return password;
+};
 
 const GerenciarUsuarios: React.FC = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -17,6 +29,15 @@ const GerenciarUsuarios: React.FC = () => {
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
+    const [newUsuario, setNewUsuario] = useState<Partial<Usuario>>({
+        NomeCompleto: '',
+        Email: '',
+        CPF: '',
+        NumeroCelular: '',
+        TipoUsuario: 'motorista',
+    });
+    const [emailError, setEmailError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
@@ -153,7 +174,6 @@ const GerenciarUsuarios: React.FC = () => {
                 const response = await getAllUsuarios(token);
                 setUsuarios(response);
 
-                // Armazena os e-mails originais
                 const emailMap = response.reduce((acc, usuario) => {
                     acc[usuario.CodigoUsuario] = usuario.Email;
                     return acc;
@@ -170,6 +190,63 @@ const GerenciarUsuarios: React.FC = () => {
 
         fetchUsuarios();
     }, [token]);
+
+    // Função para editar um usuário
+    const handleNewUserInputChange = (field: keyof Usuario, value: string) => {
+        setNewUsuario((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+        if (field === 'Email') {
+            setEmailError(null);
+        }
+    };
+
+    const validateNewUser = () => {
+        if (!newUsuario.NomeCompleto || !newUsuario.Email || !newUsuario.CPF || !newUsuario.NumeroCelular) {
+            toast.error('Por favor, preencha todos os campos obrigatórios.');
+            return false;
+        }
+        return true;
+    };
+
+    // Função para verificar se o e-mail já está em uso
+    const handleEmailBlur = async () => {
+        if (newUsuario.Email) {
+            const emailExists = await checkEmailExists(newUsuario.Email, token!);
+            if (emailExists) {
+                setEmailError('Este e-mail já está em uso. Por favor, use outro e-mail.');
+            }
+        }
+    };
+
+    const handleAddNewUser = async () => {
+        if (!validateNewUser()) return;
+        if (!token || !user) return;
+
+        const Senha = generateRandomPassword();
+
+        setIsSaving(true);
+        try {
+            if (!emailError) {
+                await addUsuario(token, { ...newUsuario, UsuarioAlteracao: user.id, Senha });
+                toast.success('Usuário adicionado com sucesso! Uma senha temporária foi enviada para o e-mail.');
+                setNewUsuario({
+                    NomeCompleto: '',
+                    Email: '',
+                    CPF: '',
+                    NumeroCelular: '',
+                    TipoUsuario: 'motorista',
+                });
+                setIsNewUserModalOpen(false);
+                await getAllUsuarios(token);
+            }
+        } catch (error) {
+            toast.error('Erro ao adicionar usuário.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     // Função para verificar se o e-mail já está em uso
     const checkEmailBeforeSave = async (usuario: Partial<Usuario>): Promise<boolean> => {
@@ -308,7 +385,14 @@ const GerenciarUsuarios: React.FC = () => {
             <Toaster position="top-right" />
             <div className="container mx-auto p-4">
                 <h1 className="text-3xl font-bold mb-4">Gerenciar Usuários</h1>
-
+                <div className="flex justify-between mb-4">
+                    <button
+                        onClick={() => setIsNewUserModalOpen(true)}
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                        Novo Usuário
+                    </button>
+                </div>
                 <div>
                     <div className="ag-theme-quartz" style={{ height: 500, width: '100%' }}>
                         {isLoading ? (
@@ -412,6 +496,75 @@ const GerenciarUsuarios: React.FC = () => {
                 </div>
             </Modal>
 
+            {/* Modal para adicionar novo usuário */}
+            <Modal isOpen={isNewUserModalOpen} onRequestClose={() => setIsNewUserModalOpen(false)} className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+                    <h2 className="text-xl font-bold mb-4">Novo Usuário</h2>
+                    <div className="space-y-4">
+                        <input
+                            type="text"
+                            placeholder="Nome Completo"
+                            value={newUsuario.NomeCompleto}
+                            onChange={(e) => handleNewUserInputChange('NomeCompleto', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded"
+                        />
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            value={newUsuario.Email}
+                            onChange={(e) => handleNewUserInputChange('Email', e.target.value)}
+                            onBlur={handleEmailBlur}
+                            className={`w-full p-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded`}
+                        />
+                        {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+                        <Cleave
+                            placeholder="CPF"
+                            options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'] }}
+                            value={newUsuario.CPF}
+                            onChange={(e) => handleNewUserInputChange('CPF', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded"
+                        />
+                        <Cleave
+                            placeholder="Número Celular"
+                            options={{  blocks: [2, 5, 4], delimiters: [' ', '-'] }}
+                            value={newUsuario.NumeroCelular}
+                            onChange={(e) => handleNewUserInputChange('NumeroCelular', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded"
+                        />
+                        <select
+                            value={newUsuario.TipoUsuario}
+                            onChange={(e) => handleNewUserInputChange('TipoUsuario', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded"
+                        >
+                            <option value="administrador">Administrador</option>
+                            <option value="gerente">Gerente</option>
+                            <option value="portaria">Portaria</option>
+                            <option value="patio">Pátio</option>
+                            <option value="motorista">Motorista</option>
+                        </select>
+                    </div>
+
+                    <div className="flex justify-end gap-4 mt-6">
+                        <button
+                            onClick={() => setIsNewUserModalOpen(false)}
+                            className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleAddNewUser}
+                            className="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-800 flex items-center"
+                            disabled={isSaving || emailError !== null}
+                        >
+                            {isSaving ? (
+                                <FaSpinner className="animate-spin text-3xl" />
+                            ) : (
+                                'Adicionar'
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
