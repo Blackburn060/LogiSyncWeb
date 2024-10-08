@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 interface DadosAgendamentoProps {
   dataAgendamento: string;
@@ -42,10 +40,12 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
     }
   }, [arquivo]);
 
-  // Função para formatar a data no formato dia/mês/ano
+  // Função para formatar a data no formato dia/mês/ano sem converter para objeto Date
   const formatarData = (data: string) => {
-    const dataObj = new Date(data);
-    return format(dataObj, "dd/MM/yyyy", { locale: ptBR });
+    const [ano, mes, dia] = data.split('-');
+    
+    // Retorna a data no formato dia/mês/ano
+    return `${dia}/${mes}/${ano}`;
   };
 
   return (
@@ -57,7 +57,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
-            value={formatarData(dataAgendamento)}
+            value={formatarData(dataAgendamento)} // Exibindo a data formatada
             readOnly
           />
         </div>

@@ -17,4 +17,6 @@ router.get('/agendamentos/status', authMiddleware, agendamentoController.listarA
 router.get('/agendamentos/:id', authMiddleware, agendamentoController.buscarAgendamentoPorId);
 router.get('/agendamentos-gestao-patio', authMiddleware, agendamentoController.listarAgendamentosPatio);
 
+router.get('/sse/agendamentos', authMiddleware, agendamentoController.eventoSSE);
+
 module.exports = router;

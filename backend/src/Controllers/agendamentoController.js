@@ -1,58 +1,104 @@
 const agendamentoModel = require('../models/agendamentoModel');
 const portariaController = require('../Controllers/portariaController');
 
+let clients = [];
+
+// Função para evento SSE
+const eventoSSE = (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    clients.push(res);
+
+    req.on('close', () => {
+        clients = clients.filter(client => client !== res);
+    });
+};
+
+// Função para enviar atualizações para todos os clientes conectados via SSE
+const enviarAtualizacaoSSE = (data) => {
+    clients.forEach(client => {
+        client.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+};
+
+// Função que atualiza o status de um agendamento e envia evento SSE
+const atualizarStatusAgendamentoEEnviarEvento = async (CodigoAgendamento, novoStatus) => {
+    const atualizado = await agendamentoModel.updateStatusAgendamento(CodigoAgendamento, novoStatus);
+    if (atualizado) {
+        enviarAtualizacaoSSE({ CodigoAgendamento, novoStatus });
+    }
+};
+
 // Listar agendamentos por usuário
 const listarAgendamentos = async (req, res) => {
     try {
         const filters = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);
+
+        if (agendamentos.length === 0) {
+            return res.status(204).send();
+        }
+
         res.json(agendamentos);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
     }
 };
 
+// Listar agendamentos por data
 const listarAgendamentosPorData = async (req, res) => {
     try {
-      const { DataAgendamento } = req.query;
-      if (!DataAgendamento) {
-        return res.status(400).send({ message: 'Data de agendamento é obrigatória' });
-      }
-  
-      const agendamentos = await agendamentoModel.getAgendamentosPorData(DataAgendamento);
-      res.json(agendamentos);
+        const { DataAgendamento } = req.query;
+        if (!DataAgendamento) {
+            return res.status(400).send({ message: 'Data de agendamento é obrigatória' });
+        }
+
+        const agendamentos = await agendamentoModel.getAgendamentosPorData(DataAgendamento);
+
+        if (agendamentos.length === 0) {
+            return res.status(204).send();
+        }
+
+        res.json(agendamentos);
     } catch (error) {
-      res.status(500).send({ message: 'Erro ao buscar agendamentos por data: ' + error.message });
+        res.status(500).send({ message: 'Erro ao buscar agendamentos por data: ' + error.message });
     }
-  };
-  // Listar agendamentos aprovados
-// Listar agendamentos com status "Aprovado", "Andamento" ou "Finalizado"
+};
+// Listar agendamentos por status
 const listarAgendamentosPorStatus = async (req, res) => {
     try {
-        const agendamentos = await agendamentoModel.getAgendamentosPorStatus();  // Chama o model que retorna os agendamentos com os três status
+        const agendamentos = await agendamentoModel.getAgendamentosPorStatus();
+
+        if (agendamentos.length === 0) {
+            return res.status(204).send();
+        }
+
         res.json(agendamentos);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
     }
 };
+// Aprovar agendamento
 const aprovarAgendamento = async (req, res) => {
     try {
         const { CodigoAgendamento } = req.params;
         const { UsuarioAprovacao, ObservacaoPortaria } = req.body;
-        
-        // Aprovar o agendamento - Atualizar status para "Andamento"
+
         const aprovado = await agendamentoModel.updateStatusAgendamento(CodigoAgendamento, 'Andamento');
-        
+
         if (aprovado) {
-            // Adicionar dados na portaria
             const portariaData = {
                 CodigoAgendamento,
-                DataHoraEntrada: new Date().toISOString(), // Adiciona a data/hora de entrada
+                DataHoraEntrada: new Date().toISOString(),
                 UsuarioAprovacao,
                 ObservacaoPortaria
             };
 
-            await portariaController.adicionarPortaria({ body: portariaData }, res);  // Chama a função do controller de portaria para adicionar os dados
+            await portariaController.adicionarPortaria({ body: portariaData }, res);
+
+            // Enviar evento SSE para todos os clientes conectados
+            enviarAtualizacaoSSE({ CodigoAgendamento, novoStatus: 'Andamento' });
 
             res.status(200).json({ message: 'Agendamento aprovado e dados da portaria adicionados' });
         } else {
@@ -62,23 +108,26 @@ const aprovarAgendamento = async (req, res) => {
         res.status(500).json({ message: 'Erro ao aprovar o agendamento', error });
     }
 };
+
+// Recusar agendamento
 const recusarAgendamento = async (req, res) => {
     try {
         const { CodigoAgendamento } = req.params;
         const { UsuarioAprovacao, MotivoRecusa } = req.body;
 
-        // Atualiza o status do agendamento para "Recusado"
         const recusado = await agendamentoModel.updateStatusAgendamento(CodigoAgendamento, 'Recusado');
 
         if (recusado) {
-            // Atualiza ou insere os dados da portaria com o motivo da recusa
             const portariaData = {
                 CodigoAgendamento,
                 MotivoRecusa,
                 UsuarioAprovacao
             };
 
-            await portariaController.adicionarPortaria({ body: portariaData }, res);  // Chama a função para inserir os dados da portaria
+            await portariaController.adicionarPortaria({ body: portariaData }, res);
+
+            // Enviar evento SSE para todos os clientes conectados
+            enviarAtualizacaoSSE({ CodigoAgendamento, novoStatus: 'Recusado' });
 
             res.status(200).json({ message: 'Agendamento recusado e dados da portaria adicionados' });
         } else {
@@ -88,23 +137,30 @@ const recusarAgendamento = async (req, res) => {
         res.status(500).json({ message: 'Erro ao recusar o agendamento', error });
     }
 };
-  
-// Listar agendamentos com placa do veículo
+
+// Listar agendamentos com placa
 const listarAgendamentosComPlaca = async (req, res) => {
     try {
         const filters = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentosWithPlaca(filters);
+
+        if (agendamentos.length === 0) {
+            return res.status(204).send();
+        }
+
         res.json(agendamentos);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar agendamentos com placa: ' + error.message });
     }
 };
-
 // Adicionar agendamento
 const adicionarAgendamento = async (req, res) => {
     try {
         const id = await agendamentoModel.addAgendamento(req.body);
         res.status(201).send({ id, message: 'Agendamento adicionado com sucesso' });
+
+        // Enviar evento SSE
+        enviarAtualizacaoSSE({ id, novoStatus: 'Novo agendamento' });
     } catch (error) {
         res.status(500).send({ message: 'Erro ao adicionar agendamento: ' + error.message });
     }
@@ -115,13 +171,13 @@ const atualizarAgendamento = async (req, res) => {
     const agendamentoId = req.params.id;
     const changes = req.body;
 
-    console.log("Atualizando agendamento ID:", agendamentoId);  // Log para verificar ID
-    console.log("Dados recebidos para atualizar:", changes);     // Log para verificar os dados recebidos
-
     try {
         const updated = await agendamentoModel.updateAgendamento(changes, agendamentoId);
         if (updated) {
             res.send({ message: 'Agendamento atualizado com sucesso.' });
+
+            // Enviar evento SSE
+            enviarAtualizacaoSSE({ agendamentoId, novoStatus: 'Atualizado' });
         } else {
             res.status(404).send({ message: 'Agendamento não encontrado.' });
         }
@@ -130,27 +186,31 @@ const atualizarAgendamento = async (req, res) => {
     }
 };
 
+// Buscar agendamento por ID
 const buscarAgendamentoPorId = async (req, res) => {
     const agendamentoId = req.params.id;
-  
+
     try {
-      const agendamento = await agendamentoModel.getAgendamentoById(agendamentoId);
-      if (agendamento) {
-        res.json(agendamento);
-      } else {
-        res.status(404).send({ message: 'Agendamento não encontrado.' });
-      }
+        const agendamento = await agendamentoModel.getAgendamentoById(agendamentoId);
+        if (agendamento) {
+            res.json(agendamento);
+        } else {
+            res.status(404).send({ message: 'Agendamento não encontrado.' });
+        }
     } catch (error) {
-      res.status(500).send({ message: 'Erro ao buscar agendamento: ' + error.message });
+        res.status(500).send({ message: 'Erro ao buscar agendamento: ' + error.message });
     }
-  };
-  
+};
+
 // Cancelar agendamento
 const cancelarAgendamento = async (req, res) => {
     try {
         const changes = await agendamentoModel.cancelarAgendamento(req.params.id);
         if (changes) {
             res.send({ message: 'Agendamento cancelado com sucesso' });
+
+            // Enviar evento SSE
+            enviarAtualizacaoSSE({ id: req.params.id, novoStatus: 'Cancelado' });
         } else {
             res.status(404).send({ message: 'Agendamento não encontrado' });
         }
@@ -165,6 +225,9 @@ const deletarAgendamento = async (req, res) => {
         const changes = await agendamentoModel.deleteAgendamento(req.params.id);
         if (changes) {
             res.send({ message: 'Agendamento deletado com sucesso' });
+
+            // Enviar evento SSE
+            enviarAtualizacaoSSE({ id: req.params.id, novoStatus: 'Deletado' });
         } else {
             res.status(404).send({ message: 'Agendamento não encontrado' });
         }
@@ -183,42 +246,21 @@ const registrarIndisponibilidadeHorario = async (req, res) => {
     }
 };
 
-// Listar indisponibilidades registradas
+
+// Listar indisponibilidades
 const listarIndisponibilidades = async (req, res) => {
     try {
         const indisponibilidades = await agendamentoModel.getIndisponibilidades();
+
+        if (indisponibilidades.length === 0) {
+            return res.status(204).send();
+        }
+
         res.json(indisponibilidades);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar indisponibilidades: ' + error.message });
     }
 };
-const { getAgendamentosPorData, getAgendamentosPorStatus } = require('../models/agendamentoModel');
-
-// Função para buscar agendamentos filtrados por data e status
-const listarAgendamentosPatio = async (req, res) => {
-    try {
-      const { data, status } = req.query; // Captura os parâmetros da query string
-  
-      if (!data) {
-        return res.status(400).json({ message: "Data do agendamento é necessária." });
-      }
-  
-      // Se o status for fornecido, filtre por status também
-      const agendamentos = status
-        ? await agendamentoModel.getAgendamentosPorStatusEData(data, status)
-        : await agendamentoModel.getAgendamentosPorData(data);
-  
-      if (agendamentos.length === 0) {
-        return res.status(404).json({ message: "Nenhum agendamento encontrado." });
-      }
-  
-      res.status(200).json(agendamentos);
-    } catch (error) {
-      console.error("Erro ao buscar agendamentos para a gestão de pátio:", error);
-      res.status(500).json({ message: "Erro ao buscar agendamentos." });
-    }
-  };
-  
 
 // Deletar indisponibilidade
 const deletarIndisponibilidade = async (req, res) => {
@@ -235,6 +277,31 @@ const deletarIndisponibilidade = async (req, res) => {
     }
 };
 
+const listarAgendamentosPatio = async (req, res) => {
+    try {
+        const { data, status } = req.query;
+
+        if (!data) {
+            return res.status(400).json({ message: "Data do agendamento é necessária." });
+        }
+
+        const agendamentos = status
+            ? await agendamentoModel.getAgendamentosPorStatusEData(data, status)
+            : await agendamentoModel.getAgendamentosPorData(data);
+
+        // Verifica se há agendamentos; caso contrário, retorna 204
+        if (agendamentos.length === 0) {
+            return res.status(204).send(); // Sem conteúdo, mas a requisição foi bem-sucedida
+        }
+
+        res.status(200).json(agendamentos);
+    } catch (error) {
+        console.error("Erro ao buscar agendamentos para a gestão de pátio:", error);
+        res.status(500).json({ message: "Erro ao buscar agendamentos." });
+    }
+};
+
+
 module.exports = {
     listarAgendamentos,
     recusarAgendamento,
@@ -250,5 +317,6 @@ module.exports = {
     listarAgendamentosPorData,
     registrarIndisponibilidadeHorario,
     listarIndisponibilidades,
-    deletarIndisponibilidade
+    deletarIndisponibilidade,
+    eventoSSE // Endpoint para Server-Sent Events
 };
