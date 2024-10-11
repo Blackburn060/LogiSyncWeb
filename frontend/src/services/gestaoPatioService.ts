@@ -41,16 +41,23 @@ export const getAgendamentosGestaoPatio = async (
 
     // Se o status for 204, retorna um array vazio
     if (response.status === 204) {
+      console.log("Nenhum agendamento encontrado para a gestão de pátio.");
       return [];
     }
 
     console.log("Response data:", response.data);
     return response.data as Agendamento[];
-  } catch (error) {
-    console.error("Erro ao buscar agendamentos para a gestão de pátio:", error);
-    throw error;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Erro ao buscar agendamentos para a gestão de pátio:", error.message);
+      throw new Error(`Erro ao buscar agendamentos: ${error.response?.data?.message || error.message}`);
+    } else {
+      console.error("Erro desconhecido ao buscar agendamentos para a gestão de pátio:", error);
+      throw new Error("Erro desconhecido ao buscar agendamentos.");
+    }
   }
 };
+
 // Função para buscar veículo por código
 export const getVeiculoPorCodigo = async (token: string, codigoVeiculo: number): Promise<Veiculo | null> => {
   if (!token) {
@@ -69,6 +76,7 @@ export const getVeiculoPorCodigo = async (token: string, codigoVeiculo: number):
       console.error("Erro ao buscar veículo:", error.message);
       throw new Error(`Erro ao buscar veículo: ${error.response?.data?.message || error.message}`);
     } else {
+      console.error("Erro desconhecido ao buscar veículo:", error);
       throw new Error("Erro desconhecido ao buscar veículo.");
     }
   }

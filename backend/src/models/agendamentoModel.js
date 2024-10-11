@@ -268,9 +268,35 @@ const deleteIndisponibilidade = (id) => {
         });
     });
 };
+const getAgendamentosPorStatusEData = (data, status) => {
+    return new Promise((resolve, reject) => {
+        let sql = `
+            SELECT ag.*, ve.Placa 
+            FROM agendamentos ag
+            LEFT JOIN cadastroveiculo ve ON ag.CodigoVeiculo = ve.CodigoVeiculo
+            WHERE ag.DataAgendamento = ?
+        `;
 
+        const params = [data];
+        
+        // Adiciona filtro por status se fornecido
+        if (status) {
+            sql += ` AND ag.SituacaoAgendamento = ?`;
+            params.push(status);
+        }
+
+        db.all(sql, params, (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
 module.exports = {
     getAllAgendamentos,
+    getAgendamentosPorStatusEData,
     addAgendamento,
     updateStatusAgendamento,
     getAgendamentosPorStatus,

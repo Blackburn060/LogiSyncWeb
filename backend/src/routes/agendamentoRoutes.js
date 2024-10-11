@@ -15,7 +15,7 @@ router.delete('/agendamentos/indisponibilidade/:id', authMiddleware, agendamento
 router.get('/agendamentos-por-data', authMiddleware, agendamentoController.listarAgendamentosPorData);
 router.get('/agendamentos/status', authMiddleware, agendamentoController.listarAgendamentosPorStatus);
 router.get('/agendamentos/:id', authMiddleware, agendamentoController.buscarAgendamentoPorId);
-router.get('/agendamentos-gestao-patio', authMiddleware, agendamentoController.listarAgendamentosPatio);
+router.get('/agendamentos-gestao-patio', agendamentoController.listarAgendamentosGestaoPatio);
 
 router.get('/sse/agendamentos', authMiddleware, agendamentoController.eventoSSE);
 

@@ -277,7 +277,7 @@ const deletarIndisponibilidade = async (req, res) => {
     }
 };
 
-const listarAgendamentosPatio = async (req, res) => {
+const listarAgendamentosGestaoPatio = async (req, res) => {
     try {
         const { data, status } = req.query;
 
@@ -285,29 +285,25 @@ const listarAgendamentosPatio = async (req, res) => {
             return res.status(400).json({ message: "Data do agendamento é necessária." });
         }
 
-        const agendamentos = status
-            ? await agendamentoModel.getAgendamentosPorStatusEData(data, status)
-            : await agendamentoModel.getAgendamentosPorData(data);
+        const agendamentos = await agendamentoModel.getAgendamentosPorStatusEData(data, status);
 
-        // Verifica se há agendamentos; caso contrário, retorna 204
         if (agendamentos.length === 0) {
-            return res.status(204).send(); // Sem conteúdo, mas a requisição foi bem-sucedida
+            return res.status(204).send(); // Sem conteúdo, mas requisição bem-sucedida
         }
 
         res.status(200).json(agendamentos);
     } catch (error) {
-        console.error("Erro ao buscar agendamentos para a gestão de pátio:", error);
-        res.status(500).json({ message: "Erro ao buscar agendamentos." });
+        res.status(500).json({ message: "Erro ao buscar agendamentos.", error });
     }
 };
-
+;
 
 module.exports = {
     listarAgendamentos,
     recusarAgendamento,
     listarAgendamentosComPlaca,
     aprovarAgendamento,
-    listarAgendamentosPatio,
+    listarAgendamentosGestaoPatio,
     adicionarAgendamento,
     buscarAgendamentoPorId,
     atualizarAgendamento,
