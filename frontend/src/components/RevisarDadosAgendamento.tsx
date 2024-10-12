@@ -11,9 +11,10 @@ import { Usuario } from '../models/Usuario';
 import { Veiculo } from '../models/Veiculo';
 import { Transportadora } from '../models/Transportadora';
 import { Produto } from '../models/Produto';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, UploadTaskSnapshot } from 'firebase/storage';
 import { storage } from '../../firebaseConfig';
 import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface RevisarDadosAgendamentoProps {
   selectedDate: Date;
@@ -34,6 +35,9 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [arquivoUrl, setArquivoUrl] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,6 +64,12 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
 
     fetchData();
   }, [token, user]);
+
+  // Define o tipo de agendamento com base em uma informação existente ou armazenada
+  const tipoAgendamento = localStorage.getItem('TipoAgendamento') || 'carga';
+
+  // Escolha uma cor diferente para cada tipo de agendamento
+  const corTipoAgendamento = tipoAgendamento === 'carga' ? 'bg-blue-500' : 'bg-green-500';
 
   const validateFile = (file: File | null): boolean => {
     if (!file) return false;
@@ -89,20 +99,20 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
     return new Promise<string | null>((resolve, reject) => {
       uploadTask.on(
         'state_changed',
-        (snapshot) => {
+        (snapshot: UploadTaskSnapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           setUploadProgress(progress);
         },
-        (error) => {
+        (error: unknown) => {
           console.error('Erro ao fazer upload:', error);
           toast.error('Erro ao fazer upload do arquivo.');
           reject(null);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL: string) => {
             setArquivoUrl(downloadURL);
             resolve(downloadURL);
-          }).catch((error) => {
+          }).catch((error: unknown) => {
             console.error('Erro ao obter URL do download:', error);
             toast.error('Erro ao obter URL do arquivo.');
             reject(null);
@@ -113,13 +123,13 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
   };
 
   const handleAgendar = async () => {
+    if (isSubmitting) return;
+
     if (!usuario || !veiculoSelecionado || !selectedDate || !horarioSelecionado) {
       toast.error('Preencha todos os campos obrigatórios!');
       return;
     }
 
-    const tipoAgendamento = localStorage.getItem('TipoAgendamento') || 'carga';
-    
     let urlArquivo: string | null = null;
 
     if (arquivo) {
@@ -129,6 +139,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
           throw new Error('Falha no upload do arquivo.');
         }
       } catch (error) {
+        setIsSubmitting(false);
         return;
       }
     }
@@ -148,14 +159,18 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
       DiaTodo: false,
     };
 
+    setIsSubmitting(true);
+
     try {
       const response = await addAgendamento(token!, novoAgendamento);
       console.log('Resposta do servidor após adicionar agendamento:', response);
       toast.success('Agendamento realizado com sucesso!');
-      onClose();
+      navigate('/agendamentos');
     } catch (error) {
       console.error('Erro ao realizar agendamento:', error);
       toast.error('Erro ao realizar agendamento.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -180,7 +195,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
               Fechar
             </button>
           </div>
-          
+
           {/* Conteúdo Rolável */}
           <div className="flex flex-col space-y-2 p-4">
             {/* Dados Pessoais */}
@@ -206,6 +221,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
                 className="border rounded p-2 w-full"
                 value={veiculoSelecionado}
                 onChange={(e) => setVeiculoSelecionado(e.target.value)}
+                disabled={isSubmitting}
               >
                 <option value="">Selecione</option>
                 {veiculos.map((veiculo) => (
@@ -217,15 +233,28 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
             </div>
 
             {/* Dados do Agendamento */}
-            <div className="border p-3 rounded-lg">
-              <h3 className="text-lg font-semibold mb-1">Dados do Agendamento</h3>
+            <div className="border p-3 rounded-lg relative">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Dados do Agendamento</h3>
+                {/* Indicador do Tipo de Agendamento como quadrado à direita */}
+                <div className={`w-16 h-9 ${corTipoAgendamento} rounded border border-gray-300 flex items-center justify-center text-white font-bold text-sm`}>
+                  {tipoAgendamento === 'carga' ? 'Carga' : 'Descarga'}
+                </div>
+              </div>
+
               <div className="flex space-x-2 mb-4">
                 <div><strong>Data:</strong> {selectedDate.toLocaleDateString()}</div>
                 <div><strong>Horário:</strong> {horarioSelecionado.horarioInicio} - {horarioSelecionado.horarioFim}</div>
               </div>
+
               <div className="mb-2">
                 <label><strong>Produto:</strong></label>
-                <select className="border rounded p-1 w-full" value={produto} onChange={(e) => setProduto(e.target.value)}>
+                <select
+                  className="border rounded p-1 w-full"
+                  value={produto}
+                  onChange={(e) => setProduto(e.target.value)}
+                  disabled={isSubmitting}
+                >
                   <option value="">Selecione</option>
                   {produtos.map((produto) => (
                     <option key={produto.CodigoProduto} value={produto.CodigoProduto}>
@@ -242,6 +271,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
                   placeholder="Quantidade"
                   value={quantidade}
                   onChange={(e) => setQuantidade(e.target.value)}
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -251,11 +281,17 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
                   placeholder="Insira uma observação"
                   value={observacao}
                   onChange={(e) => setObservacao(e.target.value)}
+                  disabled={isSubmitting}
                 ></textarea>
               </div>
               <div>
                 <label><strong>Upload de Arquivo:</strong></label>
-                <input type="file" className="border rounded p-2 w-full" onChange={(e) => setArquivo(e.target.files?.[0] || null)} />
+                <input
+                  type="file"
+                  className="border rounded p-2 w-full"
+                  onChange={(e) => setArquivo(e.target.files?.[0] || null)}
+                  disabled={isSubmitting}
+                />
                 {arquivo && (
                   <div className="mt-2">
                     <p>Progresso do upload: {uploadProgress}%</p>
@@ -267,9 +303,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
 
             <button
               onClick={handleAgendar}
-              className="bg-blue-500 text-white py-2 px-4 rounded mt-4"
+              className={`bg-blue-500 text-white py-2 px-4 rounded mt-4 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting}
             >
-              Confirmar Agendamento
+              {isSubmitting ? 'Aguarde...' : 'Confirmar Agendamento'}
             </button>
           </div>
         </div>
