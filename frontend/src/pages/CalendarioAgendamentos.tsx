@@ -3,7 +3,7 @@ import Calendar, { CalendarProps } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Horario } from '../models/Horario';
 import { getHorariosDisponiveis } from '../services/horarioService';
@@ -12,17 +12,14 @@ import Modal from 'react-modal';
 
 const CalendarioAgendamentos: React.FC = () => {
   const { user, token } = useAuth();
-  const [authChecked, setAuthChecked] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<Horario[]>([]);
   const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
 
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const tipoAgendamento = localStorage.getItem('TipoAgendamento');
@@ -30,7 +27,6 @@ const CalendarioAgendamentos: React.FC = () => {
       navigate('/processo');
     }
   }, [navigate]);
-
 
   const handleRevisarAgendamento = () => {
     if (!user || !token) {
@@ -68,6 +64,7 @@ const CalendarioAgendamentos: React.FC = () => {
         const horarios = await getHorariosDisponiveis(formattedDate, tipoAgendamento);
         setHorariosDisponiveis(horarios);
         setHorarioSelecionado(null);
+        setAlertMessage('');  // Limpa a mensagem de alerta ao buscar novos horários
       } catch (error) {
         console.error('Erro ao buscar horários disponíveis', error);
       }
@@ -85,10 +82,11 @@ const CalendarioAgendamentos: React.FC = () => {
 
       if (selectedDate.getTime() < now.getTime()) {
         setAlertMessage("Você não pode selecionar uma data anterior ao dia de hoje. Por favor, escolha uma data válida.");
-        setIsAlertModalOpen(true);
+        setHorarioSelecionado(null); // Limpa o horário selecionado, se houver
       } else {
         setSelectedDate(value);
         setHorarioSelecionado(null);
+        setAlertMessage('');  // Limpa a mensagem de alerta se a data for válida
       }
     }
   };
@@ -96,20 +94,16 @@ const CalendarioAgendamentos: React.FC = () => {
   const handleHorarioClick = (horario: Horario) => {
     if (horario.agendado) {
       setAlertMessage("Este horário já está agendado. Por favor, selecione outro horário.");
-      setIsAlertModalOpen(true);
     } else {
       setHorarioSelecionado(horario);
+      setAlertMessage('');  // Limpa a mensagem de alerta ao selecionar um horário válido
     }
-  };
-
-  const handleCloseAlertModal = () => {
-    setIsAlertModalOpen(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-black">
       {/* Barra de navegação personalizada */}
-      <Navbar showLogin={!user} showRegister={!user} /> {/* Navbar com condições */}
+      <Navbar showLogin={!user} showRegister={!user} />
 
       <Toaster position="top-right" />
       <div className="container mx-auto pt-10 flex-grow">
@@ -128,12 +122,12 @@ const CalendarioAgendamentos: React.FC = () => {
                   let classes = "text-white text-xl h-16 w-16 flex items-center justify-center rounded-full transition duration-200 ease-in-out";
                   const now = new Date();
                   now.setHours(0, 0, 0, 0);
-                  
+
                   // Adiciona uma cor de fundo especial para o dia atual
                   if (date.getTime() === now.getTime()) {
                     classes += " bg-yellow-500 text-white";
                   }
-                  
+
                   // Estilo para o dia selecionado
                   if (selectedDate && date.getTime() === selectedDate.getTime()) {
                     classes += " bg-blue-600 text-white";
@@ -173,8 +167,13 @@ const CalendarioAgendamentos: React.FC = () => {
                 <span className="font-bold">Status</span>
               </div>
 
+              {/* Verificação de mensagem de erro */}
               <div className="overflow-y-auto w-full border-l border-gray-500 flex-grow">
-                {horariosDisponiveis.length > 0 ? (
+                {alertMessage ? (
+                  <div className="text-center bg-500 text-white p-4 rounded-lg">
+                    {alertMessage}
+                  </div>
+                ) : horariosDisponiveis.length > 0 ? (
                   <ul className="space-y-2">
                     {horariosDisponiveis.map((horario) => (
                       <li
@@ -247,24 +246,6 @@ const CalendarioAgendamentos: React.FC = () => {
                 Cadastrar-se
               </button>
             </div>
-          </Modal>
-
-          {/* Modal de Alerta de Horário já agendado ou data anterior */}
-          <Modal
-            isOpen={isAlertModalOpen}
-            onRequestClose={handleCloseAlertModal}
-            contentLabel="Ação Inválida"
-            className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
-            overlayClassName="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
-          >
-            <h2 className="text-xl font-bold text-center">Ação Inválida</h2>
-            <p className="mt-4 text-center">{alertMessage}</p>
-            <button
-              onClick={handleCloseAlertModal}
-              className="mt-6 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded mx-auto"
-            >
-              Fechar
-            </button>
           </Modal>
         </div>
       </div>
