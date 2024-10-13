@@ -122,8 +122,6 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
           },
         }
       );
-  
-      console.log("Agendamento finalizado e DataHoraSaida atualizada com sucesso.");
     } catch (error: unknown) {
       console.error("Erro ao finalizar o agendamento:", error);
       throw error;
@@ -144,7 +142,6 @@ export const atualizarPortaria = async (token: string, portariaId: number, dataH
         },
       }
     );
-    console.log("Resposta da API ao atualizar a portaria:", response.data);
     return response.data;
   } catch (error) {
     console.error("Erro ao atualizar a portaria:", error);

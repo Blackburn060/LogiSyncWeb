@@ -293,7 +293,6 @@ const Portaria: React.FC = () => {
           },
         };
       });
-      console.log(agendamento); // Adiciona esse log para inspecionar os dados
     } catch (error) {
       toast.error("Erro ao buscar dados da portaria.");
       console.error("Erro ao buscar dados da portaria:", error);

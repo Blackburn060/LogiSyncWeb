@@ -164,8 +164,6 @@ const updateAgendamento = (agendamento, id) => {
         const tipoAgendamento = agendamento.TipoAgendamento || null;
         const diaTodo = agendamento.DiaTodo || 0;
 
-        console.log("SQL Parameters:", observacao, usuarioAprovacao, motivoRecusa, situacaoAgendamento, tipoAgendamento, diaTodo);  // Verifique os parâmetros
-
         db.run(sql, [
             observacao, 
             usuarioAprovacao, 

@@ -4,9 +4,13 @@ import { Horario } from '../models/Horario';
 const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
 // Função para buscar todos os horários cadastrados
-export const getHorarios = async (): Promise<Horario[]> => {
+export const getHorarios = async (token: string): Promise<Horario[]> => {
   try {
-    const response = await axios.get(`${apiUrl}/horarios`);
+    const response = await axios.get(`${apiUrl}/horarios`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     throw new Error('Erro ao buscar horários');
@@ -14,19 +18,26 @@ export const getHorarios = async (): Promise<Horario[]> => {
 };
 
 // Função para atualizar um horário específico
-export const updateHorario = async (id: number, horario: Partial<Horario>): Promise<void> => {
+export const updateHorario = async (id: number, horario: Partial<Horario>, token: string): Promise<void> => {
   try {
-    await axios.put(`${apiUrl}/horarios/${id}`, horario);
+    await axios.put(`${apiUrl}/horarios/${id}`, horario, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   } catch (error) {
     throw new Error('Erro ao atualizar horário');
   }
 };
 
 // Função para buscar horários disponíveis com base na data e no tipo de agendamento
-export const getHorariosDisponiveis = async (data: string, TipoAgendamento: string): Promise<Horario[]> => {
+export const getHorariosDisponiveis = async (data: string, TipoAgendamento: string, token: string): Promise<Horario[]> => {
   try {
     const response = await axios.get(`${apiUrl}/horarios-disponiveis`, {
-      params: { data, TipoAgendamento }, // Adicionando TipoAgendamento aqui
+      params: { data, TipoAgendamento },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
@@ -35,9 +46,13 @@ export const getHorariosDisponiveis = async (data: string, TipoAgendamento: stri
 };
 
 // Função para confirmar um agendamento de horário
-export const confirmarHorario = async (horario: Partial<Horario>): Promise<void> => {
+export const confirmarHorario = async (horario: Partial<Horario>, token: string): Promise<void> => {
   try {
-    await axios.post(`${apiUrl}/agendamentos`, horario);
+    await axios.post(`${apiUrl}/agendamentos`, horario, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   } catch (error) {
     throw new Error('Erro ao confirmar agendamento');
   }
@@ -61,10 +76,13 @@ export const gerarHorariosDisponiveis = (horarioInicio: string, horarioFim: stri
 };
 
 // Função para verificar se um horário específico está agendado em uma data específica
-export const isHorarioAgendado = async (horarioIntervalo: string, data: string, TipoAgendamento: string): Promise<boolean> => {
+export const isHorarioAgendado = async (horarioIntervalo: string, data: string, TipoAgendamento: string, token: string): Promise<boolean> => {
   try {
     const response = await axios.get(`${apiUrl}/agendamentos/agendado`, {
       params: { horarioIntervalo, data, TipoAgendamento },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return response.data.agendado;
   } catch (error) {

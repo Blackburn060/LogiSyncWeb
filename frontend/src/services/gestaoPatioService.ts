@@ -1,9 +1,7 @@
-import axios from 'axios'; // Certifique-se de que essa linha está presente
+import axios from 'axios';
 
-// Definindo a URL da API
 const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
-// Interface para Agendamento
 interface Agendamento {
   CodigoAgendamento: number;
   CodigoVeiculo: number;
@@ -14,7 +12,6 @@ interface Agendamento {
   TipoAgendamento: string;
 }
 
-// Interface para Veículo
 interface Veiculo {
   CodigoVeiculo: number;
   Placa: string;
@@ -36,16 +33,14 @@ export const getAgendamentosGestaoPatio = async (
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      validateStatus: (status) => status < 500 // Tratar status 204 como sucesso
+      validateStatus: (status) => status < 500
     });
 
-    // Se o status for 204, retorna um array vazio
     if (response.status === 204) {
       console.log("Nenhum agendamento encontrado para a gestão de pátio.");
       return [];
     }
 
-    console.log("Response data:", response.data);
     return response.data as Agendamento[];
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

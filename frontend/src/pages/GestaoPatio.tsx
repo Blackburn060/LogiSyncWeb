@@ -39,7 +39,6 @@ const GestaoPatio: React.FC = () => {
               response.map(async (agendamento: Agendamento) => {
                 if (agendamento.CodigoVeiculo) {
                   const veiculo = await getVeiculoPorCodigo(token, agendamento.CodigoVeiculo);
-                  console.log(`Veículo do agendamento ${agendamento.CodigoAgendamento}:`, veiculo);
                   agendamento.Placa = veiculo?.Placa || "Sem placa";
                 } else {
                   agendamento.Placa = "Sem placa";

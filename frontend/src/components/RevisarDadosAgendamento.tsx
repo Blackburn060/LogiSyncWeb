@@ -163,7 +163,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({ selec
 
     try {
       const response = await addAgendamento(token!, novoAgendamento);
-      console.log('Resposta do servidor após adicionar agendamento:', response);
       toast.success('Agendamento realizado com sucesso!');
       navigate('/agendamentos');
     } catch (error) {

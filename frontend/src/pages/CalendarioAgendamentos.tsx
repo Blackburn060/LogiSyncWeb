@@ -61,17 +61,17 @@ const CalendarioAgendamentos: React.FC = () => {
       try {
         const formattedDate = selectedDate.toISOString().split('T')[0];
         const tipoAgendamento = localStorage.getItem('TipoAgendamento') || 'carga';
-        const horarios = await getHorariosDisponiveis(formattedDate, tipoAgendamento);
+        const horarios = await getHorariosDisponiveis(formattedDate, tipoAgendamento, token!);
         setHorariosDisponiveis(horarios);
         setHorarioSelecionado(null);
-        setAlertMessage('');  // Limpa a mensagem de alerta ao buscar novos horários
+        setAlertMessage(''); 
       } catch (error) {
         console.error('Erro ao buscar horários disponíveis', error);
       }
     };
 
     fetchHorariosDisponiveis();
-  }, [selectedDate]);
+  }, [selectedDate, token]);
 
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
@@ -82,11 +82,11 @@ const CalendarioAgendamentos: React.FC = () => {
 
       if (selectedDate.getTime() < now.getTime()) {
         setAlertMessage("Você não pode selecionar uma data anterior ao dia de hoje. Por favor, escolha uma data válida.");
-        setHorarioSelecionado(null); // Limpa o horário selecionado, se houver
+        setHorarioSelecionado(null);
       } else {
         setSelectedDate(value);
         setHorarioSelecionado(null);
-        setAlertMessage('');  // Limpa a mensagem de alerta se a data for válida
+        setAlertMessage('');
       }
     }
   };
@@ -96,7 +96,7 @@ const CalendarioAgendamentos: React.FC = () => {
       setAlertMessage("Este horário já está agendado. Por favor, selecione outro horário.");
     } else {
       setHorarioSelecionado(horario);
-      setAlertMessage('');  // Limpa a mensagem de alerta ao selecionar um horário válido
+      setAlertMessage('');
     }
   };
 

@@ -3,7 +3,6 @@ import { Agendamento } from '../models/Agendamento';
 import { AxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-// Interface para decodificar o token
 interface DecodedToken {
   id?: number;
 }
@@ -16,7 +15,6 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
         Authorization: `Bearer ${token}`,
       },
     });
-    // Se a resposta for 204, retorna uma lista vazia
     if (response.status === 204) {
       return [];
     }
@@ -33,6 +31,7 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
     throw error;
   }
 };
+
 // Função para buscar agendamentos
 export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
   try {
@@ -42,7 +41,6 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
       },
     });
     
-    // Se a resposta for 204, retorna uma lista vazia
     if (response.status === 204) {
       return [];
     }
@@ -128,6 +126,7 @@ export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
     throw error;
   }
 };
+
 // Função para atualizar o status do agendamento no banco de dados
 export const updateAgendamentoStatus = async (
   id: number, 
@@ -157,7 +156,6 @@ export const updateAgendamentoStatus = async (
     throw error;
   }
 };
-
 
 // Função para autorizar agendamentos
 export const finalizarAgendamento = async (
@@ -234,6 +232,7 @@ export const updateAgendamento = async (token: string, agendamento: Agendamento)
     throw error;
   }
 };
+
 // Registrar indisponibilidade
 export const registrarIndisponibilidade = async (
   token: string,
@@ -266,6 +265,11 @@ export const getIndisponibilidades = async (token: string): Promise<Agendamento[
         Authorization: `Bearer ${token}`,
       },
     });
+
+    if (response.status === 204) {
+      return [];
+    }
+
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {

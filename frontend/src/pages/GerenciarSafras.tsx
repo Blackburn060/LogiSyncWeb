@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import { getSafras, addSafra, updateSafra } from '../services/safraService';
 import { Safra } from '../models/Safra';
 import Navbar from '../components/Navbar';
@@ -6,7 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 const GerenciarSafras: React.FC = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [safras, setSafras] = useState<Safra[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,7 +20,7 @@ const GerenciarSafras: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await getSafras();
+        const data = await getSafras(token as string);
         setSafras(data);
       } catch (error) {
         toast.error('Erro ao carregar safras');
@@ -30,23 +30,23 @@ const GerenciarSafras: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [token]);
 
   const handleSaveSafra = async (safra: Safra) => {
-    if (!user) {
+    if (!user || !token) {
       toast.error('Erro: usuário não autenticado');
       return;
     }
     setLoading(true);
     try {
       if (safraToToggle) {
-        await updateSafra(safraToToggle.CodigoSafra!, safra, Number(user?.id));
+        await updateSafra(safraToToggle.CodigoSafra!, safra, Number(user?.id), token as string);
         toast.success('Safra atualizada com sucesso');
       } else {
-        await addSafra(safra, Number(user?.id));
+        await addSafra(safra, Number(user?.id), token as string);
         toast.success('Safra adicionada com sucesso');
       }
-      const updatedSafras = await getSafras();
+      const updatedSafras = await getSafras(token as string);
       setSafras(updatedSafras);
       setIsNovaSafraFormOpen(false);
       setAnoSafra('');
@@ -70,7 +70,7 @@ const GerenciarSafras: React.FC = () => {
   };
 
   const handleToggleSafra = async () => {
-    if (!user) {
+    if (!user || !token) {
       toast.error('Erro: usuário não autenticado');
       return;
     }
@@ -79,9 +79,9 @@ const GerenciarSafras: React.FC = () => {
       setLoading(true);
       try {
         const updatedSafra = { ...safraToToggle, SituacaoSafra: safraToToggle.SituacaoSafra === 1 ? 0 : 1 };
-        await updateSafra(safraToToggle.CodigoSafra!, updatedSafra, Number(user?.id));
+        await updateSafra(safraToToggle.CodigoSafra!, updatedSafra, Number(user?.id), token as string);
         toast.success(`Safra ${updatedSafra.SituacaoSafra === 1 ? 'ativada' : 'inativada'} com sucesso`);
-        const updatedSafras = await getSafras();
+        const updatedSafras = await getSafras(token as string);
         setSafras(updatedSafras);
         setIsModalOpen(false);
       } catch (error) {
