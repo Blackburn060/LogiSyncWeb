@@ -232,7 +232,7 @@ const AgendamentosAdmin: React.FC = () => {
       try {
         // Verifique se a observação está definida corretamente
         const observacao = selectedAgendamento.Observacao || ""; // Define a observação corretamente
-  
+
         // Atualizar o status do agendamento para 'Confirmado' e passar a observação
         await updateAgendamentoStatus(
           selectedAgendamento.CodigoAgendamento!,
@@ -243,20 +243,20 @@ const AgendamentosAdmin: React.FC = () => {
           },
           token!
         );
-  
+
         // Atualizar o estado local do agendamento com a nova observação
         setAgendamentos((prevAgendamentos) =>
           prevAgendamentos.map((agendamento) =>
             agendamento.CodigoAgendamento === selectedAgendamento.CodigoAgendamento
               ? {
-                  ...agendamento,
-                  SituacaoAgendamento: "Confirmado",
-                  Observacao: observacao,
-                }
+                ...agendamento,
+                SituacaoAgendamento: "Confirmado",
+                Observacao: observacao,
+              }
               : agendamento
           )
         );
-  
+
         // Substitua o alerta pelo toast de sucesso
         toast.success("Agendamento confirmado com sucesso!");
         handleCloseModal();
@@ -267,7 +267,7 @@ const AgendamentosAdmin: React.FC = () => {
       }
     }
   };
-  
+
   const handleRejeitar = async () => {
     if (selectedAgendamento && motivoRecusa) {
       try {
@@ -281,21 +281,21 @@ const AgendamentosAdmin: React.FC = () => {
           },
           token!
         );
-  
+
         // Atualiza o estado do agendamento para "Recusado"
         setAgendamentos((prevAgendamentos) =>
           prevAgendamentos.map((agendamento) =>
             agendamento.CodigoAgendamento === selectedAgendamento.CodigoAgendamento
               ? {
-                  ...agendamento,
-                  SituacaoAgendamento: "Recusado",
-                  MotivoRecusa: motivoRecusa,
-                  Observacao: selectedAgendamento.Observacao || "Sem observação", // Atualiza a observação
-                }
+                ...agendamento,
+                SituacaoAgendamento: "Recusado",
+                MotivoRecusa: motivoRecusa,
+                Observacao: selectedAgendamento.Observacao || "Sem observação", // Atualiza a observação
+              }
               : agendamento
           )
         );
-  
+
         // Substitua o alerta pelo toast de sucesso
         toast.success("Agendamento recusado com sucesso!");
         handleCloseModal();
@@ -308,9 +308,9 @@ const AgendamentosAdmin: React.FC = () => {
       toast.error("Por favor, informe o motivo da recusa.");
     }
   };
-  
-  
-  
+
+
+
   const handleFilterByStatus = (status: string | null) => {
     setStatusFilter(status);
   };
@@ -319,7 +319,7 @@ const AgendamentosAdmin: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Coloque o Toaster logo após o primeiro div */}
       <Toaster position="top-right" reverseOrder={false} />
-  
+
       <Navbar />
       <div className="container mx-auto p-4">
         {/* Parte superior com navegação de semanas */}
@@ -344,7 +344,7 @@ const AgendamentosAdmin: React.FC = () => {
             {/* Exibe texto em telas maiores */}
             <span className="hidden md:block">&larr; Dias anteriores</span>
           </button>
-  
+
           <div className="flex items-center space-x-4">
             {/* Botão de voltar para o hoje */}
             <button
@@ -353,7 +353,7 @@ const AgendamentosAdmin: React.FC = () => {
             >
               <IcRoundRefresh width={20} height={20} />
             </button>
-  
+
             {/* Texto com a faixa de datas */}
             <div
               className="text-lg font-semibold cursor-pointer flex items-center"
@@ -363,7 +363,7 @@ const AgendamentosAdmin: React.FC = () => {
               <button className="block md:hidden p-2 bg-blue-500 text-white rounded-lg">
                 <IcOutlineCalendarMonth width={24} height={24} />
               </button>
-  
+
               {/* Exibe o texto da data em telas maiores */}
               <span className="hidden md:block">
                 {format(currentStartDate, "dd/MM/yyyy")} -{" "}
@@ -373,7 +373,7 @@ const AgendamentosAdmin: React.FC = () => {
                 )}
               </span>
             </div>
-  
+
             <div className="relative">
               {/* Filtro de Status ao lado direito */}
               <button
@@ -608,7 +608,9 @@ const AgendamentosAdmin: React.FC = () => {
         </Modal>
 
         {loading ? (
-          <p>Carregando agendamentos...</p>
+          <div className="flex justify-center items-center h-full">
+            <l-helix size="45" speed="2.5" color="black"></l-helix>
+          </div>
         ) : (
           <div
             className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4`}

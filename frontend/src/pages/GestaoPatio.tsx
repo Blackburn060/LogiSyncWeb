@@ -130,7 +130,9 @@ const GestaoPatio: React.FC = () => {
       </div>
 
       {loading ? (
-        <p className="text-center text-lg">Carregando agendamentos...</p>
+        <div className="flex justify-center items-center h-full">
+          <l-helix size="45" speed="2.5" color="black"></l-helix>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border p-4 rounded-lg bg-white shadow-md">

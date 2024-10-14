@@ -177,12 +177,12 @@ const Portaria: React.FC = () => {
       setSelectedAgendamento((prevAgendamento) =>
         prevAgendamento
           ? {
-              ...prevAgendamento,
-              DadosPortaria: {
-                ...prevAgendamento.DadosPortaria,
-                DataHoraSaida: dataHoraSaida,
-              },
-            }
+            ...prevAgendamento,
+            DadosPortaria: {
+              ...prevAgendamento.DadosPortaria,
+              DataHoraSaida: dataHoraSaida,
+            },
+          }
           : null
       );
 
@@ -214,10 +214,10 @@ const Portaria: React.FC = () => {
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
             ? {
-                ...a,
-                SituacaoAgendamento: "Andamento",
-                Observacao: agendamento.Observacao || "Sem observação", // Atualiza também a observação localmente
-              }
+              ...a,
+              SituacaoAgendamento: "Andamento",
+              Observacao: agendamento.Observacao || "Sem observação", // Atualiza também a observação localmente
+            }
             : a
         )
       );
@@ -258,10 +258,10 @@ const Portaria: React.FC = () => {
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
             ? {
-                ...a,
-                SituacaoAgendamento: "Reprovado", // Alterar para "Reprovado"
-                MotivoRecusa: motivoRecusa,
-              }
+              ...a,
+              SituacaoAgendamento: "Reprovado", // Alterar para "Reprovado"
+              MotivoRecusa: motivoRecusa,
+            }
             : a
         )
       );
@@ -498,7 +498,9 @@ const Portaria: React.FC = () => {
         </Modal>
 
         {loading ? (
-          <p>Carregando agendamentos...</p>
+          <div className="flex justify-center items-center h-full">
+            <l-helix size="45" speed="2.5" color="black"></l-helix>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {getDaysRange().map((day) => {
