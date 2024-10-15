@@ -29,8 +29,14 @@ const getAllSafras = (filters = {}) => {
 const addSafra = (safra) => {
     return new Promise((resolve, reject) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
-        const sql = `INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao, CodigoUsuario) VALUES (?, ?, ?, ?)`;
-        db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao, safra.CodigoUsuario], function(err) {
+        
+        // Adicionando AnoSafra, SituacaoSafra, DataGeracao e UsuarioAlteracao
+        const sql = `
+            INSERT INTO cadastrosafra (AnoSafra, SituacaoSafra, DataGeracao, UsuarioAlteracao)
+            VALUES (?, ?, ?, ?)
+        `;
+        
+        db.run(sql, [safra.AnoSafra, safra.SituacaoSafra, dataGeracao, safra.UsuarioAlteracao], function(err) {
             if (err) {
                 reject(err);
             } else {
