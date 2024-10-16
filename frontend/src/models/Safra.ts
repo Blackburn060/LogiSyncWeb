@@ -1,9 +1,8 @@
-// Definição da interface Safra baseada na sua tabela
 export interface Safra {
-  CodigoSafra: number;
-  AnoSafra: number;
+  CodigoSafra?: number; // Tornado opcional para novos registros
+  AnoSafra: string; // Agora string para aceitar valores como "23/24"
   SituacaoSafra: number;
-  DataGeracao: string;
+  DataGeracao?: string; // Opcional, definido no backend
   UsuarioAlteracao?: number | null;
   DataAlteracao?: string | null;
 }

@@ -8,7 +8,7 @@ interface DecodedToken {
 }
 
 // Função para buscar agendamentos por usuário com a placa associada
-export const getAgendamentosComPlaca = async (token: string, userId: number): Promise<Agendamento[]> => {
+export const getAgendamentosComPlaca = async (token: string, userId: string): Promise<Agendamento[]> => {
   try {
     const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${userId}`, {
       headers: {
@@ -18,7 +18,43 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
     if (response.status === 204) {
       return [];
     }
-    return response.data;
+
+    const agendamentos = response.data;
+
+    for (const agendamento of agendamentos) {
+      // Recuperar dados do produto e safra (se aplicável)
+      if (agendamento.CodigoProduto) {
+        try {
+          const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
+          agendamento.DescricaoProduto = descricaoProduto;
+        } catch (error) {
+          console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
+        }
+      }
+
+      if (agendamento.CodigoSafra) {
+        try {
+          const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
+          agendamento.AnoSafra = anoSafra;
+        } catch (error) {
+          console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
+        }
+      }
+
+      // Recuperar dados da portaria pelo CodigoAgendamento
+      try {
+        const dadosPortaria = await getDadosPortaria(agendamento.CodigoAgendamento, token);
+        if (dadosPortaria) {
+          agendamento.DataHoraEntrada = dadosPortaria.DataHoraEntrada;
+          agendamento.DataHoraSaida = dadosPortaria.DataHoraSaida; // Certifique-se de adicionar o campo ao modelo
+          agendamento.ObservacaoPortaria = dadosPortaria.ObservacaoPortaria;
+        }
+      } catch (error) {
+        console.error(`Erro ao buscar dados da portaria para o agendamento ${agendamento.CodigoAgendamento}`, error);
+      }
+    }
+
+    return agendamentos;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       console.error('Erro ao buscar agendamentos com placa:', error.message);
@@ -32,6 +68,7 @@ export const getAgendamentosComPlaca = async (token: string, userId: number): Pr
   }
 };
 
+
 // Função para buscar agendamentos
 export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
   try {
@@ -40,7 +77,7 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
         Authorization: `Bearer ${token}`,
       },
     });
-    
+
     if (response.status === 204) {
       return [];
     }
@@ -59,11 +96,18 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
 
       if (agendamento.CodigoSafra) {
         try {
-          const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
-          agendamento.AnoSafra = anoSafra;
+            const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
+            agendamento.AnoSafra = anoSafra;
+            console.log(`Agendamento ${agendamento.CodigoAgendamento} - Safra atribuída:`, agendamento.AnoSafra); // Log para verificar se o valor foi atribuído
         } catch (error) {
-          console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
+            console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
+    }
+    
+    
+
+      if (agendamento.ArquivoAnexado) { // Adicione lógica para preencher Arquivo se estiver presente
+        agendamento.Arquivo = agendamento.ArquivoAnexado;
       }
     }
 
@@ -73,7 +117,6 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
     throw error;
   }
 };
-
 // Função para adicionar um novo agendamento
 export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
   try {
@@ -96,6 +139,20 @@ export const addAgendamento = async (token: string, agendamento: Agendamento): P
   }
 };
 
+// Função para buscar dados da portaria por CodigoAgendamento
+export const getDadosPortaria = async (codigoAgendamento: number, token: string) => {
+  try {
+    const response = await api.get(`/portarias/${codigoAgendamento}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar dados da portaria:", error);
+    throw error;
+  }
+};
 
 // Função para buscar o nome do Produto
 export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
@@ -111,7 +168,6 @@ export const getProdutoByCodigo = async (codigoProduto: number, token: string) =
     throw error;
   }
 };
-
 // Função para buscar a safra pelo código
 export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
   try {
@@ -126,6 +182,7 @@ export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
     throw error;
   }
 };
+
 
 // Função para atualizar o status do agendamento no banco de dados
 export const updateAgendamentoStatus = async (

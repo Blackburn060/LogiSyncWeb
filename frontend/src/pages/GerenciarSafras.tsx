@@ -62,12 +62,21 @@ const GerenciarSafras: React.FC = () => {
     e.preventDefault();
 
     if (!anoSafra.trim()) {
-      toast.error('Por favor, preencha o campo de Ano Safra.');
-      return;
+        toast.error('Por favor, preencha o campo de Ano Safra.');
+        return;
     }
 
-    handleSaveSafra({ AnoSafra: anoSafra, SituacaoSafra: situacaoSafra });
-  };
+    const novaSafra: Safra = {
+        CodigoSafra: 0, 
+        AnoSafra: anoSafra, 
+        SituacaoSafra: situacaoSafra,
+        DataGeracao: new Date().toISOString(), 
+        UsuarioAlteracao: null,
+        DataAlteracao: null
+    };
+
+    handleSaveSafra(novaSafra);
+};
 
   const handleToggleSafra = async () => {
     if (!user || !token) {
