@@ -33,6 +33,7 @@ const createTransporter = async () => {
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       refreshToken: process.env.REFRESH_TOKEN,
+      code: process.env.CODE,
       accessToken: accessToken,
     },
   });

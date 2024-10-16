@@ -11,6 +11,7 @@ const veiculoRoutes = require('./routes/veiculoRoutes');
 const portariaRoutes = require('./routes/portariaRoutes');
 const agendamentoRoutes = require('./routes/agendamentoRoutes');
 const healthCheckRoutes = require('./routes/healthCheckRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -33,6 +34,7 @@ app.use('/api', transportadoraRoutes);
 app.use('/api', veiculoRoutes);
 app.use('/api', portariaRoutes);
 app.use('/api', agendamentoRoutes);
+app.use('/api', reportRoutes);
 app.use('/api', healthCheckRoutes);
 
 app.listen(PORT, () => {

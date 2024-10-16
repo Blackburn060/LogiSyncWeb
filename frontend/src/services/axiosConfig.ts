@@ -21,14 +21,15 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error) => {
+    const originalRequest = error.config;
+    
     if (error.response && error.response.status === 401) {
       const { refreshAccessToken, logout } = useAuth();
 
       try {
         await refreshAccessToken();
-        const originalRequest = error.config;
         const newAccessToken = localStorage.getItem('token');
         if (newAccessToken) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -39,9 +40,21 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
     }
+    
+    // Adiciona um tratamento especial para erros de requisição de `blob`
+    if (error.response && error.response.data instanceof Blob && error.response.data.type === 'application/json') {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const errorMessage = JSON.parse(reader.result as string);
+        return Promise.reject(new Error(errorMessage.message));
+      };
+      reader.readAsText(error.response.data);
+    }
+    
     return Promise.reject(error);
   }
 );
+
 
 export const isAxiosError = (error: unknown): error is AxiosError => {
   return (error as AxiosError).isAxiosError !== undefined;
