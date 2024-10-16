@@ -98,7 +98,6 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
         try {
             const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
             agendamento.AnoSafra = anoSafra;
-            console.log(`Agendamento ${agendamento.CodigoAgendamento} - Safra atribuída:`, agendamento.AnoSafra); // Log para verificar se o valor foi atribuído
         } catch (error) {
             console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }

@@ -111,7 +111,6 @@ const MeusAgendamentos: React.FC = () => {
 
   // Função para abrir o modal de detalhes e buscar o nome do produto
   const handleAgendamentoClick = async (agendamento: Agendamento) => {
-    console.log("Dados do agendamento selecionado:", agendamento);
   
     // Verifica se `CodigoAgendamento` está definido e é um número válido
     if (!agendamento.CodigoAgendamento) {
@@ -122,7 +121,6 @@ const MeusAgendamentos: React.FC = () => {
     try {
       if (token) {
         const portariaData = await getDadosPortaria(agendamento.CodigoAgendamento, token);
-        console.log("Dados da portaria encontrados:", portariaData);
   
         setSelectedAgendamento({
           ...agendamento,
@@ -311,7 +309,7 @@ const MeusAgendamentos: React.FC = () => {
           </div>
 
           {/* Cartões para dispositivos pequenos */}
-          <div className="block sm:hidden grid grid-cols-1 gap-4 max-w-[90%] mx-auto">
+          <div className="block sm:hidden grid-cols-1 gap-4 max-w-[90%] mx-auto">
             {agendamentosFiltrados.length === 0 ? (
               <div className="text-center py-4 text-gray-500 dark:text-gray-300">
                 Nenhum agendamento encontrado.
