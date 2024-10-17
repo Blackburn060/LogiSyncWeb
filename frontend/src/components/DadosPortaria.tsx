@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/axiosConfig";
 import { AxiosError } from "axios";
-import { parse, isValid, format } from "date-fns";
+import { isValid, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface DadosPortariaProps {
@@ -23,7 +23,6 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
 }) => {
   const [portariaData, setPortariaData] = useState({
     dataChegada: "N/A",
-    observacao: "",
     motivoRecusa: "",
   });
   const [loading, setLoading] = useState(true);
@@ -32,13 +31,13 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
   const formatarData = (dataString: string) => {
     if (!dataString || dataString === "N/A") return "N/A";
     
-    const parsedDate = parse(dataString, 'dd/MM/yyyy HH:mm:ss', new Date());
+    const data = new Date(dataString);
     
-    if (!isValid(parsedDate)) {
+    if (!isValid(data)) {
       return "Data inválida";
     }
     
-    return format(parsedDate, "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR });
+    return format(data, "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR });
   };
 
   useEffect(() => {
@@ -50,7 +49,6 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
           if (isMounted) {
             setPortariaData({
               dataChegada: formatarData(response.data.DataHoraEntrada) || "N/A",
-              observacao: response.data.ObservacaoPortaria || "Nenhuma observação disponível",
               motivoRecusa: response.data.MotivoRecusa || "Nenhum motivo de recusa disponível",
             });
 
@@ -67,11 +65,9 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
           if (error instanceof AxiosError) {
             if (error.response?.status === 404) {
               setPortariaData({ 
-                dataChegada: "N/A", 
-                observacao: "Nenhuma observação disponível", 
+                dataChegada: "N/A",
                 motivoRecusa: "Nenhum motivo de recusa disponível" 
               });
-              setObservacaoPortaria("Nenhuma observação disponível");
               setErrorMessage(null); 
             } else {
               setErrorMessage("Erro ao carregar dados da portaria.");

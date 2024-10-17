@@ -212,7 +212,7 @@ const MeusAgendamentos: React.FC = () => {
           {/* Tabela de agendamentos para telas médias e grandes */}
           <div className="hidden sm:block relative max-h-[550px] overflow-x-auto shadow-md sm:rounded-lg max-w-[70%] mx-auto">
             <table className="w-full text-sm text-left text-gray-700 dark:text-gray-200">
-              <thead className="sticky top-0 text-md text-gray-800 font-bold uppercase bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:font-bold border-b dark:border-gray-500 z-10">
+              <thead className="sticky top-0 text-md text-gray-800 font-bold uppercase bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:font-bold border-b dark:border-gray-500 z-9">
                 <tr>
                   <th scope="col" className="px-4 py-3">
                     Data

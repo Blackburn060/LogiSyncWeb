@@ -235,7 +235,7 @@ export const recusarAgendamento = async (
         DataHoraEntrada: new Date().toISOString(),
         UsuarioAprovacao: usuarioId,
         MotivoRecusa: motivoRecusa,
-        ObservacaoPortaria: "Recusado",
+        ObservacaoPortaria: "Reprovado",
       },
       {
         headers: {

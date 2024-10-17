@@ -17,7 +17,7 @@ import GerenciarSafras from './pages/GerenciarSafras';
 import HomePageInterno from './pages/HomePageInterno';
 import SelecionarProcesso from './pages/SelecionarProcesso';
 import AutorizarAgendamentos from './pages/AutorizarAgendamentos';
-import Portaria from './pages/portaria';
+import Portaria from './pages/GerenciarPortaria';
 import ProtectedRoute from './components/ProtectedRoute';
 import RecuperarSenha from './pages/RecuperarSenha';
 import RedefinirSenha from './pages/RedefinirSenha';
