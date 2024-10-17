@@ -78,28 +78,33 @@ const updateStatusAgendamento = (CodigoAgendamento, novoStatus) => {
 // Função para buscar agendamentos com placa do veículo
 const getAllAgendamentosWithPlaca = (filters = {}) => {
   return new Promise((resolve, reject) => {
-    let sql = `
-            SELECT ag.*, ve.Placa
-            FROM agendamentos ag
-            JOIN cadastroveiculo ve ON ag.CodigoVeiculo = ve.CodigoVeiculo
-            WHERE 1=1
-        `;
-    let params = [];
+      let sql = `
+          SELECT ag.*, ve.Placa
+          FROM agendamentos ag
+          JOIN cadastroveiculo ve ON ag.CodigoVeiculo = ve.CodigoVeiculo
+          WHERE 1=1
+      `;
+      let params = [];
 
-    if (filters.CodigoUsuario) {
-      sql += " AND ag.CodigoUsuario = ?";
-      params.push(filters.CodigoUsuario);
-    }
-
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
+      if (filters.CodigoUsuario) {
+          sql += ' AND ag.CodigoUsuario = ?';
+          params.push(filters.CodigoUsuario);
       }
-    });
+
+      sql += ' LIMIT ? OFFSET ?'; // Novo: Limit e Offset
+      params.push(Number(filters.limit) || 10); // Default limit 10
+      params.push(Number(filters.offset) || 0); // Default offset 0
+
+      db.all(sql, params, (err, rows) => {
+          if (err) {
+              reject(err);
+          } else {
+              resolve(rows);
+          }
+      });
   });
 };
+
 
 // Função para cancelar um agendamento
 const cancelarAgendamento = (id) => {

@@ -147,8 +147,8 @@ const recusarAgendamento = async (req, res) => {
 // Listar agendamentos com placa
 const listarAgendamentosComPlaca = async (req, res) => {
     try {
-        const filters = req.query;
-        const agendamentos = await agendamentoModel.getAllAgendamentosWithPlaca(filters);
+        const { CodigoUsuario, limit = 10, offset = 0 } = req.query; // Novo: limit e offset
+        const agendamentos = await agendamentoModel.getAllAgendamentosWithPlaca({ CodigoUsuario, limit, offset });
 
         if (agendamentos.length === 0) {
             return res.status(204).send();
@@ -159,6 +159,7 @@ const listarAgendamentosComPlaca = async (req, res) => {
         res.status(500).send({ message: 'Erro ao buscar agendamentos com placa: ' + error.message });
     }
 };
+
 // Adicionar agendamento
 const adicionarAgendamento = async (req, res) => {
     try {

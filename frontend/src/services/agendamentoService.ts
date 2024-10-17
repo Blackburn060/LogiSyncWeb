@@ -8,65 +8,102 @@ interface DecodedToken {
 }
 
 // Função para buscar agendamentos por usuário com a placa associada
-export const getAgendamentosComPlaca = async (token: string, userId: string): Promise<Agendamento[]> => {
+export const getAgendamentosComPlacaIncremental = async (
+  token: string,
+  userId: string,
+  limit: number,
+  offset: number
+): Promise<Agendamento[]> => {
   try {
-    const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.get(
+      `/agendamentos-com-placa?CodigoUsuario=${userId}&limit=${limit}&offset=${offset}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Verifica se a resposta é 204 (sem conteúdo)
     if (response.status === 204) {
       return [];
     }
 
     const agendamentos = response.data;
 
+    const uniqueAgendamentos = new Map(); // Para armazenar agendamentos únicos
+
+    // Processar cada agendamento para incluir dados adicionais, se necessário
     for (const agendamento of agendamentos) {
-      // Recuperar dados do produto e safra (se aplicável)
-      if (agendamento.CodigoProduto) {
-        try {
-          const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
-          agendamento.DescricaoProduto = descricaoProduto;
-        } catch (error) {
-          console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
+      // Checar se já existe no map pelo ID para evitar duplicação
+      if (!uniqueAgendamentos.has(agendamento.CodigoAgendamento)) {
+        // Recuperar dados do produto e safra (se aplicável)
+        if (agendamento.CodigoProduto) {
+          try {
+            const descricaoProduto = await getProdutoByCodigo(
+              agendamento.CodigoProduto,
+              token
+            );
+            agendamento.DescricaoProduto = descricaoProduto;
+          } catch (error) {
+            console.error(
+              `Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`,
+              error
+            );
+          }
         }
-      }
 
-      if (agendamento.CodigoSafra) {
-        try {
-          const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
-          agendamento.AnoSafra = anoSafra;
-        } catch (error) {
-          console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
+        if (agendamento.CodigoSafra) {
+          try {
+            const anoSafra = await getSafraByCodigo(
+              agendamento.CodigoSafra,
+              token
+            );
+            agendamento.AnoSafra = anoSafra;
+          } catch (error) {
+            console.error(
+              `Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`,
+              error
+            );
+          }
         }
-      }
 
-      // Recuperar dados da portaria pelo CodigoAgendamento
-      try {
-        const dadosPortaria = await getDadosPortaria(agendamento.CodigoAgendamento, token);
-        if (dadosPortaria) {
-          agendamento.DataHoraEntrada = dadosPortaria.DataHoraEntrada;
-          agendamento.DataHoraSaida = dadosPortaria.DataHoraSaida; // Certifique-se de adicionar o campo ao modelo
-          agendamento.ObservacaoPortaria = dadosPortaria.ObservacaoPortaria;
+        // Recuperar dados da portaria pelo CodigoAgendamento
+        try {
+          const dadosPortaria = await getDadosPortaria(
+            agendamento.CodigoAgendamento,
+            token
+          );
+          if (dadosPortaria) {
+            agendamento.DataHoraEntrada = dadosPortaria.DataHoraEntrada;
+            agendamento.DataHoraSaida = dadosPortaria.DataHoraSaida;
+            agendamento.ObservacaoPortaria = dadosPortaria.ObservacaoPortaria;
+          }
+        } catch (error) {
+          console.error(
+            `Erro ao buscar dados da portaria para o agendamento ${agendamento.CodigoAgendamento}`,
+            error
+          );
         }
-      } catch (error) {
-        console.error(`Erro ao buscar dados da portaria para o agendamento ${agendamento.CodigoAgendamento}`, error);
+
+        uniqueAgendamentos.set(agendamento.CodigoAgendamento, agendamento);
       }
     }
 
-    return agendamentos;
+    return Array.from(uniqueAgendamentos.values());
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      console.error('Erro ao buscar agendamentos com placa:', error.message);
+      console.error("Erro ao buscar agendamentos com placa:", error.message);
       if (error.response) {
-        console.error('Detalhes do erro:', error.response.data);
+        console.error("Detalhes do erro:", error.response.data);
       }
     } else {
-      console.error('Erro desconhecido ao buscar agendamentos com placa:', error);
+      console.error("Erro desconhecido ao buscar agendamentos com placa:", error);
     }
     throw error;
   }
 };
+
 
 
 // Função para buscar agendamentos
