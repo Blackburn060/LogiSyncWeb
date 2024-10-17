@@ -64,7 +64,6 @@ const GestaoPatio: React.FC = () => {
     // Configurar o SSE para escutar atualizações automáticas
     if (token) {
       const eventSource = escutarAtualizacoesAgendamentos(token, (atualizacao: Agendamento) => {
-        console.log("Recebendo atualização de agendamento via SSE:", atualizacao);
         setAgendamentos((prevAgendamentos) => {
           const agendamentoExistente = prevAgendamentos.find(
             (agendamento) => agendamento.CodigoAgendamento === atualizacao.CodigoAgendamento
