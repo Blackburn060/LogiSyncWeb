@@ -10,17 +10,39 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
     nome: "Não Informado",
     cpf: "Não Informado",
     telefone: "Não Informado",
+    transportadora: "Não Informada", // Novo campo para o nome da transportadora
   });
 
   useEffect(() => {
     const fetchDadosPessoais = async () => {
       try {
-        const response = await api.get(`/usuarios/${usuarioId}`);
-        const userData = response.data || {}; // Verifique se há dados
+        // Buscar dados pessoais do usuário
+        const responseUsuario = await api.get(`/usuarios/${usuarioId}`);
+        const userData = responseUsuario.data || {};
+
+        // Buscar nome da transportadora usando o CodigoTransportadora do usuário
+        let nomeTransportadora = "Não Informada";
+        if (userData.CodigoTransportadora) {
+          try {
+            const responseTransportadora = await api.get(
+              `/transportadoras/${userData.CodigoTransportadora}`
+            );
+            nomeTransportadora =
+              responseTransportadora.data.Nome || "Não Informada";
+          } catch (error) {
+            console.error(
+              "Erro ao buscar nome da transportadora:",
+              error
+            );
+          }
+        }
+
+        // Atualizar estado com dados pessoais e nome da transportadora
         setDadosPessoais({
           nome: userData.NomeCompleto || "Não Informado",
           cpf: userData.CPF || "Não Informado",
           telefone: userData.NumeroCelular || "Não Informado",
+          transportadora: nomeTransportadora,
         });
       } catch (error) {
         console.error("Erro ao buscar dados pessoais:", error);
@@ -56,12 +78,21 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
             readOnly
           />
         </div>
-        <div className="col-span-2">
+        <div>
           <label className="block font-semibold">Telefone</label>
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
             value={dadosPessoais.telefone}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Transportadora</label> {/* Novo campo */}
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={dadosPessoais.transportadora} // Exibindo a transportadora
             readOnly
           />
         </div>
