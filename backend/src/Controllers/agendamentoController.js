@@ -36,15 +36,21 @@ const listarAgendamentos = async (req, res) => {
         const filters = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentos(filters);
 
-        if (agendamentos.length === 0) {
+        // Filtrar agendamentos "Indisponível"
+        const agendamentosFiltrados = agendamentos.filter(
+            (agendamento) => agendamento.SituacaoAgendamento !== "Indisponível"
+        );
+
+        if (agendamentosFiltrados.length === 0) {
             return res.status(204).send();
         }
 
-        res.json(agendamentos);
+        res.json(agendamentosFiltrados);
     } catch (error) {
         res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
     }
 };
+
 
 // Listar agendamentos por data
 const listarAgendamentosPorData = async (req, res) => {

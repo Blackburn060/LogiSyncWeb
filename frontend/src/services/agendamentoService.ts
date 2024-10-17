@@ -82,7 +82,12 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
       return [];
     }
 
-    const agendamentos = response.data;
+    let agendamentos = response.data;
+
+    // Filtra agendamentos que não são "Indisponível"
+    agendamentos = agendamentos.filter(
+      (agendamento: Agendamento) => agendamento.SituacaoAgendamento !== "Indisponível"
+    );
 
     for (const agendamento of agendamentos) {
       if (agendamento.CodigoProduto) {
@@ -96,14 +101,12 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
 
       if (agendamento.CodigoSafra) {
         try {
-            const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
-            agendamento.AnoSafra = anoSafra;
+          const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
+          agendamento.AnoSafra = anoSafra;
         } catch (error) {
-            console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
+          console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
-    }
-    
-    
+      }
 
       if (agendamento.ArquivoAnexado) { // Adicione lógica para preencher Arquivo se estiver presente
         agendamento.Arquivo = agendamento.ArquivoAnexado;
@@ -116,27 +119,7 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
     throw error;
   }
 };
-// Função para adicionar um novo agendamento
-export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
-  try {
-    const response = await api.post('/agendamentos', agendamento, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      console.error('Erro ao adicionar agendamento:', error.message);
-      if (error.response) {
-        console.error('Detalhes do erro:', error.response.data);
-      }
-    } else {
-      console.error('Erro desconhecido ao adicionar agendamento:', error);
-    }
-    throw error;
-  }
-};
+
 
 // Função para buscar dados da portaria por CodigoAgendamento
 export const getDadosPortaria = async (codigoAgendamento: number, token: string) => {
