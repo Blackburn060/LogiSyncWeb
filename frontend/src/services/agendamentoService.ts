@@ -164,7 +164,26 @@ export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
     throw error;
   }
 };
-
+export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
+  try {
+    const response = await api.post('/agendamentos', agendamento, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      console.error('Erro ao adicionar agendamento:', error.message);
+      if (error.response) {
+        console.error('Detalhes do erro:', error.response.data);
+      }
+    } else {
+      console.error('Erro desconhecido ao adicionar agendamento:', error);
+    }
+    throw error;
+  }
+};
 
 // Função para atualizar o status do agendamento no banco de dados
 export const updateAgendamentoStatus = async (
