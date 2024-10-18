@@ -43,7 +43,6 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        console.log(err);
         if (err.message === 'Network Error' && err.response === undefined) {
           toast.error('Não foi possível conectar ao servidor. Por favor, tente mais tarde.');
         } else if (err.response?.status === 500) {
@@ -106,7 +105,6 @@ const Login: React.FC = () => {
             <p className="text-white text-md font-extrabold text-right">
               <Link to="/recuperar-senha">Esqueceu sua senha?</Link>
             </p>
-
           </div>
           <div className="flex items-center justify-center pt-3">
             <button

@@ -28,8 +28,8 @@ export const updateTransportadora = async (token: string, id: number, transporta
   try {
     await axios.put(`${apiUrl}/transportadoras/${id}`, transportadora, {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
   } catch (error) {
     console.error('Erro ao atualizar transportadora:', error);
@@ -64,7 +64,6 @@ export const addTransportadora = async (token: string, transportadora: Partial<T
       throw new Error('CodigoTransportadora não retornado do backend');
     }
 
-    // Retorna a transportadora e o token atualizados
     return {
       transportadora: response.data.transportadora,
       token: response.data.token,

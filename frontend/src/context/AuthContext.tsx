@@ -42,19 +42,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
   const navigate = useNavigate();
 
- 
-
-  // Função de login
-  const login = useCallback((token: string, refreshToken: string) => {
-    setAccessToken(token);
-    setRefreshToken(refreshToken);
-    localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', refreshToken);
-    const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
-    setUser(decodedUser as UsuarioDetalhado);
-  }, []);
-
-  // Função de logout
   const logout = useCallback(() => {
     setAccessToken(null);
     setRefreshToken(null);
@@ -64,6 +51,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
     navigate('/login');
   }, [navigate]);
+
+  const login = useCallback((token: string, refreshToken: string) => {
+    try {
+      const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
+      if (!decodedUser || !decodedUser.id) {
+        throw new Error('Token inválido');
+      }
+
+      setAccessToken(token);
+      setRefreshToken(refreshToken);
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+      setUser(decodedUser as UsuarioDetalhado);
+    } catch (error) {
+      console.error('Erro ao decodificar o token:', error);
+      logout();
+    }
+  }, [logout]);
 
   // Função para renovar o token
   const refreshAccessToken = useCallback(async () => {
@@ -81,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [refreshToken, login, logout]);
 
-  // Primeira verificação do token: Executa apenas uma vez no carregamento inicial
+  // Verifica o token no início e atualiza o estado
   useEffect(() => {
     if (token) {
       const decodedUser = jwtDecode<ExtendedJwtPayload>(token);
@@ -98,7 +103,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [token, refreshToken, refreshAccessToken]);
 
-  // Verifica se existe um token no localStorage ao carregar o componente
+  // Carregar token do localStorage ao montar o componente
   useEffect(() => {
     const storedAccessToken = localStorage.getItem('token');
     if (storedAccessToken) {

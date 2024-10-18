@@ -1,5 +1,5 @@
 import api from './axiosConfig';
-import { isAxiosError } from './axiosConfig';
+import { AxiosError } from 'axios';
 
 interface FiltrosRelatorio {
     dataInicio: string;
@@ -21,7 +21,6 @@ const readBlobAsText = (blob: Blob): Promise<string> => {
     });
 };
 
-// Verifica se o objeto contém uma propriedade 'message'
 const isErrorMessage = (obj: any): obj is { message: string } => {
     return typeof obj === 'object' && obj !== null && 'message' in obj && typeof obj.message === 'string';
 };
@@ -40,7 +39,7 @@ export const gerarRelatorio = async (reportName: string, filtros: FiltrosRelator
 
         return response.data; 
     } catch (error) {
-        if (isAxiosError(error)) {
+        if (error instanceof AxiosError) {
             if (error.response?.data instanceof Blob) {
                 try {
                     const errorText = await readBlobAsText(error.response.data);

@@ -200,7 +200,7 @@ const Veiculos: React.FC = () => {
           </div>
         </div>
       </Modal>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" containerClassName='mt-20' reverseOrder={false} />
     </div>
   );
 };

@@ -18,18 +18,21 @@ const adicionarTransportadora = async (req, res) => {
             return res.status(400).send({ message: "Campos obrigatórios ausentes" });
         }
 
-        const userId = req.user.id;  
-        
+        const userId = req.user.id;
 
         const novaTransportadora = await transportadoraModel.addTransportadora(req.body, userId);
 
         const updatedUser = {
-            ...req.user,  
-            CodigoTransportadora: novaTransportadora.CodigoTransportadora 
+            CodigoUsuario: req.user.id,
+            Email: req.user.email,
+            NomeCompleto: req.user.nomecompleto,
+            TipoUsuario: req.user.tipousuario,
+            CodigoTransportadora: novaTransportadora.CodigoTransportadora,
+            CPF: req.user.cpf,
+            NumeroCelular: req.user.numerocelular
         };
 
-
-        const newAccessToken = AuthService.generateToken(updatedUser);  
+        const newAccessToken = AuthService.generateToken(updatedUser);
 
         return res.status(201).send({ 
             message: "Transportadora adicionada e usuário atualizado com sucesso", 
@@ -44,7 +47,8 @@ const adicionarTransportadora = async (req, res) => {
 
 const atualizarTransportadora = async (req, res) => {
     try {
-        const changes = await transportadoraModel.updateTransportadora(req.body, req.params.id);
+        const userId = req.user.id;
+        const changes = await transportadoraModel.updateTransportadora(req.body, req.params.id, userId);
         if (changes) {
             res.send({ message: "Transportadora atualizada com sucesso" });
         } else {
@@ -59,12 +63,12 @@ const deletarTransportadora = async (req, res) => {
     try {
         const changes = await transportadoraModel.deleteTransportadora(req.params.id);
         if (changes) {
-            res.send({ message: "Transportadora inativada com sucesso" });
+            res.send({ message: "Transportadora excluir com sucesso" });
         } else {
             res.status(404).send({ message: "Transportadora não encontrada" });
         }
     } catch (error) {
-        res.status(500).send({ message: "Erro ao inativar transportadora: " + error.message });
+        res.status(500).send({ message: "Erro ao excluir transportadora: " + error.message });
     }
 };
 
@@ -73,7 +77,7 @@ const getTransportadoraById = async (req, res) => {
         const transportadora = await transportadoraModel.getTransportadoraById(req.params.id);
         if (transportadora) {
             if (transportadora.SituacaoTransportadora === 0) {
-                return res.status(200).json({ message: "Transportadora está inativa." });
+                return res.status(200).json({ message: "Transportadora não encontrada" });
             }
             res.json(transportadora);
         } else {
@@ -94,7 +98,7 @@ const adicionarTransportadoraPublic = async (req, res) => {
         }
 
         // Adicionar a nova transportadora
-        const novaTransportadora = await transportadoraModel.addTransportadora(req.body, userId);
+        const novaTransportadora = await transportadoraModel.addTransportadoraPublic(req.body, userId);
 
         return res.status(201).send({
             message: "Transportadora adicionada com sucesso",
