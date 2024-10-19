@@ -382,7 +382,7 @@ const GerenciarUsuarios: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             <Navbar />
-            <Toaster position="top-right" />
+            <Toaster position="top-right" containerClassName='mt-20'/>
             <div className="container mx-auto p-4">
                 <h1 className="text-3xl font-bold mb-4">Gerenciar Usuários</h1>
                 <div className="flex justify-between mb-4">
@@ -459,7 +459,7 @@ const GerenciarUsuarios: React.FC = () => {
                             disabled={isSaving}
                         >
                             {isSaving ? (
-                                <FaSpinner className="animate-spin text-3xl" />
+                                <FaSpinner className="animate-spin text-2xl" />
                             ) : (
                                 "Confirmar"
                             )}
@@ -487,7 +487,7 @@ const GerenciarUsuarios: React.FC = () => {
                             disabled={isResetting}
                         >
                             {isResetting ? (
-                                <FaSpinner className="animate-spin text-3xl" />
+                                <FaSpinner className="animate-spin text-2xl" />
                             ) : (
                                 "Confirmar"
                             )}
@@ -557,7 +557,7 @@ const GerenciarUsuarios: React.FC = () => {
                             disabled={isSaving || emailError !== null}
                         >
                             {isSaving ? (
-                                <FaSpinner className="animate-spin text-3xl" />
+                                <FaSpinner className="animate-spin text-2xl" />
                             ) : (
                                 'Adicionar'
                             )}

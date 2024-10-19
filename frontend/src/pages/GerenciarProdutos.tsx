@@ -237,7 +237,7 @@ const GerenciarProdutos: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             <Navbar />
-            <Toaster position="top-right" />
+            <Toaster position="top-right" containerClassName='mt-20'/>
             <div className="container mx-auto p-4">
                 <h1 className="text-3xl font-bold mb-4">Gerenciar Produtos</h1>
 
@@ -313,7 +313,7 @@ const GerenciarProdutos: React.FC = () => {
                             disabled={isSaving}
                         >
                             {isSaving ? (
-                                <FaSpinner className="animate-spin text-3xl" />
+                                <FaSpinner className="animate-spin text-2xl" />
                             ) : (
                                 "Confirmar"
                             )}
@@ -341,7 +341,7 @@ const GerenciarProdutos: React.FC = () => {
                             disabled={isDeleting}
                         >
                             {isDeleting ? (
-                                <FaSpinner className="animate-spin text-3xl" />
+                                <FaSpinner className="animate-spin text-2xl" />
                             ) : (
                                 "Confirmar"
                             )}
@@ -383,7 +383,7 @@ const GerenciarProdutos: React.FC = () => {
                             disabled={isSaving}
                         >
                             {isSaving ? (
-                                <FaSpinner className="animate-spin text-3xl" />
+                                <FaSpinner className="animate-spin text-2xl" />
                             ) : (
                                 "Adicionar"
                             )}

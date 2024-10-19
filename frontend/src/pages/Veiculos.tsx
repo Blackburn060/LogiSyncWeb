@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
+import { FaSpinner, FaEdit, FaTrash } from 'react-icons/fa';
 import { getVeiculos, addVeiculo, updateVeiculo, deleteVeiculo } from '../services/veiculoService';
 import { Veiculo } from '../models/Veiculo';
 import Navbar from '../components/Navbar';
 import VeiculoForm from '../components/VeiculoForm';
 import { useAuth } from '../context/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEdit, FaTrash } from 'react-icons/fa';
 
 Modal.setAppElement('#root');
 
@@ -16,6 +16,8 @@ const Veiculos: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [veiculoToDelete, setVeiculoToDelete] = useState<Veiculo | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false); // Estado para exclusão
+  const [isSaving, setIsSaving] = useState(false); // Estado para adicionar/editar
   const { token, user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -38,6 +40,7 @@ const Veiculos: React.FC = () => {
 
   const handleAddVeiculo = async (veiculo: Omit<Veiculo, 'CodigoVeiculo'>) => {
     if (token) {
+      setIsSaving(true); // Ativa o loading para salvar
       try {
         const newVeiculo = { ...veiculo, CodigoUsuario: Number(user?.id) };
         await addVeiculo(token, newVeiculo);
@@ -49,11 +52,13 @@ const Veiculos: React.FC = () => {
         console.error('Erro ao adicionar veículo', error);
         toast.error('Erro ao adicionar veículo');
       }
+      setIsSaving(false); // Desativa o loading após salvar
     }
   };
 
   const handleUpdateVeiculo = async (veiculo: Veiculo) => {
     if (token && veiculo.CodigoVeiculo) {
+      setIsSaving(true); // Ativa o loading para salvar
       try {
         await updateVeiculo(token, veiculo.CodigoVeiculo, veiculo);
         const updatedVeiculos = await getVeiculos(token);
@@ -64,11 +69,13 @@ const Veiculos: React.FC = () => {
         console.error('Erro ao atualizar veículo', error);
         toast.error('Erro ao atualizar veículo');
       }
+      setIsSaving(false); // Desativa o loading após salvar
     }
   };
 
   const handleDeleteVeiculo = async () => {
     if (token && veiculoToDelete) {
+      setIsDeleting(true); // Ativa o loading para deletar
       try {
         await deleteVeiculo(token, veiculoToDelete.CodigoVeiculo!);
         setVeiculos(prevVeiculos => prevVeiculos.filter(v => v.CodigoVeiculo !== veiculoToDelete.CodigoVeiculo));
@@ -78,6 +85,7 @@ const Veiculos: React.FC = () => {
         console.error('Erro ao deletar veículo', error);
         toast.error('Erro ao deletar veículo');
       }
+      setIsDeleting(false); // Desativa o loading após deletar
     }
   };
 
@@ -119,7 +127,7 @@ const Veiculos: React.FC = () => {
                   setShowForm(true);
                 }}
               >
-                Adicionar Novo Veículo
+                {isSaving ? <FaSpinner className="animate-spin text-2xl" /> : 'Adicionar Novo Veículo'}
               </button>
             </div>
           ) : (
@@ -141,6 +149,7 @@ const Veiculos: React.FC = () => {
                       <button
                         className="text-red-500"
                         onClick={() => openConfirmDeleteModal(veiculo)}
+                        disabled={isDeleting}
                       >
                         <FaTrash className="mr-2" />
                       </button>
@@ -156,7 +165,7 @@ const Veiculos: React.FC = () => {
                     setShowForm(true);
                   }}
                 >
-                  Novo
+                  {isSaving ? <FaSpinner className="animate-spin text-2xl" /> : 'Novo'}
                 </button>
               </div>
             </>
@@ -195,12 +204,12 @@ const Veiculos: React.FC = () => {
               className="px-4 py-2 bg-red-500 text-white rounded"
               onClick={handleDeleteVeiculo}
             >
-              Excluir
+              {isDeleting ? <FaSpinner className="animate-spin text-2xl" /> : 'Excluir'}
             </button>
           </div>
         </div>
       </Modal>
-      <Toaster position="top-right" containerClassName='mt-20' reverseOrder={false} />
+      <Toaster position="top-right" containerClassName='mt-20' />
     </div>
   );
 };

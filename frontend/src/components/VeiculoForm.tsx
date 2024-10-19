@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaSpinner } from 'react-icons/fa';
 import { Veiculo } from '../models/Veiculo';
 
 interface VeiculoFormProps {
@@ -9,6 +10,7 @@ interface VeiculoFormProps {
 
 const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSave, onCancel }) => {
   const [veiculo, setVeiculo] = useState<Partial<Veiculo>>(initialVeiculo);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setVeiculo(initialVeiculo);
@@ -25,7 +27,6 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Verifica se todos os campos obrigatórios estão preenchidos
     const requiredFields = ['NomeVeiculo', 'Placa', 'Marca', 'ModeloTipo', 'AnoFabricacao', 'Cor', 'CapacidadeCarga'];
     for (const field of requiredFields) {
       if (!veiculo[field as keyof Veiculo]) {
@@ -34,7 +35,11 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
       }
     }
 
+    setIsSaving(true);
+
     await onSave(veiculo);
+
+    setIsSaving(false);
   };
 
   return (
@@ -132,8 +137,9 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded"
+              disabled={isSaving}
             >
-              Salvar
+              {isSaving ? <FaSpinner className="animate-spin text-2xl" /> : 'Salvar'}
             </button>
           </div>
         </form>

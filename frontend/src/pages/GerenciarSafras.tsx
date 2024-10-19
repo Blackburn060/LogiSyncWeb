@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { getSafras, addSafra, updateSafra } from '../services/safraService';
 import { Safra } from '../models/Safra';
 import Navbar from '../components/Navbar';
 import toast, { Toaster } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { FaSpinner } from 'react-icons/fa';
 
 const GerenciarSafras: React.FC = () => {
   const { user, token } = useAuth();
@@ -15,6 +16,9 @@ const GerenciarSafras: React.FC = () => {
 
   const [anoSafra, setAnoSafra] = useState('');
   const [situacaoSafra, setSituacaoSafra] = useState(1);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,7 +41,7 @@ const GerenciarSafras: React.FC = () => {
       toast.error('Erro: usuário não autenticado');
       return;
     }
-    setLoading(true);
+    setIsSaving(true);
     try {
       if (safraToToggle) {
         await updateSafra(safraToToggle.CodigoSafra!, safra, Number(user?.id), token as string);
@@ -54,7 +58,7 @@ const GerenciarSafras: React.FC = () => {
     } catch (error) {
       toast.error('Erro ao salvar safra');
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -62,21 +66,21 @@ const GerenciarSafras: React.FC = () => {
     e.preventDefault();
 
     if (!anoSafra.trim()) {
-        toast.error('Por favor, preencha o campo de Ano Safra.');
-        return;
+      toast.error('Por favor, preencha o campo de Ano Safra.');
+      return;
     }
 
     const novaSafra: Safra = {
-        CodigoSafra: 0, 
-        AnoSafra: anoSafra, 
-        SituacaoSafra: situacaoSafra,
-        DataGeracao: new Date().toISOString(), 
-        UsuarioAlteracao: null,
-        DataAlteracao: null
+      CodigoSafra: 0,
+      AnoSafra: anoSafra,
+      SituacaoSafra: situacaoSafra,
+      DataGeracao: new Date().toISOString(),
+      UsuarioAlteracao: null,
+      DataAlteracao: null
     };
 
     handleSaveSafra(novaSafra);
-};
+  };
 
   const handleToggleSafra = async () => {
     if (!user || !token) {
@@ -85,7 +89,7 @@ const GerenciarSafras: React.FC = () => {
     }
 
     if (safraToToggle) {
-      setLoading(true);
+      setIsToggling(true);
       try {
         const updatedSafra = { ...safraToToggle, SituacaoSafra: safraToToggle.SituacaoSafra === 1 ? 0 : 1 };
         await updateSafra(safraToToggle.CodigoSafra!, updatedSafra, Number(user?.id), token as string);
@@ -96,7 +100,7 @@ const GerenciarSafras: React.FC = () => {
       } catch (error) {
         toast.error('Erro ao alterar status da safra');
       } finally {
-        setLoading(false);
+        setIsToggling(false);
       }
     }
   };
@@ -104,7 +108,7 @@ const GerenciarSafras: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <Toaster />
+      <Toaster position="top-right" containerClassName='mt-20' />
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg">
           <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">
@@ -116,8 +120,9 @@ const GerenciarSafras: React.FC = () => {
             <button
               onClick={() => setIsNovaSafraFormOpen(true)}
               className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+              disabled={isSaving}
             >
-              Nova
+              {isSaving ? <FaSpinner className="animate-spin text-2xl" /> : 'Nova'}
             </button>
           </div>
 
@@ -153,8 +158,9 @@ const GerenciarSafras: React.FC = () => {
                           }}
                           className={`ml-4 px-4 py-2 rounded-md text-white ${safra.SituacaoSafra === 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
                             }`}
+                          disabled={isToggling}
                         >
-                          {safra.SituacaoSafra === 1 ? 'Inativar' : 'Ativar'}
+                          {(safra.SituacaoSafra === 1 ? 'Inativar' : 'Ativar')}
                         </button>
                       </li>
                     ))}
@@ -169,22 +175,25 @@ const GerenciarSafras: React.FC = () => {
       {/* Modal de Confirmação */}
       {isModalOpen && (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">
-              {`Tem certeza que deseja ${safraToToggle?.SituacaoSafra === 1 ? 'inativar' : 'ativar'} esta safra?`}
-            </h2>
-            <div className="flex justify-end">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+            <h2 className="text-xl font-bold mb-4">Confirmar Alteração</h2>
+            <p>
+              Tem certeza que deseja <b> {safraToToggle?.SituacaoSafra === 1 ? 'inativar' : 'ativar'} </b> esta safra?
+            </p>
+            <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                disabled={isToggling}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleToggleSafra}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                disabled={isToggling}
               >
-                Confirmar
+                {isToggling ? <FaSpinner className="animate-spin text-2xl" /> : 'Confirmar'}
               </button>
             </div>
           </div>
@@ -243,14 +252,16 @@ const GerenciarSafras: React.FC = () => {
                   type="button"
                   onClick={() => setIsNovaSafraFormOpen(false)}
                   className="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                  disabled={isSaving}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                  disabled={isSaving}
                 >
-                  Salvar
+                  {isSaving ? <FaSpinner className="animate-spin text-2xl" /> : 'Salvar'}
                 </button>
               </div>
             </form>

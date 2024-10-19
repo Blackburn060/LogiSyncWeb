@@ -159,13 +159,13 @@ const RegistroTransportadora: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" containerClassName='mt-20' />
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg">
           <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">Dados da Transportadora</h1>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
-              <FaSpinner className="animate-spin text-3xl text-white" />
+              <l-helix size="45" speed="2.5" color="white"></l-helix>
             </div>
           ) : (
             <>
