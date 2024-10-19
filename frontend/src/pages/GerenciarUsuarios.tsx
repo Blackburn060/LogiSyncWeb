@@ -526,7 +526,7 @@ const GerenciarUsuarios: React.FC = () => {
                         />
                         <Cleave
                             placeholder="Número Celular"
-                            options={{  blocks: [2, 5, 4], delimiters: [' ', '-'] }}
+                            options={{  delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4] }}
                             value={newUsuario.NumeroCelular}
                             onChange={(e) => handleNewUserInputChange('NumeroCelular', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded"
