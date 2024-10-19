@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  getAgendamentos,
-  updateAgendamentoStatus,
-  getProdutoByCodigo,
-  getSafraByCodigo,
-} from "../services/agendamentoService";
+import { updateAgendamentoStatus } from "../services/agendamentoService";
 import { Agendamento } from "../models/Agendamento";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext"; // Importando useAuth
@@ -15,12 +10,12 @@ import Modal from "react-modal";
 import { addDays, format, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import DatePicker from "react-datepicker";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
+import { getAgendamentosAdmin } from "../services/agendamentoService";
 
 import "react-datepicker/dist/react-datepicker.css";
 
 // SVG de seta comparativa
-
 export function FunnelIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -37,6 +32,7 @@ export function FunnelIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function IcOutlineCalendarMonth(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -53,6 +49,7 @@ export function IcOutlineCalendarMonth(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function IcRoundRefresh(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -107,17 +104,17 @@ const AgendamentosAdmin: React.FC = () => {
     const fetchAgendamentos = async () => {
       try {
         setLoading(true); // Ativa o estado de loading ao iniciar a busca dos agendamentos
-        const data = await getAgendamentos(token!); // Usa o token para buscar os agendamentos
+        const data = await getAgendamentosAdmin(token!); // Chama o novo service que você definiu
         setAgendamentos(data);
       } catch (error) {
-        console.error("Erro ao buscar agendamentos:", error);
+        console.error("Erro ao buscar agendamentos admin:", error);
       } finally {
         setLoading(false); // Desativa o estado de loading após finalizar a busca
       }
     };
 
     fetchAgendamentos();
-  }, [currentStartDate, token]);
+  }, [token]);
 
   const countFuturePendingAgendamentos = () => {
     const lastDayShown = addDays(currentStartDate, daysToShow - 1);
@@ -174,6 +171,7 @@ const AgendamentosAdmin: React.FC = () => {
     }
     setIsCalendarOpen(false);
   };
+
   const toggleFilterDropdown = () => {
     setIsFilterDropdownOpen(!isFilterDropdownOpen);
   };
@@ -190,35 +188,15 @@ const AgendamentosAdmin: React.FC = () => {
         return "bg-gray-500 text-white";
     }
   };
-  const handleOpenModal = async (agendamento: Agendamento) => {
-    setSelectedAgendamento(agendamento); // Define o agendamento selecionado inicialmente
-    setIsModalOpen(true); // Abre o modal
 
-    try {
-      // Buscar a descrição do produto, se existir
-      if (agendamento.CodigoProduto) {
-        const produtoDescricao = await getProdutoByCodigo(
-          agendamento.CodigoProduto,
-          token!
-        ); // Passando o token
-        setSelectedAgendamento((prev) =>
-          prev ? { ...prev, DescricaoProduto: produtoDescricao } : prev
-        );
-      }
-
-      // Buscar o ano da safra, se existir
-      if (agendamento.CodigoSafra) {
-        const safraAno = await getSafraByCodigo(
-          agendamento.CodigoSafra,
-          token!
-        ); // Passando o token
-        setSelectedAgendamento((prev) =>
-          prev ? { ...prev, AnoSafra: safraAno } : prev
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao buscar Produto ou Safra:", error);
-    }
+  const handleOpenModal = (agendamento: Agendamento) => {
+    setSelectedAgendamento({
+      ...agendamento,
+      DescricaoProduto:
+        agendamento.DescricaoProduto || "Produto não disponível",
+      AnoSafra: agendamento.AnoSafra || "Safra não disponível",
+    });
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -230,10 +208,8 @@ const AgendamentosAdmin: React.FC = () => {
   const handleConfirmar = async () => {
     if (selectedAgendamento) {
       try {
-        // Verifique se a observação está definida corretamente
         const observacao = selectedAgendamento.Observacao || ""; // Define a observação corretamente
 
-        // Atualizar o status do agendamento para 'Confirmado' e passar a observação
         await updateAgendamentoStatus(
           selectedAgendamento.CodigoAgendamento!,
           {
@@ -244,25 +220,23 @@ const AgendamentosAdmin: React.FC = () => {
           token!
         );
 
-        // Atualizar o estado local do agendamento com a nova observação
         setAgendamentos((prevAgendamentos) =>
           prevAgendamentos.map((agendamento) =>
-            agendamento.CodigoAgendamento === selectedAgendamento.CodigoAgendamento
+            agendamento.CodigoAgendamento ===
+            selectedAgendamento.CodigoAgendamento
               ? {
-                ...agendamento,
-                SituacaoAgendamento: "Confirmado",
-                Observacao: observacao,
-              }
+                  ...agendamento,
+                  SituacaoAgendamento: "Confirmado",
+                  Observacao: observacao,
+                }
               : agendamento
           )
         );
 
-        // Substitua o alerta pelo toast de sucesso
         toast.success("Agendamento confirmado com sucesso!");
         handleCloseModal();
       } catch (error) {
         console.error("Erro ao confirmar agendamento:", error);
-        // Substitua o alerta pelo toast de erro
         toast.error("Erro ao confirmar o agendamento.");
       }
     }
@@ -276,32 +250,31 @@ const AgendamentosAdmin: React.FC = () => {
           {
             SituacaoAgendamento: "Recusado",
             MotivoRecusa: motivoRecusa,
-            TipoAgendamento: selectedAgendamento.TipoAgendamento || "", // Certifique-se de passar o TipoAgendamento existente
-            Observacao: selectedAgendamento.Observacao || "Sem observação", // Mantém a observação atual
+            TipoAgendamento: selectedAgendamento.TipoAgendamento || "",
+            Observacao: selectedAgendamento.Observacao || "Sem observação",
           },
           token!
         );
 
-        // Atualiza o estado do agendamento para "Recusado"
         setAgendamentos((prevAgendamentos) =>
           prevAgendamentos.map((agendamento) =>
-            agendamento.CodigoAgendamento === selectedAgendamento.CodigoAgendamento
+            agendamento.CodigoAgendamento ===
+            selectedAgendamento.CodigoAgendamento
               ? {
-                ...agendamento,
-                SituacaoAgendamento: "Recusado",
-                MotivoRecusa: motivoRecusa,
-                Observacao: selectedAgendamento.Observacao || "Sem observação", // Atualiza a observação
-              }
+                  ...agendamento,
+                  SituacaoAgendamento: "Recusado",
+                  MotivoRecusa: motivoRecusa,
+                  Observacao:
+                    selectedAgendamento.Observacao || "Sem observação",
+                }
               : agendamento
           )
         );
 
-        // Substitua o alerta pelo toast de sucesso
         toast.success("Agendamento recusado com sucesso!");
         handleCloseModal();
       } catch (error) {
         console.error("Erro ao rejeitar agendamento:", error);
-        // Substitua o alerta pelo toast de erro
         toast.error("Erro ao rejeitar o agendamento.");
       }
     } else {
@@ -309,27 +282,21 @@ const AgendamentosAdmin: React.FC = () => {
     }
   };
 
-
-
   const handleFilterByStatus = (status: string | null) => {
     setStatusFilter(status);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Coloque o Toaster logo após o primeiro div */}
       <Toaster position="top-right" reverseOrder={false} />
 
       <Navbar />
       <div className="container mx-auto p-4">
-        {/* Parte superior com navegação de semanas */}
         <div className="flex justify-between items-center mb-6">
-          {/* Botão de "Dias Anteriores" */}
           <button
             onClick={handlePreviousWeek}
             className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
           >
-            {/* Exibe ícone em telas pequenas */}
             <span className="block md:hidden">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -341,12 +308,10 @@ const AgendamentosAdmin: React.FC = () => {
                 <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
               </svg>
             </span>
-            {/* Exibe texto em telas maiores */}
             <span className="hidden md:block">&larr; Dias anteriores</span>
           </button>
 
           <div className="flex items-center space-x-4">
-            {/* Botão de voltar para o hoje */}
             <button
               onClick={voltarParaHoje}
               className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
@@ -354,17 +319,14 @@ const AgendamentosAdmin: React.FC = () => {
               <IcRoundRefresh width={20} height={20} />
             </button>
 
-            {/* Texto com a faixa de datas */}
             <div
               className="text-lg font-semibold cursor-pointer flex items-center"
-              onClick={() => setIsCalendarOpen(true)} // Abre o modal do calendário
+              onClick={() => setIsCalendarOpen(true)}
             >
-              {/* Exibe o ícone de calendário em telas pequenas */}
               <button className="block md:hidden p-2 bg-blue-500 text-white rounded-lg">
                 <IcOutlineCalendarMonth width={24} height={24} />
               </button>
 
-              {/* Exibe o texto da data em telas maiores */}
               <span className="hidden md:block">
                 {format(currentStartDate, "dd/MM/yyyy")} -{" "}
                 {format(
@@ -375,15 +337,13 @@ const AgendamentosAdmin: React.FC = () => {
             </div>
 
             <div className="relative">
-              {/* Filtro de Status ao lado direito */}
               <button
-                onClick={toggleFilterDropdown} // Controla o abrir/fechar do dropdown
+                onClick={toggleFilterDropdown}
                 className="relative p-3 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
               >
                 <FunnelIcon className="w-6 h-6" />
               </button>
 
-              {/* Dropdown de filtro ao clicar na bolinha */}
               {isFilterDropdownOpen && (
                 <div className="absolute right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                   <ul className="py-1">
@@ -395,15 +355,15 @@ const AgendamentosAdmin: React.FC = () => {
                     </li>
                     <li
                       className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Confirmado")}
-                    >
-                      Confirmado
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                       onClick={() => handleFilterByStatus("Pendente")}
                     >
                       Pendente
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterByStatus("Confirmado")}
+                    >
+                      Confirmado
                     </li>
                     <li
                       className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
@@ -411,12 +371,30 @@ const AgendamentosAdmin: React.FC = () => {
                     >
                       Recusado
                     </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterByStatus("Andamento")}
+                    >
+                      Andamento
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterByStatus("Finalizado")}
+                    >
+                      Finalizado
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleFilterByStatus("Reprovado")}
+                    >
+                      Reprovado
+                    </li>
                   </ul>
                 </div>
               )}
             </div>
           </div>
-          {/* Botão de "Próximos dias" */}
+
           <button
             onClick={handleNextWeek}
             className="relative flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
@@ -434,7 +412,6 @@ const AgendamentosAdmin: React.FC = () => {
             </span>
             <span className="hidden md:block">Próximos dias &rarr;</span>
 
-            {/* Badge de contagem de agendamentos futuros pendentes */}
             {countFuturePendingAgendamentos() > 0 && (
               <span className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
                 {countFuturePendingAgendamentos()}
@@ -443,7 +420,6 @@ const AgendamentosAdmin: React.FC = () => {
           </button>
         </div>
 
-        {/* Modal de Seleção de Data */}
         <Modal
           isOpen={isCalendarOpen}
           onRequestClose={() => setIsCalendarOpen(false)}
@@ -453,14 +429,13 @@ const AgendamentosAdmin: React.FC = () => {
         >
           <DatePicker
             selected={currentStartDate}
-            onChange={handleDateChange} // Função para alterar a data
-            locale={ptBR} // Para usar o calendário em português
+            onChange={handleDateChange}
+            locale={ptBR}
             inline
             calendarClassName="w-full"
           />
         </Modal>
 
-        {/* Modal com ajuste de z-index e overlay cobrindo a tela */}
         <Modal
           isOpen={isModalOpen}
           onRequestClose={handleCloseModal}
@@ -471,12 +446,7 @@ const AgendamentosAdmin: React.FC = () => {
         >
           {selectedAgendamento && (
             <div className="p-1 space-y-2 relative">
-              {" "}
-              {/* Reduzi de "space-y-0" para "space-y-2" para aumentar um pouco o espaçamento */}
-              {/* Título e status do agendamento */}
               <div className="flex justify-between items-center mb-1">
-                {" "}
-                {/* Reduzi a margem inferior */}
                 <div>
                   <h2 className="text-xl font-bold">Detalhes do Agendamento</h2>
                   <span
@@ -507,32 +477,26 @@ const AgendamentosAdmin: React.FC = () => {
                   </svg>
                 </button>
               </div>
-              {/* Conteúdo do modal com menos espaçamento */}
+
               <div className="border-2 p-2 rounded-lg mb-2">
-                {" "}
-                {/* Reduzi o padding */}
                 <DadosPessoais usuarioId={selectedAgendamento.CodigoUsuario} />
               </div>
               <div className="border-2 p-2 rounded-lg mb-2">
-                {" "}
-                {/* Reduzi o padding e a margem */}
                 <DadosVeicular
                   codigoVeiculo={selectedAgendamento.CodigoVeiculo}
                 />
               </div>
               <div className="border-2 p-2 rounded-lg mb-2">
-                {" "}
-                {/* Reduzi o padding e a margem */}
                 <DadosAgendamentos
                   dataAgendamento={selectedAgendamento?.DataAgendamento ?? ""}
                   horaAgendamento={selectedAgendamento?.HoraAgendamento ?? ""}
-                  produto={selectedAgendamento?.DescricaoProduto ?? ""} // Nome do produto
+                  produto={selectedAgendamento?.DescricaoProduto ?? ""}
                   quantidade={
                     selectedAgendamento?.QuantidadeAgendamento ?? null
                   }
                   observacao={selectedAgendamento?.Observacao ?? null}
-                  safra={selectedAgendamento?.AnoSafra ?? ""} // Ano da safra
-                  arquivo={selectedAgendamento?.ArquivoAnexado ?? null} // Campo de arquivo, passando o valor diretamente
+                  safra={selectedAgendamento?.AnoSafra ?? ""}
+                  arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
                   editable={
                     selectedAgendamento?.SituacaoAgendamento === "Pendente"
                   }
@@ -555,8 +519,6 @@ const AgendamentosAdmin: React.FC = () => {
               </div>
               {showMotivoInput && (
                 <div className="mt-3">
-                  {" "}
-                  {/* Diminuído o margin-top de "mt-4" para "mt-3" */}
                   <label className="block mb-2">Motivo da Recusa:</label>
                   <textarea
                     className="border p-2 rounded w-full"
@@ -615,11 +577,11 @@ const AgendamentosAdmin: React.FC = () => {
           <div
             className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4`}
           >
-            {getFilteredDays().map((day) => {
+            {getFilteredDays().map((day, dayIndex) => {
               const agendamentosForDay = getAgendamentosForDay(day);
               return (
                 <div
-                  key={day.toString()}
+                  key={`day-${dayIndex}`} // Chave única para cada dia
                   className="border p-4 rounded-lg bg-white shadow-md"
                 >
                   <h2 className="text-md font-semibold mb-2 text-center text-gray-700">
@@ -631,24 +593,25 @@ const AgendamentosAdmin: React.FC = () => {
                         Sem agendamentos
                       </p>
                     ) : (
-                      agendamentosForDay.map((agendamento) => (
-                        <div
-                          key={agendamento.CodigoAgendamento}
-                          className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusClass(
-                            agendamento.SituacaoAgendamento
-                          )} shadow`}
-                          onClick={() => handleOpenModal(agendamento)}
-                        >
-                          <p className="text-sm text-center text-white">
-                            {agendamento.TipoAgendamento ||
-                              "Tipo não especificado"}{" "}
-                            {/* Verifica se o valor existe, senão exibe um valor padrão */}
-                            <span className="text-xs">
-                              | {agendamento.HoraAgendamento}
-                            </span>
-                          </p>
-                        </div>
-                      ))
+                      agendamentosForDay.map(
+                        (agendamento, agendamentoIndex) => (
+                          <div
+                            key={`agendamento-${agendamento.CodigoAgendamento}-${agendamentoIndex}`} // Usa CodigoAgendamento e o índice para garantir exclusividade
+                            className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusClass(
+                              agendamento.SituacaoAgendamento
+                            )} shadow`}
+                            onClick={() => handleOpenModal(agendamento)}
+                          >
+                            <p className="text-sm text-center text-white">
+                              {agendamento.TipoAgendamento ||
+                                "Tipo não especificado"}{" "}
+                              <span className="text-xs">
+                                | {agendamento.HoraAgendamento}
+                              </span>
+                            </p>
+                          </div>
+                        )
+                      )
                     )}
                   </div>
                 </div>

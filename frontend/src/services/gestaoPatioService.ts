@@ -91,7 +91,6 @@ export const escutarAtualizacoesAgendamentos = (
   eventSource.onmessage = (event: MessageEvent) => {
     try {
       const data: Agendamento = JSON.parse(event.data);
-      console.log("Atualização recebida via SSE:", data);
       onUpdate(data);
     } catch (error) {
       console.error("Erro ao processar os dados do SSE:", error);

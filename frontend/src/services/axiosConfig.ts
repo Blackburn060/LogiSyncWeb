@@ -1,5 +1,4 @@
 import axios, { AxiosError } from 'axios';
-import { useAuth } from '../context/AuthContext';
 
 const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
@@ -7,20 +6,34 @@ const api = axios.create({
   baseURL: backendUrl,
 });
 
-let isRefreshing = false;
-let failedQueue: any[] = [];
-
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
+// Função para realizar o logout e limpar localStorage
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+  window.location.href = '/login'; // Redireciona o usuário para a página de login
 };
 
+// Função para renovar o token de acesso
+const refreshAccessToken = async (): Promise<string | null> => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (refreshToken) {
+    try {
+      // Envia o refreshToken no corpo da requisição
+      const response = await axios.post(`${backendUrl}/refresh-token`, { refreshToken });
+      const newToken = response.data.token;
+      if (newToken) {
+        localStorage.setItem('token', newToken);
+        return newToken;
+      }
+    } catch (error) {
+      console.error('Erro ao renovar o token:', error);
+      logout(); // Faz logout se a renovação falhar
+    }
+  }
+  return null;
+};
+
+// Interceptor de requisição para adicionar o token no cabeçalho
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -29,53 +42,35 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
+// Interceptor de resposta para lidar com erros 401 e tentar renovar o token
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response, // Se a resposta for bem-sucedida, apenas a retorna
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response && error.response.status === 401) {
-      const { refreshAccessToken, logout } = useAuth();
+    // Se o erro for 401 (não autorizado) e não for uma tentativa de renovação do token
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Marca a requisição para evitar loops infinitos
 
-      if (!isRefreshing) {
-        isRefreshing = true;
-        try {
-          await refreshAccessToken();
-          const newAccessToken = localStorage.getItem('token');
-          processQueue(null, newAccessToken);
-
-          if (newAccessToken) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return axios(originalRequest);
-          }
-        } catch (err) {
-          processQueue(err, null);
-          logout();
-          return Promise.reject(err);
-        } finally {
-          isRefreshing = false;
-        }
+      // Tenta renovar o token
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest); // Reenvia a requisição original com o novo token
       }
-
-      return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      });
     }
 
-    // Adiciona um tratamento especial para erros de requisição do tipo `blob`
-    if (error.response && error.response.data instanceof Blob && error.response.data.type === 'application/json') {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const errorMessage = JSON.parse(reader.result as string);
-        return Promise.reject(new Error(errorMessage.message));
-      };
-      reader.readAsText(error.response.data);
+    // Se falhar ou não for possível renovar o token, faz logout
+    if (error.response && error.response.status === 401) {
+      logout(); // Faz logout se a renovação falhar ou não houver refresh token
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error); // Rejeita o erro se for diferente de 401
   }
 );
 

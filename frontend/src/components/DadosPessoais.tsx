@@ -10,42 +10,46 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
     nome: "Não Informado",
     cpf: "Não Informado",
     telefone: "Não Informado",
-    transportadora: "Não Informada", // Novo campo para o nome da transportadora
+    transportadora: "Não Informada",
   });
 
   useEffect(() => {
     const fetchDadosPessoais = async () => {
       try {
-        // Buscar dados pessoais do usuário
+        // Buscar dados pessoais do usuário vinculado ao agendamento
         const responseUsuario = await api.get(`/usuarios/${usuarioId}`);
         const userData = responseUsuario.data || {};
 
-        // Buscar nome da transportadora usando o CodigoTransportadora do usuário
-        let nomeTransportadora = "Não Informada";
-        if (userData.CodigoTransportadora) {
-          try {
-            const responseTransportadora = await api.get(
-              `/transportadoras/${userData.CodigoTransportadora}`
-            );
-            nomeTransportadora =
-              responseTransportadora.data.Nome || "Não Informada";
-          } catch (error) {
-            console.error(
-              "Erro ao buscar nome da transportadora:",
-              error
-            );
-          }
-        }
 
-        // Atualizar estado com dados pessoais e nome da transportadora
-        setDadosPessoais({
+        // Atualiza dados pessoais
+        setDadosPessoais((prevState) => ({
+          ...prevState,
           nome: userData.NomeCompleto || "Não Informado",
           cpf: userData.CPF || "Não Informado",
           telefone: userData.NumeroCelular || "Não Informado",
-          transportadora: nomeTransportadora,
-        });
+        }));
+
+        // Buscar transportadora vinculada ao usuário do agendamento
+        if (userData.CodigoTransportadora) {
+          const responseTransportadora = await api.get(
+            `/transportadoras/${userData.CodigoTransportadora}`
+          );
+          const transportadoraData = responseTransportadora.data || {};
+
+          // Atualiza transportadora
+          setDadosPessoais((prevState) => ({
+            ...prevState,
+            transportadora: transportadoraData.Nome || "Não Informada",
+          }));
+        } else {
+          // Caso o usuário não tenha uma transportadora vinculada
+          setDadosPessoais((prevState) => ({
+            ...prevState,
+            transportadora: "Não Informada",
+          }));
+        }
       } catch (error) {
-        console.error("Erro ao buscar dados pessoais:", error);
+        console.error("Erro ao buscar dados pessoais e transportadora:", error);
       }
     };
 
@@ -88,7 +92,7 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
           />
         </div>
         <div>
-          <label className="block font-semibold">Transportadora</label> {/* Novo campo */}
+          <label className="block font-semibold">Transportadora</label>
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"

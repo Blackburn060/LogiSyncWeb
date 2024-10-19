@@ -85,6 +85,18 @@ const listarAgendamentosPorStatus = async (req, res) => {
         res.status(500).send({ message: 'Erro ao buscar agendamentos: ' + error.message });
     }
 };
+const listarAgendamentosAdmin = async (req, res) => {
+    try {
+      // Chama a função do model que retorna os agendamentos administrativos
+      const agendamentos = await agendamentoModel.listarAgendamentosAdmin();
+      // Retorna os dados como resposta
+      return res.status(200).json(agendamentos);
+    } catch (error) {
+      // Lida com erros e retorna uma resposta com erro 500
+      return res.status(500).json({ error: 'Erro ao buscar agendamentos administrativos.' });
+    }
+  };
+  
 // Aprovar agendamento
 const aprovarAgendamento = async (req, res) => {
     try {
@@ -147,7 +159,7 @@ const recusarAgendamento = async (req, res) => {
 // Listar agendamentos com placa
 const listarAgendamentosComPlaca = async (req, res) => {
     try {
-        const { CodigoUsuario, limit = 10, offset = 0 } = req.query; // Novo: limit e offset
+        const { CodigoUsuario, limit = 10, offset = 0 } = req.query;
         const agendamentos = await agendamentoModel.getAllAgendamentosWithPlaca({ CodigoUsuario, limit, offset });
 
         if (agendamentos.length === 0) {
@@ -315,6 +327,7 @@ module.exports = {
     buscarAgendamentoPorId,
     atualizarAgendamento,
     cancelarAgendamento,
+    listarAgendamentosAdmin,
     deletarAgendamento,
     listarAgendamentosPorStatus,
     listarAgendamentosPorData,

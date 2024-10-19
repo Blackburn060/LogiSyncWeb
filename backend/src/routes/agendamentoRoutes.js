@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const agendamentoController = require('../Controllers/agendamentoController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -16,6 +17,7 @@ router.get('/agendamentos-por-data', authMiddleware, agendamentoController.lista
 router.get('/agendamentos/status', authMiddleware, agendamentoController.listarAgendamentosPorStatus);
 router.get('/agendamentos/:id', authMiddleware, agendamentoController.buscarAgendamentoPorId);
 router.get('/agendamentos-gestao-patio', agendamentoController.listarAgendamentosGestaoPatio);
+router.get('/agendamentosAdmin', authMiddleware, agendamentoController.listarAgendamentosAdmin);
 
 router.get('/sse/agendamentos', authMiddleware, agendamentoController.eventoSSE);
 

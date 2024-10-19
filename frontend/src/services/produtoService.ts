@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Produto } from '../models/Produto';
+import api from '../services/axiosConfig'; // Importa a instância configurada do axios
 
 const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
 
@@ -16,7 +17,23 @@ export const getProdutos = async (token: string): Promise<Produto[]> => {
     throw new Error('Erro ao buscar produtos');
   }
 };
+export const fetchProdutoNome = async (codigoProduto: number | null): Promise<string> => {
 
+  if (!codigoProduto) return "Produto não disponível";
+  
+  try {
+    const response = await api.get(`${apiUrl}/produtos/${codigoProduto}`);
+
+    if (response.data && response.data.DescricaoProduto) {
+      return response.data.DescricaoProduto;
+    } else {
+      return "Produto não encontrado";
+    }
+  } catch (error) {
+    console.error("Erro ao buscar o produto:", error);
+    return "Produto não disponível";
+  }
+};
 // Função para adicionar um novo produto
 export const addProduto = async (token: string, produto: Produto): Promise<void> => {
   try {

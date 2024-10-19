@@ -75,13 +75,59 @@ const updateStatusAgendamento = (CodigoAgendamento, novoStatus) => {
   });
 };
 
+const listarAgendamentosAdmin = () => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT ag.*, 
+       ve.Placa, 
+       ve.Marca, 
+       ve.AnoFabricacao, 
+       ve.Cor, 
+       ve.CapacidadeCarga,
+       pr.DescricaoProduto, 
+       pr.Categoria,
+       sa.AnoSafra, 
+       sa.SituacaoSafra,
+       po.DataHoraEntrada, 
+       po.DataHoraSaida, 
+       po.ObservacaoPortaria,
+       tr.Nome as NomeTransportadora -- Inclua o nome da transportadora
+FROM agendamentos ag
+JOIN cadastroveiculo ve ON ag.CodigoVeiculo = ve.CodigoVeiculo
+LEFT JOIN cadastroprodutos pr ON ag.CodigoProduto = pr.CodigoProduto
+LEFT JOIN cadastrosafra sa ON ag.CodigoSafra = sa.CodigoSafra
+LEFT JOIN dadosportaria po ON ag.CodigoAgendamento = po.CodigoAgendamento
+LEFT JOIN cadastrotransportadora tr ON ag.CodigoTransportadora = tr.CodigoTransportadora 
+WHERE ag.SituacaoAgendamento <> 'Indisponível';
+
+    `;
+
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
+
+module.exports = {
+  listarAgendamentosAdmin,
+  // outras funções do model aqui
+};
+
 // Função para buscar agendamentos com placa do veículo
 const getAllAgendamentosWithPlaca = (filters = {}) => {
   return new Promise((resolve, reject) => {
       let sql = `
-          SELECT ag.*, ve.Placa
+          SELECT ag.*, ve.Placa, p.DescricaoProduto, s.AnoSafra, po.DataHoraEntrada, po.DataHoraSaida, po.ObservacaoPortaria
           FROM agendamentos ag
           JOIN cadastroveiculo ve ON ag.CodigoVeiculo = ve.CodigoVeiculo
+          LEFT JOIN cadastroprodutos p ON ag.CodigoProduto = p.CodigoProduto
+          LEFT JOIN cadastrosafra s ON ag.CodigoSafra = s.CodigoSafra
+          LEFT JOIN dadosportaria po ON ag.CodigoAgendamento = po.CodigoAgendamento
           WHERE 1=1
       `;
       let params = [];
@@ -91,9 +137,9 @@ const getAllAgendamentosWithPlaca = (filters = {}) => {
           params.push(filters.CodigoUsuario);
       }
 
-      sql += ' LIMIT ? OFFSET ?'; // Novo: Limit e Offset
-      params.push(Number(filters.limit) || 10); // Default limit 10
-      params.push(Number(filters.offset) || 0); // Default offset 0
+      sql += ' LIMIT ? OFFSET ?';
+      params.push(Number(filters.limit) || 50);
+      params.push(Number(filters.offset) || 0);
 
       db.all(sql, params, (err, rows) => {
           if (err) {
@@ -314,6 +360,7 @@ const getAgendamentosPorStatusEData = (data, status) => {
 };
 module.exports = {
   getAllAgendamentos,
+  listarAgendamentosAdmin,
   getAgendamentosPorStatusEData,
   addAgendamento,
   updateStatusAgendamento,
