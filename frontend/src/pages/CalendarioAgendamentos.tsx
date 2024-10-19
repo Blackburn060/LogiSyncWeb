@@ -161,64 +161,87 @@ const CalendarioAgendamentos: React.FC = () => {
 
             {/* Seção de Horários e Status */}
             <div
-              className="p-4 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow md:w-1/2 w-full"
-              style={{ height: '550px' }}
+  className="p-4 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow md:w-1/2 w-full"
+  style={{ height: '550px' }}
+>
+  {/* Título com o indicador de tipo de agendamento */}
+  <div className="flex items-center space-x-4">
+    <h2 className="text-md font-semibold">
+      {selectedDate
+        ? `${selectedDate.toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}`
+        : 'Escolha um dia no calendário!'}
+    </h2>
+    {/* Indicador de TipoAgendamento */}
+    <div
+      className={`flex items-center justify-center px-2 py-1 text-sm font-semibold rounded ${
+        tipoAgendamento === 'carga' ? 'bg-green-500' : 'bg-yellow-500'
+      }`}
+    >
+      {tipoAgendamento === 'carga' ? 'Carga' : 'Descarga'}
+    </div>
+  </div>
+
+  {/* Títulos de Horários e Status */}
+  <div className="w-full grid grid-cols-2 text-center mb-2">
+    <div className="flex justify-start pl-4">
+      <span className="font-bold">Horários</span>
+    </div>
+    <div className="flex justify-end pr-4">
+      <span className="font-bold">Status</span>
+    </div>
+  </div>
+
+  {/* Verificação de mensagem de erro */}
+  <div className="overflow-y-auto w-full border-l border-gray-500 flex-grow">
+    {alertMessage ? (
+      <div className="text-center bg-red-500 text-white p-4 rounded-lg">
+        {alertMessage}
+      </div>
+    ) : horariosDisponiveis.length > 0 ? (
+      <ul className="space-y-2">
+        {horariosDisponiveis.map((horario) => (
+          <li
+            key={`${horario.horarioInicio}-${horario.horarioFim}`}
+            className="mb-2 flex justify-between px-4"
+          >
+            <button
+              className={`px-4 py-2 rounded-lg w-full flex justify-between items-center text-sm ${
+                horarioSelecionado === horario ? 'bg-blue-800' : 'bg-blue-600'
+              } hover:bg-blue-800`}
+              onClick={() => handleHorarioClick(horario)}
             >
-              <h2 className="text-md font-semibold mb-4">
-                {selectedDate
-                  ? `${selectedDate.toLocaleDateString('pt-BR', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}`
-                  : 'Escolha um dia no calendário!'}
-              </h2>
-
-              {/* Títulos de Horários e Status */}
-              <div className="w-full grid grid-cols-2 text-center mb-2">
-                <span className="font-bold">Horários</span>
-                <span className="font-bold">Status</span>
+              <div className="flex justify-start w-full">
+                <span>{`${horario.horarioInicio} - ${horario.horarioFim}`}</span>
               </div>
-
-              {/* Verificação de mensagem de erro */}
-              <div className="overflow-y-auto w-full border-l border-gray-500 flex-grow">
-                {alertMessage ? (
-                  <div className="text-center bg-500 text-white p-4 rounded-lg">{alertMessage}</div>
-                ) : horariosDisponiveis.length > 0 ? (
-                  <ul className="space-y-2">
-                    {horariosDisponiveis.map((horario) => (
-                      <li
-                        key={`${horario.horarioInicio}-${horario.horarioFim}`}
-                        className="mb-2 flex justify-between px-4"
-                      >
-                        <button
-                          className={`px-4 py-2 rounded-lg w-full flex justify-between items-center text-sm ${
-                            horarioSelecionado === horario ? 'bg-blue-800' : 'bg-blue-600'
-                          } hover:bg-blue-800`}
-                          onClick={() => handleHorarioClick(horario)}
-                        >
-                          <span>{`${horario.horarioInicio} - ${horario.horarioFim}`}</span>
-                          <span
-                            className={`w-4 h-4 rounded-full ${!horario.agendado ? 'bg-green-500' : 'bg-gray-500'}`}
-                          ></span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-center">Sem horários disponíveis para esta data.</p>
-                )}
+              <div className="flex justify-end w-full">
+                <span
+                  className={`w-4 h-4 rounded-full ${
+                    !horario.agendado ? 'bg-green-500' : 'bg-gray-500'
+                  }`}
+                ></span>
               </div>
+            </button>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-center">Sem horários disponíveis para esta data.</p>
+    )}
+  </div>
 
-              <button
-                onClick={handleRevisarAgendamento}
-                className="mt-4 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
-                disabled={!horarioSelecionado}
-              >
-                Revisar Agendamento
-              </button>
-            </div>
+  <button
+    onClick={handleRevisarAgendamento}
+    className="mt-4 bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
+    disabled={!horarioSelecionado}
+  >
+    Revisar Agendamento
+  </button>
+</div>
           </div>
 
           {isModalOpen && horarioSelecionado && selectedDate && (

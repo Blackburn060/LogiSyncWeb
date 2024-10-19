@@ -159,8 +159,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
   };
 
   const handleAgendar = async () => {
+    // Verifica se já está submetendo o agendamento para evitar múltiplas requisições
     if (isSubmitting) return;
-
+  
+    // Validação básica dos campos obrigatórios
     if (
       !usuario ||
       !veiculoSelecionado ||
@@ -171,9 +173,9 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
       toast.error("Preencha todos os campos obrigatórios!");
       return;
     }
-
+  
     let urlArquivo: string | null = null;
-
+  
     if (arquivo) {
       try {
         urlArquivo = await handleUploadArquivo();
@@ -181,16 +183,17 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
           throw new Error("Falha no upload do arquivo.");
         }
       } catch (error) {
-        setIsSubmitting(false);
+        setIsSubmitting(false); // Libera o botão novamente em caso de erro
         return;
       }
     }
-
+  
+    // Monta o novo agendamento
     const novoAgendamento = {
       CodigoUsuario: usuario.CodigoUsuario,
       CodigoVeiculo: Number(veiculoSelecionado),
       CodigoProduto: produto ? Number(produto) : null,
-      CodigoSafra: Number(safraSelecionada), // Adicionando o código da safra
+      CodigoSafra: Number(safraSelecionada),
       CodigoTransportadora: transportadora?.CodigoTransportadora || null,
       DataAgendamento: selectedDate.toISOString().split("T")[0],
       HoraAgendamento: `${horarioSelecionado.horarioInicio} - ${horarioSelecionado.horarioFim}`,
@@ -201,21 +204,23 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
       SituacaoAgendamento: "Pendente",
       DiaTodo: false,
     };
-
-    setIsSubmitting(true);
-
+  
+    setIsSubmitting(true); // Ativa o estado de submissão para evitar múltiplos cliques
+  
     try {
-      const response = await addAgendamento(token!, novoAgendamento);
+      // Faz a requisição para adicionar o agendamento sem armazenar o resultado
+      await addAgendamento(token!, novoAgendamento);
       toast.success("Agendamento realizado com sucesso!");
       navigate("/agendamentos");
     } catch (error) {
       console.error("Erro ao realizar agendamento:", error);
       toast.error("Erro ao realizar agendamento.");
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Libera o botão após finalizar a requisição
     }
+    
   };
-
+  
   return (
     <>
       <Toaster position="top-right" />
