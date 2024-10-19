@@ -150,7 +150,7 @@ const Portaria: React.FC = () => {
       </svg>
     );
   };
-
+  
   const handleFinalizarAgendamento = async (agendamento: Agendamento) => {
     try {
       const dataHoraSaida = new Date().toISOString();
@@ -498,41 +498,41 @@ const Portaria: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-            {getDaysRange().map((day) => {
-              const agendamentosForDay = getAgendamentosForDay(day);
-              return (
-                <div
-                  key={day.toString()}
-                  className="border p-4 rounded-lg bg-white shadow-md"
-                >
-                  <h2 className="text-md font-semibold mb-2 text-center text-gray-700">
-                    {formatarData(day)}
-                  </h2>
-                  <div className="flex flex-col space-y-2">
-                    {agendamentosForDay.length === 0 ? (
-                      <p className="text-center text-gray-400">
-                        Sem agendamentos
-                      </p>
-                    ) : (
-                      agendamentosForDay.map((agendamento) => (
-                        <div
-                          key={agendamento.CodigoAgendamento}
-                          className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusColor(
-                            agendamento.SituacaoAgendamento
-                          )} text-white shadow`}
-                          onClick={() => handleOpenModal(agendamento)}
-                        >
-                          <p className="text-sm text-center text-white">
-                            {agendamento.TipoAgendamento} |{" "}
-                            {agendamento.HoraAgendamento}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+    {getDaysRange().map((day) => {
+  const agendamentosForDay = getAgendamentosForDay(day);
+  return (
+    <div
+      key={day.toString()} // Chave para os dias continua sendo única
+      className="border p-4 rounded-lg bg-white shadow-md"
+    >
+      <h2 className="text-md font-semibold mb-2 text-center text-gray-700">
+        {formatarData(day)}
+      </h2>
+      <div className="flex flex-col space-y-2">
+        {agendamentosForDay.length === 0 ? (
+          <p className="text-center text-gray-400">
+            Sem agendamentos
+          </p>
+        ) : (
+          agendamentosForDay.map((agendamento, index) => (
+            <div
+              key={`${agendamento.CodigoAgendamento}-${agendamento.HoraAgendamento}-${index}`} // Agora garantimos que a chave é única
+              className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusColor(
+                agendamento.SituacaoAgendamento
+              )} text-white shadow`}
+              onClick={() => handleOpenModal(agendamento)}
+            >
+              <p className="text-sm text-center text-white">
+                {agendamento.TipoAgendamento} | {agendamento.HoraAgendamento}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+})}
+
           </div>
         )}
 

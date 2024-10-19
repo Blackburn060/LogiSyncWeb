@@ -50,9 +50,20 @@ const getAgendamentosPorData = (dataAgendamento) => {
 const getAgendamentosPorStatus = () => {
   return new Promise((resolve, reject) => {
     const sql = `
-            SELECT * FROM agendamentos
-            WHERE SituacaoAgendamento IN ("Confirmado", "Andamento", "Finalizado", "Reprovado")
-        `;
+      SELECT 
+        agendamentos.*,
+        cadastroProdutos.DescricaoProduto,
+        cadastroSafra.AnoSafra,
+        dadosPortaria.DataHoraSaida,
+        dadosPortaria.ObservacaoPortaria,
+        dadosPortaria.MotivoRecusa
+      FROM agendamentos
+      LEFT JOIN cadastroProdutos ON agendamentos.CodigoProduto = cadastroProdutos.CodigoProduto
+      LEFT JOIN cadastroSafra ON agendamentos.CodigoSafra = cadastroSafra.CodigoSafra
+      LEFT JOIN dadosPortaria ON agendamentos.CodigoAgendamento = dadosPortaria.CodigoAgendamento
+      WHERE agendamentos.SituacaoAgendamento IN ("Confirmado", "Andamento", "Finalizado", "Reprovado")
+    `;
+    
     db.all(sql, [], (err, rows) => {
       if (err) {
         reject(err);
@@ -62,6 +73,8 @@ const getAgendamentosPorStatus = () => {
     });
   });
 };
+
+
 const updateStatusAgendamento = (CodigoAgendamento, novoStatus) => {
   return new Promise((resolve, reject) => {
     const sql = `UPDATE agendamentos SET SituacaoAgendamento = ? WHERE CodigoAgendamento = ?`;

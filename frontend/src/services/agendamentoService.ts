@@ -223,34 +223,7 @@ export const updateAgendamentoStatus = async (
 };
 
 // Função para autorizar agendamentos
-export const finalizarAgendamento = async (
-  token: string,
-  agendamentoId: number,
-  tipoAgendamento: string
-) => {
-  try {
-    const dataHoraSaida = new Date().toISOString();
 
-    const response = await api.put(
-      `/agendamentos/${agendamentoId}`,
-      {
-        SituacaoAgendamento: "Finalizado",
-        DataHoraSaida: dataHoraSaida,
-        TipoAgendamento: tipoAgendamento,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return { message: "Agendamento finalizado com sucesso!" };
-  } catch (error) {
-    console.error("Erro ao finalizar o agendamento:", error);
-    throw error;
-  }
-};
 
 // Função para recusar agendamentos com motivo
 export const recusarAgendamento = async (token: string, id: number, motivo: string): Promise<void> => {

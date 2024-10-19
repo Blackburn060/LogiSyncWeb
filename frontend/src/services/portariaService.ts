@@ -10,38 +10,11 @@ export const getAgendamentosPorStatus = async (token: string): Promise<Agendamen
         Authorization: `Bearer ${token}`,
       },
     });
-    const agendamentos = response.data;
 
-    for (const agendamento of agendamentos) {
-      if (agendamento.CodigoProduto) {
-        try {
-          const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
-          agendamento.DescricaoProduto = descricaoProduto;
-        } catch (error) {
-          console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
-        }
-      }
-
-      if (agendamento.CodigoSafra) {
-        try {
-          const anoSafra = await getAnoSafraByCodigo(agendamento.CodigoSafra, token);
-          agendamento.AnoSafra = anoSafra;
-        } catch (error) {
-          console.error(`Erro ao buscar a safra para o agendamento ${agendamento.CodigoAgendamento}`, error);
-        }
-      }
-
-      if (agendamento.CodigoAgendamento) {
-        try {
-          const dadosPortaria = await getDadosPortaria(token, agendamento.CodigoAgendamento);
-          agendamento.ObservacaoPortaria = dadosPortaria?.ObservacaoPortaria || '';
-        } catch (error) {
-          console.error(`Erro ao buscar a observação da portaria para o agendamento ${agendamento.CodigoAgendamento}`, error);
-        }
-      }
-    }
-
-    return agendamentos;
+    // O backend já deve retornar o produto, safra e observação da portaria, 
+    // então aqui simplesmente retornamos os dados
+    return response.data;
+    
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       console.error('Erro ao buscar agendamentos:', error.message);
