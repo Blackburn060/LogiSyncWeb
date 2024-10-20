@@ -9,9 +9,8 @@ const listarUsuarios = async (req, res) => {
     const usuarios = await userModel.getAllUsers(filters);
     res.json(usuarios);
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao buscar usuários: " + error.message });
+    console.error("Erro ao buscar usuários:", error.message);
+    res.status(500).send({ message: "Erro ao buscar usuários: " + error.message });
   }
 };
 
@@ -25,9 +24,8 @@ const listarUsuario = async (req, res) => {
       res.status(404).send({ message: "Usuário não encontrado" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao buscar usuário: " + error.message });
+    console.error("Erro ao buscar usuário:", error.message);
+    res.status(500).send({ message: "Erro ao buscar usuário: " + error.message });
   }
 };
 
@@ -64,15 +62,20 @@ const adicionarUsuario = async (req, res) => {
     const userId = await userModel.addUser(user);
 
     // Enviar e-mail de boas-vindas com a senha temporária
-    await enviarEmailBoasVindas(Email, Senha);
+    try {
+      await enviarEmailBoasVindas(Email, Senha);
+    } catch (emailError) {
+      console.error(`Erro ao enviar e-mail de boas-vindas: ${emailError.message}`);
+      return res.status(201).send({ 
+        id: userId, 
+        message: "Usuário adicionado com sucesso, mas não foi possível enviar o e-mail de boas-vindas." 
+      });
+    }
 
-    res
-      .status(201)
-      .send({ id: userId, message: "Usuário adicionado com sucesso" });
+    res.status(201).send({ id: userId, message: "Usuário adicionado com sucesso" });
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao adicionar usuário: " + error.message });
+    console.error("Erro ao adicionar usuário:", error.message);
+    res.status(500).send({ message: "Erro ao adicionar usuário: " + error.message });
   }
 };
 
@@ -80,7 +83,6 @@ const adicionarUsuario = async (req, res) => {
 const atualizarUsuario = async (req, res) => {
   const user = req.body;
 
-  // Verifique se há campos para atualizar
   if (Object.keys(user).length === 0) {
     return res.status(400).send({ message: "Nenhum dado para atualizar" });
   }
@@ -93,10 +95,8 @@ const atualizarUsuario = async (req, res) => {
       res.status(400).send({ message: "Nenhuma alteração foi realizada" });
     }
   } catch (error) {
-    console.error("Erro ao atualizar usuário:", error);
-    res
-      .status(500)
-      .send({ message: "Erro ao atualizar usuário: " + error.message });
+    console.error("Erro ao atualizar usuário:", error.message);
+    res.status(500).send({ message: "Erro ao atualizar usuário: " + error.message });
   }
 };
 
@@ -106,15 +106,13 @@ const verificarEmailExistente = async (req, res) => {
   try {
     const user = await userModel.findUserByEmail(email.toLowerCase());
     if (user) {
-      // Verifica se o usuário existe e se está ativo (SituacaoUsuario = 1)
-      res.json({ exists: true, active: user.SituacaoUsuario === 1 });
+      res.json({ exists: true, active: user.situacaoUsuario === 1 });
     } else {
       res.json({ exists: false, active: false });
     }
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao verificar e-mail: " + error.message });
+    console.error("Erro ao verificar e-mail:", error.message);
+    res.status(500).send({ message: "Erro ao verificar e-mail: " + error.message });
   }
 };
 
@@ -128,20 +126,18 @@ const deletarUsuario = async (req, res) => {
       res.status(404).send({ message: "Usuário não encontrado" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao deletar usuário: " + error.message });
+    console.error("Erro ao deletar usuário:", error.message);
+    res.status(500).send({ message: "Erro ao deletar usuário: " + error.message });
   }
 };
 
 // Adicionar um usuário sem autenticação
 const adicionarUsuarioPublic = async (req, res) => {
-  const { nomeCompleto, email, senha, tipoUsuario, numeroCelular, cpf } =
-    req.body;
+  const { nomeCompleto, email, senha, tipoUsuario, numeroCelular, cpf } = req.body;
 
   try {
     const existingUser = await userModel.findUserByEmail(email.toLowerCase());
-    if (existingUser) {
+    if (existingUser && existingUser.situacaoUsuario === 1) {
       return res.status(400).send({ message: "E-mail já está em uso." });
     }
 
@@ -157,13 +153,10 @@ const adicionarUsuarioPublic = async (req, res) => {
     };
 
     const userId = await userModel.addUser(user);
-    res
-      .status(201)
-      .send({ id: userId, message: "Usuário registrado com sucesso" });
+    res.status(201).send({ id: userId, message: "Usuário registrado com sucesso" });
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao registrar usuário: " + error.message });
+    console.error("Erro ao registrar usuário:", error.message);
+    res.status(500).send({ message: "Erro ao registrar usuário: " + error.message });
   }
 };
 

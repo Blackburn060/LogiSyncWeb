@@ -33,8 +33,8 @@ const createTransporter = async () => {
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       refreshToken: process.env.REFRESH_TOKEN,
-      code: process.env.CODE,
       accessToken: accessToken,
+      code: process.env.CODE,
     },
   });
 
@@ -78,7 +78,8 @@ const enviarEmailRecuperacaoSenha = async (to, resetLink) => {
       html: htmlContent,
     });
   } catch (error) {
-    console.error("Erro ao enviar e-mail:", error);
+    console.error("Erro ao enviar e-mail:", error.message);
+    throw new Error("Erro ao enviar e-mail de recuperação de senha.");
   }
 };
 
@@ -115,7 +116,8 @@ const enviarEmailSenhaTemporaria = async (to, senhaTemporaria) => {
       html: htmlContent,
     });
   } catch (error) {
-    console.error(`Erro ao enviar e-mail para ${to}:`, error);
+    console.error(`Erro ao enviar e-mail: ${error.message}`);
+    throw new Error(`Erro ao enviar e-mail de senha temporária para ${to}.`);
   }
 };
 
@@ -138,7 +140,8 @@ const enviarEmailBoasVindas = async (to, senhaTemporaria) => {
       html: htmlContent,
     });
   } catch (error) {
-    console.error(`Erro ao enviar e-mail de boas-vindas para ${to}:`, error);
+    console.error(`Erro ao enviar e-mail de boas-vindas para ${to}: ${error.message}`);
+    throw new Error("Erro ao enviar e-mail de boas-vindas.");
   }
 };
 
@@ -150,7 +153,7 @@ const enviarEmailsTemporariosEmSerie = async (emails) => {
     try {
       await enviarEmailSenhaTemporaria(email.to, email.senhaTemporaria);
     } catch (error) {
-      console.error(`Erro ao enviar e-mail para ${email.to}:`, error);
+      console.error(`Erro ao enviar e-mail para ${email.to}: ${error.message}`);
     }
     await delay(2000);
   }

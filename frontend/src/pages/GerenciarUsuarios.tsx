@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { getAllUsuarios, updateUsuario, checkEmailExists, resetarSenhaUsuario, addUsuario } from '../services/usuarioService';
+import { getAllUsuarios, addUsuario, checkEmailExists, updateUsuario, resetarSenhaUsuario, inactivateUsuario } from '../services/usuarioService';
 import { Usuario } from '../models/Usuario';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, RowSelectionOptions } from 'ag-grid-community';
+import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import toast, { Toaster } from 'react-hot-toast';
 import Modal from 'react-modal';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaEdit } from 'react-icons/fa';
 import Cleave from 'cleave.js/react';
+import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 
 // Função para gerar uma senha aleatória
 const generateRandomPassword = () => {
@@ -23,13 +24,31 @@ const generateRandomPassword = () => {
     return password;
 };
 
+// Função para formatar CPF
+const formatCPF = (cpf: string) => {
+    return cpf.replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+};
+
+// Função para formatar número de celular
+const formatPhone = (phone: string) => {
+    return phone.replace(/\D/g, '')
+        .replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+};
+
 const GerenciarUsuarios: React.FC = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-    const [modifiedRows, setModifiedRows] = useState<{ [key: number]: boolean }>({});
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+    const [selectedUser, setSelectedUser] = useState<Partial<Usuario> | null>(null);
+    const [originalEmail, setOriginalEmail] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isActivating, setIsActivating] = useState(false);
+    const { token, user } = useAuth();
     const [newUsuario, setNewUsuario] = useState<Partial<Usuario>>({
         NomeCompleto: '',
         Email: '',
@@ -38,71 +57,33 @@ const GerenciarUsuarios: React.FC = () => {
         TipoUsuario: 'motorista',
     });
     const [emailError, setEmailError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isResetting, setIsResetting] = useState(false);
-    const { token, user } = useAuth();
-    const [originalEmails, setOriginalEmails] = useState<{ [key: number]: string }>({});
+    const [cpfError, setCpfError] = useState<string | null>(null);
 
     // Configuração das colunas da AG Grid
     const [columnDefs] = useState<ColDef<Usuario>[]>([
-        { headerName: 'Nome Completo', field: 'NomeCompleto', sortable: true, filter: true, editable: true },
-        { headerName: 'Email', field: 'Email', sortable: true, filter: true, editable: true },
-        { headerName: 'CPF', field: 'CPF', sortable: true, filter: true },
-        { headerName: 'Número Celular', field: 'NumeroCelular', sortable: true, filter: true, editable: true },
+        { headerName: 'Nome Completo', field: 'NomeCompleto', sortable: true, filter: true },
+        { headerName: 'Email', field: 'Email', sortable: true, filter: true },
+        { headerName: 'CPF', field: 'CPF', sortable: true, filter: true, valueFormatter: (params) => formatCPF(params.value) },
+        { headerName: 'Número Celular', field: 'NumeroCelular', sortable: true, filter: true, valueFormatter: (params) => formatPhone(params.value) },
         {
-            headerName: 'Tipo de Usuário',
-            field: 'TipoUsuario',
-            sortable: true,
-            filter: true,
-            editable: true,
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: ['administrador', 'gerente', 'portaria', 'patio', 'motorista'],
-            },
-            cellRenderer: (params: any) => {
-                switch (params.value) {
-                    case 'administrador':
-                        return 'Administrador';
-                    case 'gerente':
-                        return 'Gerente';
-                    case 'portaria':
-                        return 'Portaria';
-                    case 'patio':
-                        return 'Pátio';
-                    case 'motorista':
-                        return 'Motorista';
-                    default:
-                        return params.value;
-                }
-            },
-        },
-        {
-            headerName: 'Situação',
-            field: 'SituacaoUsuario',
-            sortable: true,
-            filter: true,
-            editable: false,
-            cellRenderer: (params: any) => {
-                const isChecked = params.value === 1;
-                return (
-                    <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => {
-                            const newValue = isChecked ? 0 : 1;
-                            params.node.setDataValue(params.colDef.field, newValue);
-                        }}
-                    />
-                );
-            },
-            cellStyle: (params: any) => {
-                return {
-                    color: params.value === 1 ? 'green' : 'red',
-                    fontWeight: 'bold',
-                };
-            },
-        },
+            headerName: 'Ações',
+            cellRenderer: (params: { data: Usuario; }) => (
+                <div className="flex gap-6">
+                    <button
+                        className="text-blue-500"
+                        onClick={() => handleEdit(params.data)}
+                    >
+                        <FaEdit className="text-xl" />
+                    </button>
+                    <button
+                        className={`font-bold text-${params.data.SituacaoUsuario === 1 ? 'red' : 'green'}-500`}
+                        onClick={() => openConfirmationModal(params.data)}
+                    >
+                        {params.data.SituacaoUsuario === 1 ? 'Desativar' : 'Ativar'}
+                    </button>
+                </div>
+            )
+        }
     ]);
 
     const [defaultColDef] = useState<ColDef>({
@@ -110,58 +91,8 @@ const GerenciarUsuarios: React.FC = () => {
         minWidth: 150,
         filter: true,
         sortable: true,
-        editable: true,
     });
 
-    const [rowSelection] = useState<RowSelectionOptions | "single" | "multiple">(() => {
-        return {
-            mode: "multiRow",
-        };
-    });
-
-    // Regras para destacar uma linha inteira quando ela for modificada
-    const rowClassRules = {
-        'bg-yellow-200': (params: any) => modifiedRows[params.data.CodigoUsuario],
-    };
-
-    // Textos traduzidos para português
-    const localeText = {
-        page: 'Página',
-        more: 'Mais',
-        to: 'até',
-        of: 'de',
-        next: 'Próximo',
-        last: 'Último',
-        first: 'Primeiro',
-        previous: 'Anterior',
-        filterOoo: 'Filtrar...',
-        applyFilter: 'Aplicar Filtro...',
-        equals: 'Igual a',
-        notEqual: 'Diferente de',
-        lessThan: 'Menor que',
-        greaterThan: 'Maior que',
-        lessThanOrEqual: 'Menor ou igual a',
-        greaterThanOrEqual: 'Maior ou igual a',
-        inRange: 'No intervalo',
-        contains: 'Contém',
-        notContains: 'Não contém',
-        startsWith: 'Começa com',
-        endsWith: 'Termina com',
-        loadingOoo: 'Carregando...',
-        noRowsToShow: 'Nenhum dado para mostrar',
-        pinColumn: 'Fixar Coluna',
-        autoSizeThisColumn: 'Auto-ajustar esta Coluna',
-        autoSizeAllColumns: 'Auto-ajustar todas as Colunas',
-        resetColumns: 'Redefinir Colunas',
-        export: 'Exportar',
-        csvExport: 'Exportar CSV',
-        excelExport: 'Exportar Excel',
-        blank: 'Vazio',
-        notBlank: 'Não vazio',
-        pageSize: 'Itens por Página',
-    };
-
-    // Busca todos os usuários ao carregar o componente
     useEffect(() => {
         const fetchUsuarios = async () => {
             if (!token) {
@@ -173,13 +104,6 @@ const GerenciarUsuarios: React.FC = () => {
                 setIsLoading(true);
                 const response = await getAllUsuarios(token);
                 setUsuarios(response);
-
-                const emailMap = response.reduce((acc, usuario) => {
-                    acc[usuario.CodigoUsuario] = usuario.Email;
-                    return acc;
-                }, {} as { [key: number]: string });
-                setOriginalEmails(emailMap);
-
             } catch (error) {
                 console.error('Erro ao buscar usuários', error);
                 toast.error('Erro ao buscar usuários');
@@ -191,56 +115,198 @@ const GerenciarUsuarios: React.FC = () => {
         fetchUsuarios();
     }, [token]);
 
-    // Função para editar um usuário
-    const handleNewUserInputChange = (field: keyof Usuario, value: string) => {
-        setNewUsuario((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-        if (field === 'Email') {
-            setEmailError(null);
-        }
+    const handleEdit = (usuario: Usuario) => {
+        setSelectedUser(usuario);
+        setOriginalEmail(usuario.Email);
+        setIsModalOpen(true);
     };
 
-    const validateNewUser = () => {
-        if (!newUsuario.NomeCompleto || !newUsuario.Email || !newUsuario.CPF || !newUsuario.NumeroCelular) {
+    const openConfirmationModal = (usuario: Usuario) => {
+        setSelectedUser(usuario);
+        setIsActivating(usuario.SituacaoUsuario === 0);
+        setIsConfirmationModalOpen(true);
+    };
+
+    const resetSelectedUser = () => {
+        setSelectedUser(null);
+        setOriginalEmail(null);
+        setEmailError(null);
+        setCpfError(null);
+    };
+
+    const resetNewUserForm = () => {
+        setNewUsuario({
+            NomeCompleto: '',
+            Email: '',
+            CPF: '',
+            NumeroCelular: '',
+            TipoUsuario: 'motorista',
+        });
+        setEmailError(null);
+        setCpfError(null);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        resetSelectedUser();
+    };
+
+    const handleCloseNewUserModal = () => {
+        setIsNewUserModalOpen(false);
+        resetNewUserForm();
+    };
+
+    const handleCloseConfirmationModal = () => {
+        setIsConfirmationModalOpen(false);
+        resetSelectedUser();
+    };
+
+    const handleSaveUser = async () => {
+        if (!selectedUser || !token || !user) return;
+
+        if (!selectedUser.NomeCompleto || !selectedUser.Email || !selectedUser.CPF || !selectedUser.NumeroCelular) {
             toast.error('Por favor, preencha todos os campos obrigatórios.');
-            return false;
+            return;
         }
-        return true;
-    };
 
-    // Função para verificar se o e-mail já está em uso
-    const handleEmailBlur = async () => {
-        if (newUsuario.Email) {
-            const emailExists = await checkEmailExists(newUsuario.Email, token!);
-            if (emailExists) {
-                setEmailError('Este e-mail já está em uso. Por favor, use outro e-mail.');
-            }
+        if (cpfError || emailError) {
+            toast.error('Erro nos dados informados.');
+            return;
         }
-    };
-
-    const handleAddNewUser = async () => {
-        if (!validateNewUser()) return;
-        if (!token || !user) return;
-
-        const Senha = generateRandomPassword();
 
         setIsSaving(true);
+
         try {
-            if (!emailError) {
-                await addUsuario(token, { ...newUsuario, UsuarioAlteracao: user.id, Senha });
-                toast.success('Usuário adicionado com sucesso! Uma senha temporária foi enviada para o e-mail.');
-                setNewUsuario({
-                    NomeCompleto: '',
-                    Email: '',
-                    CPF: '',
-                    NumeroCelular: '',
-                    TipoUsuario: 'motorista',
+            await updateUsuario(token, selectedUser.CodigoUsuario!, {
+                ...selectedUser,
+                UsuarioAlteracao: user.id
+            });
+
+            toast.success('Usuário atualizado com sucesso!');
+            setIsModalOpen(false);
+            resetSelectedUser();
+
+            const response = await getAllUsuarios(token);
+            setUsuarios(response);
+        } catch (error) {
+            toast.error('Erro ao salvar alterações.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleActivationToggle = async () => {
+        if (!selectedUser || !token) return;
+
+        try {
+            setIsSaving(true);
+
+            if (isActivating) {
+                // Ativar usuário
+                await updateUsuario(token, selectedUser.CodigoUsuario!, {
+                    SituacaoUsuario: 1,
+                    UsuarioAlteracao: user!.id,
                 });
-                setIsNewUserModalOpen(false);
-                await getAllUsuarios(token);
+                toast.success('Usuário ativado com sucesso!');
+            } else {
+                // Inativar usuário
+                await inactivateUsuario(token, selectedUser.CodigoUsuario!);
+                toast.success('Usuário desativado com sucesso!');
             }
+
+            const response = await getAllUsuarios(token);
+            setUsuarios(response);
+            handleCloseConfirmationModal();
+        } catch (error) {
+            toast.error(`Erro ao ${isActivating ? 'ativar' : 'desativar'} o usuário.`);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Função para resetar a senha de um usuário
+    const handleResetarSenha = async () => {
+        if (!selectedUser || !token) return;
+
+        try {
+            setIsSaving(true);
+            await resetarSenhaUsuario(token, [selectedUser.CodigoUsuario!]);
+            toast.success('Senha do usuário foi resetada com sucesso!');
+        } catch (error) {
+            toast.error('Erro ao resetar a senha do usuário.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Função para validar o CPF
+    const validateCpf = (value: string) => {
+        if (cpfValidator.isValid(value)) {
+            setCpfError(null);
+        } else {
+            setCpfError('CPF inválido. Por favor, insira um CPF válido.');
+        }
+    };
+
+    // Verificação do e-mail em ambos os modais
+    const handleEmailBlur = async (email: string, currentEmail?: string) => {
+        if (email === originalEmail) {
+            setEmailError(null);
+            return;
+        }
+
+        if (email && email !== currentEmail) {
+            const emailExists = await checkEmailExists(email, token!);
+            if (emailExists) {
+                setEmailError('Este e-mail já está em uso. Por favor, use outro e-mail.');
+            } else {
+                setEmailError(null);
+            }
+        }
+    };
+
+    const handleInputChange = (field: keyof Usuario, value: string) => {
+        if (field === 'CPF') {
+            validateCpf(value);
+        }
+
+        if (field === 'Email' && selectedUser) {
+            handleEmailBlur(value, originalEmail || undefined);
+        }
+
+        setSelectedUser((prev) => ({
+            ...prev!,
+            [field]: value,
+        }));
+    };
+
+    // Função para adicionar um novo usuário
+    const handleAddNewUser = async () => {
+        if (!newUsuario.NomeCompleto || !newUsuario.Email || !newUsuario.CPF || !newUsuario.NumeroCelular) {
+            toast.error('Por favor, preencha todos os campos obrigatórios.');
+            return;
+        }
+
+        if (cpfError || emailError) {
+            toast.error('Erro nos dados informados.');
+            return;
+        }
+
+        const senhaGerada = generateRandomPassword();
+        setIsSaving(true);
+
+        try {
+            await addUsuario(token!, {
+                ...newUsuario,
+                Senha: senhaGerada,
+                UsuarioAlteracao: user!.id,
+            });
+
+            toast.success('Usuário adicionado com sucesso!');
+            handleCloseNewUserModal();
+
+            const response = await getAllUsuarios(token!);
+            setUsuarios(response);
         } catch (error) {
             toast.error('Erro ao adicionar usuário.');
         } finally {
@@ -248,142 +314,17 @@ const GerenciarUsuarios: React.FC = () => {
         }
     };
 
-    // Função para verificar se o e-mail já está em uso
-    const checkEmailBeforeSave = async (usuario: Partial<Usuario>): Promise<boolean> => {
-        const originalEmail = originalEmails[usuario.CodigoUsuario!];
-
-        if (!usuario.Email || usuario.Email === originalEmail) {
-            return true;
-        }
-
-        try {
-            const emailExists = await checkEmailExists(usuario.Email, token!);
-            if (emailExists) {
-                toast.error(<span>O e-mail <strong>{usuario.Email}</strong> já está em uso por outro usuário.</span>);
-                return false;
-            }
-            return true;
-        } catch (error) {
-            console.error('Erro ao verificar e-mail:', error);
-            toast.error('Erro ao verificar e-mail.');
-            return false;
-        }
-    };
-
-    // Função para editar um usuário (atualiza o estado local)
-    const handleEdit = (usuario: Partial<Usuario>) => {
-        setUsuarios((prevUsuarios) =>
-            prevUsuarios.map((u) => (u.CodigoUsuario === usuario.CodigoUsuario ? { ...u, ...usuario } : u))
-        );
-        toast.success('Usuário atualizado localmente. Salve para persistir.');
-    };
-
-    // Verifica se o e-mail foi alterado e se já está em uso
-    const handleCellValueChanged = async (params: any) => {
-        const { data, colDef, newValue, oldValue } = params;
-
-        if (colDef.field === 'Email' && newValue !== oldValue) {
-            const isEmailValid = await checkEmailBeforeSave(data);
-
-            if (!isEmailValid) {
-                params.node.setDataValue(colDef.field, oldValue);
-            } else {
-                setModifiedRows((prev) => ({
-                    ...prev,
-                    [data.CodigoUsuario]: true,
-                }));
-            }
-        } else {
-            setModifiedRows((prev) => ({
-                ...prev,
-                [data.CodigoUsuario]: true,
-            }));
-            handleEdit(data);
-        }
-    };
-
-    // Controla a seleção dos usuários
-    const handleSelectionChanged = (event: any) => {
-        const selectedNodes = event.api.getSelectedNodes();
-        const selectedIds = selectedNodes.map((node: any) => node.data.CodigoUsuario);
-        setSelectedUsers(selectedIds);
-    };
-
-    const openSaveModal = () => {
-        setIsSaveModalOpen(true);
-    };
-
-    const closeSaveModal = () => {
-        setIsSaveModalOpen(false);
-    };
-
-    const handleSave = async () => {
-        if (!token || !user) {
-            console.error('Token ou usuário logado não encontrados');
-            return;
-        }
-
-        setIsSaving(true);
-        const modifiedUsers = usuarios.filter((usuario) => modifiedRows[usuario.CodigoUsuario]);
-
-        if (modifiedUsers.length === 0) {
-            toast.error('Nenhum usuário foi alterado.');
-            setIsSaving(false);
-            return;
-        }
-
-        try {
-            await Promise.all(
-                modifiedUsers.map(async (usuario) => {
-                    const usuarioAtualizado = { ...usuario };
-                    delete usuarioAtualizado.Senha;
-                    usuarioAtualizado.UsuarioAlteracao = user.id;
-
-                    await updateUsuario(token, usuario.CodigoUsuario!, usuarioAtualizado);
-                })
-            );
-            toast.success('Usuários modificados foram atualizados com sucesso!');
-            setModifiedRows({});
-            closeSaveModal();
-        } catch (error) {
-            console.error('Erro ao atualizar usuários', error);
-            toast.error('Erro ao atualizar usuários.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // Função para abrir o modal de reset de senha
-    const openResetModal = () => {
-        setIsModalOpen(true);
-    };
-
-    // Função para fechar o modal de reset de senha
-    const closeResetModal = () => {
-        setIsModalOpen(false);
-    };
-
-    // Função para resetar as senhas dos usuários selecionados
-    const handleResetSenha = async () => {
-        setIsResetting(true);
-        try {
-            await resetarSenhaUsuario(token!, selectedUsers);
-            toast.success('Senhas resetadas e e-mails enviados!');
-            setSelectedUsers([]);
-            closeResetModal();
-        } catch (error) {
-            console.error('Erro ao resetar as senhas', error);
-            toast.error('Erro ao resetar as senhas.');
-        } finally {
-            setIsResetting(false);
-        }
+    // Função para verificar e validar o CPF no modal de criação
+    const handleCpfChange = (cpf: string) => {
+        validateCpf(cpf);
+        setNewUsuario((prev) => ({ ...prev, CPF: cpf }));
     };
 
     return (
         <div className="min-h-screen bg-gray-100">
             <Navbar />
-            <Toaster position="top-right" containerClassName='mt-20'/>
-            <div className="container mx-auto p-4">
+            <Toaster position="top-right" containerClassName='mt-20' />
+            <div id="main-content" className="container mx-auto p-4">
                 <h1 className="text-3xl font-bold mb-4">Gerenciar Usuários</h1>
                 <div className="flex justify-between mb-4">
                     <button
@@ -393,174 +334,261 @@ const GerenciarUsuarios: React.FC = () => {
                         Novo Usuário
                     </button>
                 </div>
-                <div>
-                    <div className="ag-theme-quartz" style={{ height: 500, width: '100%' }}>
-                        {isLoading ? (
-                            <div className="flex justify-center items-center h-full">
-                                <l-helix size="45" speed="2.5" color="black"></l-helix>
-                            </div>
-                        ) : (
-                            <AgGridReact
-                                rowData={usuarios}
-                                columnDefs={columnDefs}
-                                defaultColDef={defaultColDef}
-                                rowSelection={rowSelection}
-                                rowClassRules={rowClassRules}
-                                pagination={true}
-                                paginationPageSize={20}
-                                onCellValueChanged={handleCellValueChanged}
-                                onSelectionChanged={handleSelectionChanged}
-                                localeText={localeText}
-                            />
-                        )}
-                    </div>
-                    <div className="mt-4 flex gap-4">
-                        <button
-                            onClick={openSaveModal}
-                            className={`${Object.keys(modifiedRows).length > 0
-                                ? 'bg-logisync-color-blue-50 hover:bg-logisync-color-blue-400'
-                                : 'bg-gray-300 cursor-not-allowed'
-                                } text-white font-bold py-2 px-4 rounded`}
-                            disabled={Object.keys(modifiedRows).length === 0}
-                        >
-                            Salvar Alterações
-                        </button>
-                        <button
-                            onClick={openResetModal}
-                            className={`${selectedUsers.length > 0
-                                ? 'bg-red-500 hover:bg-red-700'
-                                : 'bg-gray-300 cursor-not-allowed'
-                                } text-white font-bold py-2 px-4 rounded`}
-                            disabled={selectedUsers.length === 0}
-                        >
-                            Resetar Senhas
-                        </button>
-                    </div>
+                <div className="ag-theme-quartz" style={{ height: 500, width: '100%' }}>
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-full">
+                            <FaSpinner className="animate-spin text-4xl" />
+                        </div>
+                    ) : (
+                        <AgGridReact
+                            rowData={usuarios}
+                            columnDefs={columnDefs}
+                            defaultColDef={defaultColDef}
+                            pagination={true}
+                            paginationPageSize={20}
+                        />
+                    )}
                 </div>
-
             </div>
 
-            {/* Modal de Confirmação para Salvar Alterações */}
-            <Modal isOpen={isSaveModalOpen} onRequestClose={closeSaveModal} contentLabel="Confirmar Salvamento" className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50" overlayClassName="fixed inset-0 bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-                    <h2 className="text-xl font-bold mb-4">Confirmar Salvamento</h2>
-                    <p>Tem certeza que deseja salvar as alterações nos usuários modificados?</p>
-                    <div className="flex justify-end gap-4 mt-6">
-                        <button
-                            onClick={closeSaveModal}
-                            className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
-                            disabled={isSaving}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            className="bg-logisync-color-blue-50 text-white font-bold py-2 px-4 rounded hover:bg-logisync-color-blue-400 flex items-center"
-                            disabled={isSaving}
-                        >
-                            {isSaving ? (
-                                <FaSpinner className="animate-spin text-2xl" />
-                            ) : (
-                                "Confirmar"
-                            )}
-                        </button>
-                    </div>
+            {/* Modal para Adicionar Novo Usuário */}
+            <Modal
+                isOpen={isNewUserModalOpen}
+                onRequestClose={handleCloseNewUserModal}
+                className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+                ariaHideApp={false}
+            >
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+                    <h2 className="text-2xl font-bold mb-4">Adicionar Novo Usuário</h2>
+
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAddNewUser();
+                        }}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <label htmlFor="NomeCompleto" className="block text-sm font-medium text-gray-700">
+                                Nome Completo
+                            </label>
+                            <input
+                                id="NomeCompleto"
+                                type="text"
+                                value={newUsuario.NomeCompleto}
+                                onChange={(e) => setNewUsuario((prev) => ({ ...prev, NomeCompleto: e.target.value }))}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="Email" className="block text-sm font-medium text-gray-700">
+                                Email
+                            </label>
+                            <input
+                                id="Email"
+                                type="email"
+                                value={newUsuario.Email}
+                                onChange={(e) => setNewUsuario((prev) => ({ ...prev, Email: e.target.value }))}
+                                onBlur={() => handleEmailBlur(newUsuario.Email!)}
+                                className={`mt-1 block w-full p-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded`}
+                                required
+                            />
+                            {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                        </div>
+
+                        <div>
+                            <label htmlFor="CPF" className="block text-sm font-medium text-gray-700">
+                                CPF
+                            </label>
+                            <Cleave
+                                id="CPF"
+                                placeholder="CPF"
+                                options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'], numericOnly: true }}
+                                value={newUsuario.CPF}
+                                onChange={(e) => handleCpfChange(e.target.value)}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                            {cpfError && <p className="text-red-500 text-sm mt-1">{cpfError}</p>}
+                        </div>
+
+                        <div>
+                            <label htmlFor="NumeroCelular" className="block text-sm font-medium text-gray-700">
+                                Número Celular
+                            </label>
+                            <Cleave
+                                id="NumeroCelular"
+                                placeholder="Número Celular"
+                                options={{ delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4], numericOnly: true }}
+                                value={newUsuario.NumeroCelular}
+                                onChange={(e) => setNewUsuario((prev) => ({ ...prev, NumeroCelular: e.target.value }))}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-4 mt-6">
+                            <button
+                                type="button"
+                                onClick={handleCloseNewUserModal}
+                                className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                className="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-800 flex items-center"
+                                disabled={isSaving || emailError !== null || cpfError !== null}
+                            >
+                                {isSaving ? (
+                                    <FaSpinner className="animate-spin text-2xl" />
+                                ) : (
+                                    'Adicionar'
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </Modal>
 
-            {/* Modal de Confirmação para Resetar Senhas */}
-            <Modal isOpen={isModalOpen} onRequestClose={closeResetModal} contentLabel="Confirmar Reset de Senha" className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50" overlayClassName="fixed inset-0 bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-                    <h2 className="text-xl font-bold mb-4">Confirmar Reset de Senha</h2>
-                    <p>Tem certeza que deseja resetar a senha dos usuários selecionados?</p>
-                    <div className="flex justify-end gap-4 mt-6">
-                        <button
-                            onClick={closeResetModal}
-                            className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
-                            disabled={isResetting}
+            {/* Modal de Edição */}
+            <Modal
+                isOpen={isModalOpen}
+                onRequestClose={handleCloseModal}
+                className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+                ariaHideApp={false}
+            >
+                {/* Conteúdo do modal de edição */}
+                {selectedUser && (
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+                        <h2 className="text-2xl font-bold mb-4">Editar Usuário</h2>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleSaveUser();
+                            }}
+                            className="space-y-4"
                         >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleResetSenha}
-                            className="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-800 flex items-center"
-                            disabled={isResetting}
-                        >
-                            {isResetting ? (
-                                <FaSpinner className="animate-spin text-2xl" />
-                            ) : (
-                                "Confirmar"
-                            )}
-                        </button>
+                            <div>
+                                <label htmlFor="NomeCompleto" className="block text-sm font-medium text-gray-700">
+                                    Nome Completo
+                                </label>
+                                <input
+                                    id="NomeCompleto"
+                                    type="text"
+                                    value={selectedUser.NomeCompleto}
+                                    onChange={(e) => handleInputChange('NomeCompleto', e.target.value)}
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="Email" className="block text-sm font-medium text-gray-700">
+                                    Email
+                                </label>
+                                <input
+                                    id="Email"
+                                    type="email"
+                                    value={selectedUser.Email}
+                                    onChange={(e) => handleInputChange('Email', e.target.value)}
+                                    className={`mt-1 block w-full p-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded`}
+                                    required
+                                />
+                                {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                            </div>
+
+                            <div>
+                                <label htmlFor="CPF" className="block text-sm font-medium text-gray-700">
+                                    CPF
+                                </label>
+                                <Cleave
+                                    id="CPF"
+                                    placeholder="CPF"
+                                    options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'], numericOnly: true }}
+                                    value={selectedUser.CPF}
+                                    onChange={(e) => handleInputChange('CPF', e.target.value)}
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                    required
+                                />
+                                {cpfError && <p className="text-red-500 text-sm mt-1">{cpfError}</p>}
+                            </div>
+
+                            <div>
+                                <label htmlFor="NumeroCelular" className="block text-sm font-medium text-gray-700">
+                                    Número Celular
+                                </label>
+                                <Cleave
+                                    id="NumeroCelular"
+                                    placeholder="Número Celular"
+                                    options={{ delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4], numericOnly: true }}
+                                    value={selectedUser.NumeroCelular}
+                                    onChange={(e) => handleInputChange('NumeroCelular', e.target.value)}
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex justify-between items-center mt-6">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseModal}
+                                    className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleResetarSenha}
+                                    className="bg-orange-500 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Resetar Senha
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-800 flex items-center"
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? (
+                                        <FaSpinner className="animate-spin text-2xl" />
+                                    ) : (
+                                        'Salvar'
+                                    )}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </div>
+                )}
             </Modal>
 
-            {/* Modal para adicionar novo usuário */}
-            <Modal isOpen={isNewUserModalOpen} onRequestClose={() => setIsNewUserModalOpen(false)} className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-                    <h2 className="text-xl font-bold mb-4">Novo Usuário</h2>
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            placeholder="Nome Completo"
-                            value={newUsuario.NomeCompleto}
-                            onChange={(e) => handleNewUserInputChange('NomeCompleto', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            value={newUsuario.Email}
-                            onChange={(e) => handleNewUserInputChange('Email', e.target.value)}
-                            onBlur={handleEmailBlur}
-                            className={`w-full p-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded`}
-                        />
-                        {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
-                        <Cleave
-                            placeholder="CPF"
-                            options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'] }}
-                            value={newUsuario.CPF}
-                            onChange={(e) => handleNewUserInputChange('CPF', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded"
-                        />
-                        <Cleave
-                            placeholder="Número Celular"
-                            options={{  delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4] }}
-                            value={newUsuario.NumeroCelular}
-                            onChange={(e) => handleNewUserInputChange('NumeroCelular', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded"
-                        />
-                        <select
-                            value={newUsuario.TipoUsuario}
-                            onChange={(e) => handleNewUserInputChange('TipoUsuario', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded"
-                        >
-                            <option value="administrador">Administrador</option>
-                            <option value="gerente">Gerente</option>
-                            <option value="portaria">Portaria</option>
-                            <option value="patio">Pátio</option>
-                            <option value="motorista">Motorista</option>
-                        </select>
-                    </div>
+            {/* Modal de Confirmação para Ativar/Inativar Usuário */}
+            <Modal
+                isOpen={isConfirmationModalOpen}
+                onRequestClose={handleCloseConfirmationModal}
+                className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+                ariaHideApp={false}
+            >
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+                    <h2 className="text-2xl font-bold mb-4">{isActivating ? 'Ativar Usuário' : 'Desativar Usuário'}</h2>
+                    <p>{isActivating ? 'Tem certeza de que deseja ativar este usuário?' : 'Tem certeza de que deseja desativar este usuário?'}</p>
 
                     <div className="flex justify-end gap-4 mt-6">
                         <button
-                            onClick={() => setIsNewUserModalOpen(false)}
+                            type="button"
+                            onClick={handleCloseConfirmationModal}
                             className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
                         >
                             Cancelar
                         </button>
                         <button
-                            onClick={handleAddNewUser}
-                            className="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-800 flex items-center"
-                            disabled={isSaving || emailError !== null}
+                            type="button"
+                            onClick={handleActivationToggle}
+                            className={`bg-${isActivating ? 'green' : 'red'}-600 text-white font-bold py-2 px-4 rounded`}
+                            disabled={isSaving}
                         >
-                            {isSaving ? (
-                                <FaSpinner className="animate-spin text-2xl" />
-                            ) : (
-                                'Adicionar'
-                            )}
+                            {isSaving ? <FaSpinner className="animate-spin text-2xl" /> : isActivating ? 'Ativar' : 'Desativar'}
                         </button>
                     </div>
                 </div>
