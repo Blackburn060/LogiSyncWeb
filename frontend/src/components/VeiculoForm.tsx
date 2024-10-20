@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Cleave from 'cleave.js/react';
+import { NumericFormat } from 'react-number-format';
 import { FaSpinner } from 'react-icons/fa';
 import { Veiculo } from '../models/Veiculo';
 
@@ -21,6 +23,14 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
     setVeiculo(prevState => ({
       ...prevState,
       [name]: value,
+    }));
+  };
+
+  const handleCapacidadeChange = (values: any) => {
+    const { value } = values;
+    setVeiculo(prevState => ({
+      ...prevState,
+      CapacidadeCarga: value,
     }));
   };
 
@@ -59,17 +69,23 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 required
               />
             </div>
+
             <div>
               <label className="block mb-2">Placa</label>
-              <input
-                type="text"
+              <Cleave
                 name="Placa"
                 value={veiculo.Placa || ''}
                 onChange={handleChange}
+                options={{
+                  blocks: [7],
+                  uppercase: true,
+                }}
                 className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Ex. ABC-1234"
                 required
               />
             </div>
+
             <div>
               <label className="block mb-2">Marca</label>
               <input
@@ -81,6 +97,7 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 required
               />
             </div>
+
             <div>
               <label className="block mb-2">Modelo/Tipo</label>
               <input
@@ -92,17 +109,23 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 required
               />
             </div>
+
             <div>
               <label className="block mb-2">Ano de Fabricação</label>
-              <input
-                type="number"
+              <Cleave
                 name="AnoFabricacao"
                 value={veiculo.AnoFabricacao || ''}
                 onChange={handleChange}
+                options={{
+                  numericOnly: true,
+                  blocks: [4],
+                }}
                 className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Ex. 2020"
                 required
               />
             </div>
+
             <div>
               <label className="block mb-2">Cor</label>
               <input
@@ -114,18 +137,24 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 required
               />
             </div>
+
             <div>
               <label className="block mb-2">Capacidade de Carga</label>
-              <input
-                type="number"
+              <NumericFormat
                 name="CapacidadeCarga"
                 value={veiculo.CapacidadeCarga || ''}
-                onChange={handleChange}
+                onValueChange={handleCapacidadeChange}
                 className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Ex. 20 ton"
+                suffix=" ton"
+                decimalScale={0}
+                allowNegative={false}
+                valueIsNumericString
                 required
               />
             </div>
           </div>
+
           <div className="flex justify-end mt-4">
             <button
               type="button"

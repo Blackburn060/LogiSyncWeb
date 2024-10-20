@@ -16,8 +16,8 @@ const Veiculos: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [veiculoToDelete, setVeiculoToDelete] = useState<Veiculo | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false); // Estado para exclusão
-  const [isSaving, setIsSaving] = useState(false); // Estado para adicionar/editar
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { token, user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,7 +40,7 @@ const Veiculos: React.FC = () => {
 
   const handleAddVeiculo = async (veiculo: Omit<Veiculo, 'CodigoVeiculo'>) => {
     if (token) {
-      setIsSaving(true); // Ativa o loading para salvar
+      setIsSaving(true);
       try {
         const newVeiculo = { ...veiculo, CodigoUsuario: Number(user?.id) };
         await addVeiculo(token, newVeiculo);
@@ -52,13 +52,13 @@ const Veiculos: React.FC = () => {
         console.error('Erro ao adicionar veículo', error);
         toast.error('Erro ao adicionar veículo');
       }
-      setIsSaving(false); // Desativa o loading após salvar
+      setIsSaving(false);
     }
   };
 
   const handleUpdateVeiculo = async (veiculo: Veiculo) => {
     if (token && veiculo.CodigoVeiculo) {
-      setIsSaving(true); // Ativa o loading para salvar
+      setIsSaving(true);
       try {
         await updateVeiculo(token, veiculo.CodigoVeiculo, veiculo);
         const updatedVeiculos = await getVeiculos(token);
@@ -69,13 +69,13 @@ const Veiculos: React.FC = () => {
         console.error('Erro ao atualizar veículo', error);
         toast.error('Erro ao atualizar veículo');
       }
-      setIsSaving(false); // Desativa o loading após salvar
+      setIsSaving(false);
     }
   };
 
   const handleDeleteVeiculo = async () => {
     if (token && veiculoToDelete) {
-      setIsDeleting(true); // Ativa o loading para deletar
+      setIsDeleting(true);
       try {
         await deleteVeiculo(token, veiculoToDelete.CodigoVeiculo!);
         setVeiculos(prevVeiculos => prevVeiculos.filter(v => v.CodigoVeiculo !== veiculoToDelete.CodigoVeiculo));
@@ -85,7 +85,7 @@ const Veiculos: React.FC = () => {
         console.error('Erro ao deletar veículo', error);
         toast.error('Erro ao deletar veículo');
       }
-      setIsDeleting(false); // Desativa o loading após deletar
+      setIsDeleting(false);
     }
   };
 
@@ -110,6 +110,7 @@ const Veiculos: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
+      <Toaster position="top-right" containerClassName='mt-20' />
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-md bg-logisync-color-blue-400 p-6 rounded-lg relative">
           <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">Veículos</h1>
@@ -209,7 +210,6 @@ const Veiculos: React.FC = () => {
           </div>
         </div>
       </Modal>
-      <Toaster position="top-right" containerClassName='mt-20' />
     </div>
   );
 };
