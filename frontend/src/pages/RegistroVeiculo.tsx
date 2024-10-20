@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Cleave from 'cleave.js/react';
+import { NumericFormat } from 'react-number-format';
 import { Toaster, toast } from 'react-hot-toast';
 import { FaSpinner, FaAsterisk } from 'react-icons/fa';
 import imagemCadastroVeiculo from '../assets/images/ImagemCadastroVeículo.webp';
@@ -31,9 +33,14 @@ const RegistroVeiculo: React.FC = () => {
     }
   }, [navigate]);
 
+  const handleCapacidadeChange = (values: any) => {
+    const { value } = values;
+    setFormData({ ...formData, capacidadeCarga: value });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +55,7 @@ const RegistroVeiculo: React.FC = () => {
         const usuarioResponse = await axios.post(`${backendUrl}/usuarios/public`, usuario);
         const codigoUsuario = usuarioResponse.data.id;
         toast.success('Usuário cadastrado com sucesso!');
-        
+
         let codigoTransportadora: number | null = null;
         if (transportadora && transportadora.nomeEmpresa) {
           try {
@@ -89,11 +96,11 @@ const RegistroVeiculo: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row h-screen lg:py-10 lg:px-24 overflow-y-auto">
       <Toaster position="top-right" reverseOrder={false} />
-      
+
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
         <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full object-contain" />
       </div>
-      
+
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none p-4">
         <form onSubmit={handleSubmit} className="w-full max-w-sm overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
           <div className="mb-6">
@@ -102,11 +109,10 @@ const RegistroVeiculo: React.FC = () => {
             </h1>
           </div>
 
-          {/* Form Fields */}
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomeVeiculo">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="nomeVeiculo">
               Nome do veículo
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color='red' className='ml-1' />
             </label>
             <input
               type="text"
@@ -119,109 +125,112 @@ const RegistroVeiculo: React.FC = () => {
               required
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="placa">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="placa">
               Placa
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color='red' className='ml-1' />
             </label>
-            <input
-              type="text"
+            <Cleave
               id="placa"
               name="placa"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite a placa do Veículo"
+              placeholder="Ex. ABC-1234"
+              options={{ blocks: [7], uppercase: true }}
               value={formData.placa}
               onChange={handleChange}
               required
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="marca">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="marca">
               Marca
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color='red' className='ml-1' />
             </label>
             <input
               type="text"
               id="marca"
               name="marca"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite a marca do Veículo"
+              placeholder="Ex. Ford, Scania..."
               value={formData.marca}
               onChange={handleChange}
               required
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="modeloTipo">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="modeloTipo">
               Modelo/Tipo
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color='red' className='ml-1' />
             </label>
             <input
               type="text"
               id="modeloTipo"
               name="modeloTipo"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite o Modelo ou Tipo do Veículo"
+              placeholder="Ex. Cavalo mecânico simples, Carreta 2 eixos..."
               value={formData.modeloTipo}
               onChange={handleChange}
               required
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="anoFabricacao">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="anoFabricacao">
               Ano de Fabricação
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color='red' className='ml-1' />
             </label>
-            <input
-              type="text"
+            <Cleave
               id="anoFabricacao"
               name="anoFabricacao"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite o ano de fabricação do Veículo"
+              placeholder="Ex. 2027"
+              options={{ numericOnly: true, blocks: [4] }}
               value={formData.anoFabricacao}
               onChange={handleChange}
               required
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="cor">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="cor">
               Cor
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color='red' className='ml-1' />
             </label>
             <input
               type="text"
               id="cor"
               name="cor"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite a cor do Veículo"
+              placeholder="Ex. Cinza"
               value={formData.cor}
               onChange={handleChange}
               required
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="capacidadeCarga">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="capacidadeCarga">
               Capacidade de Carga
-              <FaAsterisk size={13} color='red' className='ml-2' />
+              <FaAsterisk size={11} color="red" className="ml-1" />
             </label>
-            <input
-              type="text"
+            <NumericFormat
               id="capacidadeCarga"
               name="capacidadeCarga"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Digite a capacidade do Veículo"
+              placeholder="Ex. 20 ton"
+              suffix=" ton"
+              decimalScale={0}
+              allowNegative={false}
+              valueIsNumericString
               value={formData.capacidadeCarga}
-              onChange={handleChange}
+              onValueChange={handleCapacidadeChange}
               required
             />
           </div>
-          
+
           <div className="mb-4">
             <button
               type="submit"
