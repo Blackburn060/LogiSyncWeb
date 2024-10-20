@@ -206,7 +206,7 @@ const RegistroTransportadora: React.FC = () => {
                         name="CNPJ"
                         value={formData.CNPJ || ''}
                         onChange={handleChange}
-                        options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'] }}
+                        options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'], numericOnly: true }}
                         disabled={!!formData.CNPJ || !!transportadora}
                         className={`w-full p-2 border ${!!formData.CNPJ || !!transportadora ? 'border-gray-400 bg-gray-200' : 'border-gray-300'} rounded`}
                       />
@@ -264,7 +264,7 @@ const RegistroTransportadora: React.FC = () => {
                           name="CNPJ"
                           value={formData.CNPJ || ''}
                           onChange={handleChange}
-                          options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'] }}
+                          options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'], numericOnly: true }}
                           className="w-full p-2 border border-gray-300 rounded"
                         />
                       </div>
@@ -363,7 +363,7 @@ const RegistroTransportadora: React.FC = () => {
                     id="CNPJ"
                     name="CNPJ"
                     value={formData.CNPJ || ''}
-                    options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'] }}
+                    options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'], numericOnly: true }}
                     disabled
                     className="w-full p-2 border border-gray-300 rounded bg-gray-200"
                   />
@@ -425,7 +425,7 @@ const RegistroTransportadora: React.FC = () => {
                   name="CNPJ"
                   value={formData.CNPJ || ''}
                   onChange={handleChange}
-                  options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'] }}
+                  options={{ blocks: [2, 3, 3, 4, 2], delimiters: ['.', '.', '/', '-'], numericOnly: true }}
                   className="w-full p-2 border border-gray-300 rounded"
                 />
               </div>
