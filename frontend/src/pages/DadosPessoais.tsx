@@ -39,6 +39,7 @@ const DadosPessoais: React.FC = () => {
         }
       } catch (error) {
         console.error('Erro ao buscar detalhes da conta', error);
+        toast.error('Erro ao buscar detalhes da conta');
       } finally {
         setIsLoading(false);
       }
@@ -90,7 +91,8 @@ const DadosPessoais: React.FC = () => {
     }
   };
 
-  const handlePasswordUpdate = async () => {
+  const handlePasswordUpdate = async (event: React.FormEvent) => {
+    event.preventDefault();
     setPasswordError('');
     setIsUpdatingPassword(true);
 
@@ -154,12 +156,6 @@ const DadosPessoais: React.FC = () => {
     return value;
   };
 
-  const handleCPF_CNPJInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    const formattedValue = handleMaskCPF_CNPJ(value);
-    setValue('CPF', formattedValue);
-  };
-
   const handleCancelEdit = () => {
     reset({
       NomeCompleto: usuario?.NomeCompleto,
@@ -173,13 +169,13 @@ const DadosPessoais: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Navbar />
-      <Toaster position="top-right" containerClassName='mt-20'/>
+      <Toaster position="top-right" containerClassName='mt-20' />
       <div className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg">
           <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">Dados Pessoais</h1>
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
-              <FaSpinner className="animate-spin text-2xl text-white" />
+              <l-helix size="45" speed="2.5" color="white"></l-helix>
             </div>
           ) : !usuario ? (
             <div className="flex justify-center items-center h-full">
@@ -221,7 +217,7 @@ const DadosPessoais: React.FC = () => {
                       <Cleave
                         {...field}
                         value={usuario.NumeroCelular}
-                        options={{  delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4] }}
+                        options={{ delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4], numericOnly: true }}
                         disabled
                         className="w-full p-2 border border-gray-300 rounded bg-white text-black"
                       />
@@ -275,6 +271,7 @@ const DadosPessoais: React.FC = () => {
                     <input
                       {...field}
                       id="NomeCompleto"
+                      required
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
                   )}
@@ -290,6 +287,7 @@ const DadosPessoais: React.FC = () => {
                       {...field}
                       id="Email"
                       type="email"
+                      required
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
                   )}
@@ -306,6 +304,7 @@ const DadosPessoais: React.FC = () => {
                       value={handleMaskCPF_CNPJ(field.value)}
                       onChange={(e) => field.onChange(handleMaskCPF_CNPJ(e.target.value))}
                       id="CPF"
+                      required
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
                   )}
@@ -319,7 +318,8 @@ const DadosPessoais: React.FC = () => {
                   render={({ field }) => (
                     <Cleave
                       {...field}
-                      options={{  delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4] }}
+                      options={{ delimiters: ['(', ') ', '-'], blocks: [0, 2, 5, 4], numericOnly: true }}
+                      required
                       className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600"
                     />
                   )}
@@ -343,7 +343,7 @@ const DadosPessoais: React.FC = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity duration-300">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md transform transition-transform duration-300 scale-100">
             <h2 className="text-xl font-bold mb-4 text-center shadow-md bg-gray-300 p-2 rounded">Atualizar Senha</h2>
-            <form onSubmit={(e) => { e.preventDefault(); handlePasswordUpdate(); }}>
+            <form onSubmit={handlePasswordUpdate}>
               <div className="mb-4">
                 <label className="block text-black mb-2" htmlFor="Senha">Nova Senha</label>
                 <input
@@ -354,6 +354,7 @@ const DadosPessoais: React.FC = () => {
                     setNewPassword(e.target.value);
                     setPasswordError('');
                   }}
+                  required
                   className={`w-full p-2 border ${passwordError ? 'border-red-500' : 'border-gray-300'} rounded focus:ring-2 focus:ring-blue-600`}
                 />
               </div>
@@ -367,6 +368,7 @@ const DadosPessoais: React.FC = () => {
                     setConfirmPassword(e.target.value);
                     setPasswordError('');
                   }}
+                  required
                   className={`w-full p-2 border ${passwordError ? 'border-red-500' : 'border-gray-300'} rounded focus:ring-2 focus:ring-blue-600`}
                 />
               </div>
