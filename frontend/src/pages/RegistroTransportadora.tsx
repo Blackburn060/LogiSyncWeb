@@ -58,7 +58,7 @@ const RegistroTransportadora: React.FC = () => {
         <img src={imagemCadastroVeiculo} alt="Imagem Cadastro Veículo" className="w-auto h-full object-contain" />
       </div>
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
           <div className="mb-6">
             <h1 className="bg-logisync-color-blue-50 text-white text-2xl font-extrabold py-2 w-full rounded flex items-center justify-center">Registre a Transportadora</h1>
           </div>

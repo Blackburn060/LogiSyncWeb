@@ -94,7 +94,7 @@ const RegistroVeiculo: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen lg:py-10 lg:px-24 overflow-y-auto">
+    <div className="flex  lg:flex-row h-screen lg:py-10 lg:px-24 overflow-y-auto">
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white rounded-l-lg">
