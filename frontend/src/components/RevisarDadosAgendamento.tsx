@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Modal from "react-modal";
 import { Horario } from "../models/Horario";
 import { getUsuarioById } from "../services/usuarioService";
@@ -6,13 +6,13 @@ import { getVeiculos } from "../services/veiculoService";
 import { getTransportadora } from "../services/transportadoraService";
 import { addAgendamento } from "../services/agendamentoService";
 import { getProdutos } from "../services/produtoService";
-import { getSafras } from "../services/safraService"; // Importar o serviço de safras
+import { getSafras } from "../services/safraService";
 import { useAuth } from "../context/AuthContext";
 import { Usuario } from "../models/Usuario";
 import { Veiculo } from "../models/Veiculo";
 import { Transportadora } from "../models/Transportadora";
 import { Produto } from "../models/Produto";
-import { Safra } from "../models/Safra"; // Importar o modelo de Safra
+import { Safra } from "../models/Safra";
 import {
   ref,
   uploadBytesResumable,
@@ -22,6 +22,7 @@ import {
 import { storage } from "../../firebaseConfig";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { FaSpinner, FaTimes } from "react-icons/fa";
 
 interface RevisarDadosAgendamentoProps {
   selectedDate: Date;
@@ -41,16 +42,29 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     null
   );
   const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [safras, setSafras] = useState<Safra[]>([]); // Estado para armazenar as safras
+  const [safras, setSafras] = useState<Safra[]>([]);
   const [veiculoSelecionado, setVeiculoSelecionado] = useState<string>("");
   const [produto, setProduto] = useState<string>("");
   const [quantidade, setQuantidade] = useState<string>("");
-  const [safraSelecionada, setSafraSelecionada] = useState<string>(""); // Armazena a safra selecionada
+  const [safraSelecionada, setSafraSelecionada] = useState<string>("");
   const [observacao, setObservacao] = useState<string>("");
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadTask, setUploadTask] = useState<any>(null);
   const [arquivoUrl, setArquivoUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleRemoveArquivo = () => {
+    setArquivo(null);
+    setArquivoUrl(null);
+    setUploadProgress(0);
+    setUploadTask(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -69,8 +83,8 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
           const produtosData = await getProdutos(token);
           setProdutos(produtosData);
 
-          const safrasData = await getSafras(token); // Buscar safras do serviço
-          setSafras(safrasData); // Armazena as safras no estado
+          const safrasData = await getSafras(token);
+          setSafras(safrasData);
 
           if (usuarioData.CodigoTransportadora) {
             const transportadoraData = await getTransportadora(
@@ -88,10 +102,8 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     fetchData();
   }, [token, user]);
 
-  // Define o tipo de agendamento com base em uma informação existente ou armazenada
   const tipoAgendamento = localStorage.getItem("TipoAgendamento") || "carga";
 
-  // Escolha uma cor diferente para cada tipo de agendamento
   const corTipoAgendamento =
     tipoAgendamento === "carga" ? "bg-blue-500" : "bg-green-500";
 
@@ -110,7 +122,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
 
     if (!validTypes.includes(file.type)) {
       toast.error(
-        "Tipo de arquivo não permitido. Aceitamos apenas .jpg, .png, .pdf, .docx, .xls e .xlsx."
+        "Tipo de arquivo não permitido. Tipos permitidos: .jpg, .png, .pdf, .docx, .xls e .xlsx."
       );
       return false;
     }
@@ -123,23 +135,37 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     return true;
   };
 
-  const handleUploadArquivo = async (): Promise<string | null> => {
-    if (!arquivo || !validateFile(arquivo)) return null;
+  const handlePrepareUpload = (file: File) => {
+    if (!validateFile(file)) return;
 
-    const storageRef = ref(storage, `uploads/${arquivo.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, arquivo);
+    const storageRef = ref(storage, `uploads/${file.name}`);
+    const task = uploadBytesResumable(storageRef, file, { cacheControl: 'no-store' });
+    setUploadTask(task);
+
+    task.on(
+      "state_changed",
+      (snapshot: UploadTaskSnapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(progress);
+      },
+      (error: unknown) => {
+        console.error("Erro ao preparar upload:", error);
+        toast.error("Erro ao preparar upload do arquivo.");
+      }
+    );
+  };
+
+  const finalizeUpload = async (): Promise<string | null> => {
+    if (!uploadTask) return null;
 
     return new Promise<string | null>((resolve, reject) => {
       uploadTask.on(
         "state_changed",
-        (snapshot: UploadTaskSnapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(progress);
-        },
+        null,
         (error: unknown) => {
-          console.error("Erro ao fazer upload:", error);
-          toast.error("Erro ao fazer upload do arquivo.");
+          console.error("Erro ao finalizar upload:", error);
+          toast.error("Erro ao finalizar upload do arquivo.");
           reject(null);
         },
         () => {
@@ -158,37 +184,34 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     });
   };
 
+  // Quando um novo arquivo é selecionado, ele automaticamente inicia o pré-processamento
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setArquivo(file);
+    if (file) {
+      handlePrepareUpload(file);
+    }
+  };
+
   const handleAgendar = async () => {
-    // Verifica se já está submetendo o agendamento para evitar múltiplas requisições
     if (isSubmitting) return;
-  
-    // Validação básica dos campos obrigatórios
-    if (
-      !usuario ||
-      !veiculoSelecionado ||
-      !selectedDate ||
-      !horarioSelecionado ||
-      !safraSelecionada
-    ) {
+
+    if (!usuario || !veiculoSelecionado || !selectedDate || !horarioSelecionado) {
       toast.error("Preencha todos os campos obrigatórios!");
       return;
     }
-  
+
+    setIsSubmitting(true);
+
     let urlArquivo: string | null = null;
-  
-    if (arquivo) {
-      try {
-        urlArquivo = await handleUploadArquivo();
-        if (!urlArquivo) {
-          throw new Error("Falha no upload do arquivo.");
-        }
-      } catch (error) {
-        setIsSubmitting(false); // Libera o botão novamente em caso de erro
+    if (uploadTask) {
+      urlArquivo = await finalizeUpload();
+      if (!urlArquivo) {
+        setIsSubmitting(false);
         return;
       }
     }
-  
-    // Monta o novo agendamento
+
     const novoAgendamento = {
       CodigoUsuario: usuario.CodigoUsuario,
       CodigoVeiculo: Number(veiculoSelecionado),
@@ -204,11 +227,8 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
       SituacaoAgendamento: "Pendente",
       DiaTodo: false,
     };
-  
-    setIsSubmitting(true); // Ativa o estado de submissão para evitar múltiplos cliques
-  
+
     try {
-      // Faz a requisição para adicionar o agendamento sem armazenar o resultado
       await addAgendamento(token!, novoAgendamento);
       toast.success("Agendamento realizado com sucesso!");
       navigate("/agendamentos");
@@ -216,14 +236,13 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
       console.error("Erro ao realizar agendamento:", error);
       toast.error("Erro ao realizar agendamento.");
     } finally {
-      setIsSubmitting(false); // Libera o botão após finalizar a requisição
+      setIsSubmitting(false);
     }
-    
   };
-  
+
   return (
     <>
-      <Toaster position="top-right" />
+      <Toaster position="top-right" containerClassName='mt-20' />
       <Modal
         isOpen={true}
         onRequestClose={onClose}
@@ -243,7 +262,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
             </button>
           </div>
 
-          {/* Conteúdo Rolável */}
           <div className="flex flex-col space-y-2 p-4">
             {/* Dados Pessoais */}
             <div className="border p-3 rounded-lg">
@@ -299,31 +317,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
               </select>
             </div>
 
-            {/* Safra */}
-            <div className="border p-3 rounded-lg">
-              <h3 className="text-lg font-semibold mb-1">Safra</h3>
-              <select
-                className="border rounded p-2 w-full"
-                value={safraSelecionada}
-                onChange={(e) => setSafraSelecionada(e.target.value)}
-                disabled={isSubmitting}
-              >
-                <option value="">Selecione a Safra</option>
-                {safras
-                  .filter((safra) => safra.SituacaoSafra === 1) // Apenas safras ativas
-                  .map((safra) => (
-                    <option key={safra.CodigoSafra} value={safra.CodigoSafra}>
-                      {safra.AnoSafra} {/* Exibe apenas o ano */}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
             {/* Dados do Agendamento */}
             <div className="border p-3 rounded-lg relative">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Dados do Agendamento</h3>
-                {/* Indicador do Tipo de Agendamento como quadrado à direita */}
                 <div
                   className={`w-16 h-9 ${corTipoAgendamento} rounded border border-gray-300 flex items-center justify-center text-white font-bold text-sm`}
                 >
@@ -331,7 +328,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                 </div>
               </div>
 
-              <div className="flex space-x-2 mb-4">
+              <div className="flex space-x-2 mt-4">
                 <div>
                   <strong>Data:</strong> {selectedDate.toLocaleDateString()}
                 </div>
@@ -341,7 +338,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                 </div>
               </div>
 
-              <div className="mb-2">
+              <div className="mt-2">
                 <label>
                   <strong>Produto:</strong>
                 </label>
@@ -362,7 +359,29 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                   ))}
                 </select>
               </div>
-              <div>
+
+              <div className="mt-2">
+                <label>
+                  <strong>Safra:</strong>
+                </label>
+                <select
+                  className="border rounded p-2 w-full"
+                  value={safraSelecionada}
+                  onChange={(e) => setSafraSelecionada(e.target.value)}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Selecione a Safra</option>
+                  {safras
+                    .filter((safra) => safra.SituacaoSafra === 1)
+                    .map((safra) => (
+                      <option key={safra.CodigoSafra} value={safra.CodigoSafra}>
+                        {safra.AnoSafra}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="mt-2">
                 <label>
                   <strong>Quantidade:</strong>
                 </label>
@@ -375,7 +394,8 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                   disabled={isSubmitting}
                 />
               </div>
-              <div>
+
+              <div className="mt-2">
                 <label>
                   <strong>Observação:</strong>
                 </label>
@@ -387,26 +407,42 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                   disabled={isSubmitting}
                 ></textarea>
               </div>
-              <div>
+
+              {/* Upload de Arquivo */}
+              <div className="mb-4">
                 <label>
                   <strong>Upload de Arquivo:</strong>
                 </label>
-                <input
-                  type="file"
-                  className="border rounded p-2 w-full"
-                  onChange={(e) => setArquivo(e.target.files?.[0] || null)}
-                  disabled={isSubmitting}
-                />
+                <div className="flex items-center">
+                  <input
+                    type="file"
+                    className="border rounded p-2 w-full"
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                    disabled={isSubmitting}
+                  />
+                  {arquivo && (
+                    <button
+                      onClick={handleRemoveArquivo}
+                      className="ml-2 text-red-600 hover:text-red-800"
+                      title="Remover arquivo"
+                    >
+                      <FaTimes size={18} />
+                    </button>
+                  )}
+                </div>
+
                 {arquivo && (
                   <div className="mt-2">
                     <p>Progresso do upload: {uploadProgress}%</p>
                     {arquivoUrl && (
-                      <p>
+                      <p className="mt-1">
                         Arquivo disponível em:{" "}
                         <a
                           href={arquivoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
+                          className="underline text-blue-600"
                         >
                           {arquivoUrl}
                         </a>
@@ -419,12 +455,11 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
 
             <button
               onClick={handleAgendar}
-              className={`bg-blue-500 text-white py-2 px-4 rounded mt-4 ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`bg-blue-500 text-white py-2 px-4 rounded mt-4 flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Aguarde..." : "Confirmar Agendamento"}
+              {isSubmitting ? <FaSpinner className="animate-spin text-2xl" /> : "Confirmar Agendamento"}
             </button>
           </div>
         </div>
