@@ -106,7 +106,7 @@ const verificarEmailExistente = async (req, res) => {
   try {
     const user = await userModel.findUserByEmail(email.toLowerCase());
     if (user) {
-      res.json({ exists: true, active: user.situacaoUsuario === 1 });
+      res.json({ exists: true, active: user.SituacaoUsuario === 1 });
     } else {
       res.json({ exists: false, active: false });
     }
