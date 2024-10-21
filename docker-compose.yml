@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   backend:
     build:
@@ -5,25 +7,34 @@ services:
     ports:
       - '3001:3000'
     environment:
-      - NODE_ENV=development
-      - PORT=3001
-      - REACT_APP_FRONTEND_URL=${REACT_APP_FRONTEND_URL}
+      - NODE_ENV=production
+      - PORT=3000
+      - REACT_APP_FRONTEND_URL_PROD=${REACT_APP_FRONTEND_URL_PROD}
       - SECRET_KEY=${SECRET_KEY}
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
       - CLIENT_ID=${CLIENT_ID}
       - CLIENT_SECRET=${CLIENT_SECRET}
       - REFRESH_TOKEN=${REFRESH_TOKEN}
-      - CODE=${CODE}
-      - "3000:80"
+    networks:
+      - backend
 
   frontend:
     build:
       context: ./frontend
     ports:
-      - "3001:3001"
+      - "80:80"
     environment:
-      - NODE_ENV=development
-      - VITE_APP_BACKEND_API_URL=${VITE_APP_BACKEND_API_URL}
+      - NODE_ENV=production
+      - VITE_APP_BACKEND_API_URL_PROD=${VITE_APP_BACKEND_API_URL_PROD}
       - VITE_APP_GOOGLE_APIKEY=${VITE_APP_GOOGLE_APIKEY}
+    depends_on:
+      - backend
+    networks:
+      - frontend
 
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
