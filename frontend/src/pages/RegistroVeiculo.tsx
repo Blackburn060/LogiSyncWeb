@@ -220,8 +220,8 @@ const RegistroVeiculo: React.FC = () => {
               id="capacidadeCarga"
               name="capacidadeCarga"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Ex. 20 ton"
-              suffix=" ton"
+              placeholder="Ex. 1000 kg"
+              suffix=" kg"
               decimalScale={0}
               allowNegative={false}
               valueIsNumericString

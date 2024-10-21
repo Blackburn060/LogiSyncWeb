@@ -145,8 +145,8 @@ const VeiculoForm: React.FC<VeiculoFormProps> = ({ veiculo: initialVeiculo, onSa
                 value={veiculo.CapacidadeCarga || ''}
                 onValueChange={handleCapacidadeChange}
                 className="w-full p-2 border border-gray-300 rounded"
-                placeholder="Ex. 20 ton"
-                suffix=" ton"
+                placeholder="Ex. 1000 kg"
+                suffix=" kg"
                 decimalScale={0}
                 allowNegative={false}
                 valueIsNumericString
