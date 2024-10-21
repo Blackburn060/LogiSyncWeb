@@ -60,7 +60,7 @@ class AuthController {
 
         await User.savePasswordResetToken(user.CodigoUsuario, hashedToken);
 
-        const resetLink = `${process.env.REACT_APP_FRONTEND_URL}/redefinir-senha?token=${resetToken}&id=${user.CodigoUsuario}`;
+        const resetLink = `${process.env.REACT_APP_FRONTEND_URL_PROD}/redefinir-senha?token=${resetToken}&id=${user.CodigoUsuario}`;
 
         await enviarEmailRecuperacaoSenha(user.Email, resetLink);
       }

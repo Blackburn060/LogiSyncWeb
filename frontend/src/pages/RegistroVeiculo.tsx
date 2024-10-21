@@ -7,7 +7,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { FaSpinner, FaAsterisk } from 'react-icons/fa';
 import imagemCadastroVeiculo from '../assets/images/ImagemCadastroVeículo.webp';
 
-const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 const RegistroVeiculo: React.FC = () => {
   const [formData, setFormData] = useState({

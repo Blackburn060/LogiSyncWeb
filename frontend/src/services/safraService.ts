@@ -2,7 +2,7 @@ import api from './axiosConfig';
 import { Safra } from '../models/Safra';
 import axios from 'axios';
 
-const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 export const getSafras = async (token: string): Promise<Safra[]> => {
   try {

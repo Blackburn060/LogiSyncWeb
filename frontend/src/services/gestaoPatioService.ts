@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 interface Agendamento {
   CodigoAgendamento: number;

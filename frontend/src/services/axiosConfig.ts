@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const backendUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 const api = axios.create({
   baseURL: backendUrl,

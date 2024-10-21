@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 app.use(cors({
-    origin: process.env.REACT_APP_FRONTEND_URL,
+    origin: process.env.REACT_APP_FRONTEND_URL_PROD,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true

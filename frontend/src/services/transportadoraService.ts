@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Transportadora } from '../models/Transportadora';
 
-const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 // Função para buscar uma transportadora pelo ID
 export const getTransportadora = async (token: string, id: number): Promise<Transportadora | null> => {

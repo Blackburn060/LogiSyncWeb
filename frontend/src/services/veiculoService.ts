@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Veiculo } from '../models/Veiculo';
 
-const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 export const getVeiculos = async (token: string): Promise<Veiculo[]> => {
   const response = await axios.get(`${apiUrl}/veiculos`, {

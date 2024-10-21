@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Usuario } from '../models/Usuario';
 
-const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 // Função para obter todos os usuários
 export const getAllUsuarios = async (token: string): Promise<Usuario[]> => {

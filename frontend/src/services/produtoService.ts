@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Produto } from '../models/Produto';
 import api from '../services/axiosConfig'; // Importa a instância configurada do axios
 
-const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL;
+const apiUrl = import.meta.env.VITE_APP_BACKEND_API_URL_PROD;
 
 // Função para buscar todos os produtos
 export const getProdutos = async (token: string): Promise<Produto[]> => {

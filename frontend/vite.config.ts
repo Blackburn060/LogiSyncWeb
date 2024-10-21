@@ -31,7 +31,7 @@ export default defineConfig({
     })
   ],
   define: {
-    'import.meta.env.VITE_APP_BACKEND_API_URL': JSON.stringify(process.env.VITE_APP_BACKEND_API_URL),
+    'import.meta.env.VITE_APP_BACKEND_API_URL_PROD': JSON.stringify(process.env.VITE_APP_BACKEND_API_URL_PROD),
     'import.meta.env.VITE_APP_GOOGLE_APIKEY': JSON.stringify(process.env.VITE_APP_GOOGLE_APIKEY)
   },
   build: {
