@@ -3,7 +3,7 @@ name: Build and Deploy to Azure App Service Production environment
 on:
   push:
     branches:
-      - production
+      - main
 
 jobs:
   build-and-push:
