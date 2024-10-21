@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.get('/usuarios', authMiddleware, userController.listarUsuarios);
 router.get('/usuarios/:id', authMiddleware, userController.listarUsuario);
 router.put('/usuarios/:id', authMiddleware, userController.atualizarUsuario);
+router.post('/usuarios', authMiddleware, userController.adicionarUsuario);
 router.delete('/usuarios/:id', authMiddleware, userController.deletarUsuario);
 router.get('/verificar-email', authMiddleware, userController.verificarEmailExistente); 
 

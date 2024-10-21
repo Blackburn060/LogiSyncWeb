@@ -16,11 +16,10 @@ import DadosVeicular from "../components/DadosVeicular";
 import DadosPessoais from "../components/DadosPessoais";
 import DadosAgendamentos from "../components/DadosAgendamento";
 import DadosPortaria from "../components/DadosPortaria";
-import "react-datepicker/dist/react-datepicker.css"; // Importa o CSS do Datepicker
-import DatePicker from "react-datepicker"; // Importa o componente DatePicker
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
 import { getDadosPortaria } from "../services/portariaService";
 
-// Aqui está o seu ícone personalizado
 export function IcRoundRefresh(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -58,9 +57,9 @@ export function IcOutlineCalendarMonth(props: React.SVGProps<SVGSVGElement>) {
 // Função para controlar a rolagem da página quando qualquer modal estiver aberto
 const toggleBodyScroll = (isModalOpen: boolean) => {
   if (isModalOpen) {
-    document.body.style.overflow = "hidden"; // Impede a rolagem da página
+    document.body.style.overflow = "hidden";
   } else {
-    document.body.style.overflow = ""; // Restaura a rolagem da página
+    document.body.style.overflow = "";
   }
 };
 
@@ -89,18 +88,17 @@ const Portaria: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false);
   const [motivoRecusa, setMotivoRecusa] = useState("");
-  const [observacaoPortaria, setObservacaoPortaria] = useState(""); // Observação para o campo da portaria
+  const [observacaoPortaria, setObservacaoPortaria] = useState("");
   const [loading, setLoading] = useState<boolean>(true);
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false); // Controla a exibição do modal do calendário
-  const [filterStatus, setFilterStatus] = useState<string>("Todos"); // Filtro de status
-  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false); // Controla o dropdown de filtro
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("Todos");
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   const daysToShow = 7;
 
   useEffect(() => {
-    // O scroll será bloqueado se qualquer um dos modais estiver aberto
     toggleBodyScroll(isModalOpen || isRecusaModalOpen || isCalendarModalOpen);
-    return () => toggleBodyScroll(false); // Certifique-se de limpar quando o componente desmontar
+    return () => toggleBodyScroll(false);
   }, [isModalOpen, isRecusaModalOpen, isCalendarModalOpen]);
 
   useEffect(() => {
@@ -121,17 +119,16 @@ const Portaria: React.FC = () => {
   }, [token, currentStartDate]);
 
   const voltarParaHoje = () => {
-    setCurrentStartDate(new Date()); // Define o dia atual no estado
+    setCurrentStartDate(new Date());
   };
 
-  // Toggle para abrir/fechar o dropdown
   const toggleFilterDropdown = () => {
     setIsFilterDropdownOpen(!isFilterDropdownOpen);
   };
 
   const handleFilterChange = (status: string) => {
     setFilterStatus(status);
-    setIsFilterDropdownOpen(false); // Fecha o dropdown ao selecionar um filtro
+    setIsFilterDropdownOpen(false);
   };
 
   const FunnelIcon = ({ onClick }: { onClick: () => void }) => {
@@ -153,7 +150,7 @@ const Portaria: React.FC = () => {
       </svg>
     );
   };
-
+  
   const handleFinalizarAgendamento = async (agendamento: Agendamento) => {
     try {
       const dataHoraSaida = new Date().toISOString();
@@ -163,7 +160,7 @@ const Portaria: React.FC = () => {
         token!,
         agendamento.CodigoAgendamento!,
         agendamento.TipoAgendamento!,
-        agendamento.Observacao ?? "Sem observação" // Passe a observação do agendamento (ou "Sem observação" se estiver vazia)
+        agendamento.Observacao ?? "Sem observação"
       );
 
       setAgendamentos((prevAgendamentos) =>
@@ -177,12 +174,12 @@ const Portaria: React.FC = () => {
       setSelectedAgendamento((prevAgendamento) =>
         prevAgendamento
           ? {
-              ...prevAgendamento,
-              DadosPortaria: {
-                ...prevAgendamento.DadosPortaria,
-                DataHoraSaida: dataHoraSaida,
-              },
-            }
+            ...prevAgendamento,
+            DadosPortaria: {
+              ...prevAgendamento.DadosPortaria,
+              DataHoraSaida: dataHoraSaida,
+            },
+          }
           : null
       );
 
@@ -198,13 +195,12 @@ const Portaria: React.FC = () => {
     try {
       const usuarioId = Number(user!.id);
 
-      // Aprovar o agendamento e enviar a observação da portaria
       await aprovarAgendamento(
         token!,
         agendamento.CodigoAgendamento!,
         agendamento.TipoAgendamento!,
         usuarioId,
-        observacaoPortaria // Observação da portaria passada aqui
+        observacaoPortaria
       );
 
       toast.success("Agendamento aprovado com sucesso!");
@@ -214,10 +210,10 @@ const Portaria: React.FC = () => {
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
             ? {
-                ...a,
-                SituacaoAgendamento: "Andamento",
-                Observacao: agendamento.Observacao || "Sem observação", // Atualiza também a observação localmente
-              }
+              ...a,
+              SituacaoAgendamento: "Andamento",
+              Observacao: agendamento.Observacao || "Sem observação",
+            }
             : a
         )
       );
@@ -253,15 +249,14 @@ const Portaria: React.FC = () => {
       handleCloseRecusaModal();
       handleCloseModal();
 
-      // Atualizar o estado do agendamento com "Reprovado" em vez de "Recusado"
       setAgendamentos((prevAgendamentos) =>
         prevAgendamentos.map((a) =>
           a.CodigoAgendamento === agendamento.CodigoAgendamento
             ? {
-                ...a,
-                SituacaoAgendamento: "Reprovado", // Alterar para "Reprovado"
-                MotivoRecusa: motivoRecusa,
-              }
+              ...a,
+              SituacaoAgendamento: "Reprovado",
+              MotivoRecusa: motivoRecusa,
+            }
             : a
         )
       );
@@ -273,7 +268,7 @@ const Portaria: React.FC = () => {
 
   const handleOpenModal = async (agendamento: Agendamento) => {
     setSelectedAgendamento(agendamento);
-    setObservacaoPortaria(""); // Resetar observação
+    setObservacaoPortaria("");
 
     try {
       const dadosPortaria = await getDadosPortaria(
@@ -293,7 +288,6 @@ const Portaria: React.FC = () => {
           },
         };
       });
-      console.log(agendamento); // Adiciona esse log para inspecionar os dados
     } catch (error) {
       toast.error("Erro ao buscar dados da portaria.");
       console.error("Erro ao buscar dados da portaria:", error);
@@ -492,51 +486,53 @@ const Portaria: React.FC = () => {
               if (date) {
                 setCurrentStartDate(date);
               }
-              setIsCalendarModalOpen(false); // Fecha o modal após selecionar uma data
+              setIsCalendarModalOpen(false);
             }}
             inline
           />
         </Modal>
 
         {loading ? (
-          <p>Carregando agendamentos...</p>
+          <div className="flex justify-center items-center h-full">
+            <l-helix size="45" speed="2.5" color="black"></l-helix>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-            {getDaysRange().map((day) => {
-              const agendamentosForDay = getAgendamentosForDay(day);
-              return (
-                <div
-                  key={day.toString()}
-                  className="border p-4 rounded-lg bg-white shadow-md"
-                >
-                  <h2 className="text-md font-semibold mb-2 text-center text-gray-700">
-                    {formatarData(day)}
-                  </h2>
-                  <div className="flex flex-col space-y-2">
-                    {agendamentosForDay.length === 0 ? (
-                      <p className="text-center text-gray-400">
-                        Sem agendamentos
-                      </p>
-                    ) : (
-                      agendamentosForDay.map((agendamento) => (
-                        <div
-                          key={agendamento.CodigoAgendamento}
-                          className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusColor(
-                            agendamento.SituacaoAgendamento
-                          )} text-white shadow`}
-                          onClick={() => handleOpenModal(agendamento)}
-                        >
-                          <p className="text-sm text-center text-white">
-                            {agendamento.TipoAgendamento} |{" "}
-                            {agendamento.HoraAgendamento}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+    {getDaysRange().map((day) => {
+  const agendamentosForDay = getAgendamentosForDay(day);
+  return (
+    <div
+      key={day.toString()} // Chave para os dias continua sendo única
+      className="border p-4 rounded-lg bg-white shadow-md"
+    >
+      <h2 className="text-md font-semibold mb-2 text-center text-gray-700">
+        {formatarData(day)}
+      </h2>
+      <div className="flex flex-col space-y-2">
+        {agendamentosForDay.length === 0 ? (
+          <p className="text-center text-gray-400">
+            Sem agendamentos
+          </p>
+        ) : (
+          agendamentosForDay.map((agendamento, index) => (
+            <div
+              key={`${agendamento.CodigoAgendamento}-${agendamento.HoraAgendamento}-${index}`} // Agora garantimos que a chave é única
+              className={`p-2 mb-2 rounded cursor-pointer flex justify-center items-center ${getStatusColor(
+                agendamento.SituacaoAgendamento
+              )} text-white shadow`}
+              onClick={() => handleOpenModal(agendamento)}
+            >
+              <p className="text-sm text-center text-white">
+                {agendamento.TipoAgendamento} | {agendamento.HoraAgendamento}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+})}
+
           </div>
         )}
 
@@ -580,7 +576,7 @@ const Portaria: React.FC = () => {
               quantidade={selectedAgendamento.QuantidadeAgendamento ?? 0}
               observacao={selectedAgendamento?.Observacao ?? null}
               arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
-              safra={selectedAgendamento?.AnoSafra ?? "N/A"} // Exibe o AnoSafra diretamente
+              safra={selectedAgendamento?.AnoSafra ?? "N/A"}
             />
 
             {/* Utilizando o campo de observação da portaria */}
@@ -594,7 +590,7 @@ const Portaria: React.FC = () => {
               isObservacaoEditable={
                 selectedAgendamento.SituacaoAgendamento === "Confirmado"
               }
-              situacaoAgendamento={selectedAgendamento.SituacaoAgendamento} // Passa o status do agendamento
+              situacaoAgendamento={selectedAgendamento.SituacaoAgendamento}
             />
 
             <div className="flex justify-between mt-4 space-x-4">

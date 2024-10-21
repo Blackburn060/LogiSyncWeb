@@ -24,7 +24,7 @@ const GerenciarHorarios: React.FC = () => {
   useEffect(() => {
     const fetchHorarios = async () => {
       try {
-        const data = await getHorarios();
+        const data = await getHorarios(token!);
         setHorarios(data);
         gerarHorariosDisponiveis(data[0], TipoAgendamento);
       } catch (error) {
@@ -35,13 +35,18 @@ const GerenciarHorarios: React.FC = () => {
     const fetchIndisponibilidades = async () => {
       try {
         const data = await getIndisponibilidades(token!);
-        const indisponibilidadesAtualizadas = data.map((ind) => ({
-          ...ind,
-          HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
-          DiaTodo: !ind.HoraAgendamento,
-          DataAgendamento: format(parseISO(ind.DataAgendamento), 'dd/MM/yyyy'),
-        }));
-        setIndisponibilidades(indisponibilidadesAtualizadas);
+
+        if (data.length === 0) {
+          setIndisponibilidades([]);
+        } else {
+          const indisponibilidadesAtualizadas = data.map((ind) => ({
+            ...ind,
+            HoraAgendamento: ind.HoraAgendamento || "Dia Todo",
+            DiaTodo: !ind.HoraAgendamento,
+            DataAgendamento: format(parseISO(ind.DataAgendamento), 'dd/MM/yyyy'),
+          }));
+          setIndisponibilidades(indisponibilidadesAtualizadas);
+        }
       } catch (error) {
         console.error('Erro ao carregar indisponibilidades', error);
       }
@@ -82,6 +87,11 @@ const GerenciarHorarios: React.FC = () => {
     }
   };
 
+  const formatHorario = (horario: string | undefined) => {
+    // Formata o horário no padrão HH:mm ou retorna string vazia
+    return horario ? horario.slice(0, 5) : '';
+  };
+
   const handleEditClick = (horario: Horario) => {
     setEditingHorario(horario);
   };
@@ -89,14 +99,14 @@ const GerenciarHorarios: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (editingHorario) {
       const { name, value } = e.target;
-      setEditingHorario({ ...editingHorario, [name]: Number(value) });
+      setEditingHorario({ ...editingHorario, [name]: value });
     }
   };
 
   const handleUpdate = async () => {
     if (editingHorario) {
       try {
-        await updateHorario(editingHorario.id!, editingHorario);
+        await updateHorario(editingHorario.id!, editingHorario, token!);
         toast.success('Horário atualizado com sucesso.');
         setEditingHorario(null);
 
@@ -202,7 +212,7 @@ const GerenciarHorarios: React.FC = () => {
                   type="time"
                   id="horarioInicio"
                   name="horarioInicio"
-                  value={editingHorario.horarioInicio}
+                  value={formatHorario(editingHorario.horarioInicio)}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -215,7 +225,7 @@ const GerenciarHorarios: React.FC = () => {
                   type="time"
                   id="horarioFim"
                   name="horarioFim"
-                  value={editingHorario.horarioFim}
+                  value={formatHorario(editingHorario.horarioFim)}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -228,7 +238,7 @@ const GerenciarHorarios: React.FC = () => {
                   type="number"
                   id="intervaloCarga"
                   name="intervaloCarga"
-                  value={editingHorario.intervaloCarga}
+                  value={editingHorario.intervaloCarga || ''}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -241,7 +251,7 @@ const GerenciarHorarios: React.FC = () => {
                   type="number"
                   id="intervaloDescarga"
                   name="intervaloDescarga"
-                  value={editingHorario.intervaloDescarga}
+                  value={editingHorario.intervaloDescarga || ''}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -353,26 +363,26 @@ const GerenciarHorarios: React.FC = () => {
               </div>
 
               <h2 className="text-xl font-bold mt-8 mb-4 text-center">Indisponibilidades Registradas</h2>
-{indisponibilidades.length > 0 ? (
-  <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
-    {indisponibilidades.map((ind) => (
-      <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
-        <div>
-          <p>{ind.DataAgendamento} - {ind.HoraAgendamento}</p>
-          <p><strong>Tipo:</strong> {ind.TipoAgendamento}</p> {/* Adiciona o campo TipoAgendamento */}
-        </div>
-        <button
-          onClick={() => openModal(ind.CodigoAgendamento!)}
-          className="ml-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-        >
-          Excluir
-        </button>
-      </li>
-    ))}
-  </ul>
-) : (
-  <p className="text-center text-gray-500">Não há registros de indisponibilidades no momento.</p>
-)}
+              {indisponibilidades.length > 0 ? (
+                <ul className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
+                  {indisponibilidades.map((ind) => (
+                    <li key={ind.CodigoAgendamento} className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
+                      <div>
+                        <p>{ind.DataAgendamento} - {ind.HoraAgendamento}</p>
+                        <p><strong>Tipo:</strong> {ind.TipoAgendamento}</p>
+                      </div>
+                      <button
+                        onClick={() => openModal(ind.CodigoAgendamento!)}
+                        className="ml-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                      >
+                        Excluir
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-gray-500">Não há registros de indisponibilidades no momento.</p>
+              )}
 
             </div>
           )}

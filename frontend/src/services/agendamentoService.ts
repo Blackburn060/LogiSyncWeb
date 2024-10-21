@@ -3,34 +3,60 @@ import { Agendamento } from '../models/Agendamento';
 import { AxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-// Interface para decodificar o token
 interface DecodedToken {
   id?: number;
 }
 
 // Função para buscar agendamentos por usuário com a placa associada
-export const getAgendamentosComPlaca = async (token: string, userId: number): Promise<Agendamento[]> => {
+export const getAgendamentosComPlacaIncremental = async (
+  token: string,
+  userId: string,
+  limit: number = 50,  // Define o limite por página
+  offset: number = 0   // Começa com o offset inicial em 0
+): Promise<Agendamento[]> => {
+  const allAgendamentos: Agendamento[] = [];
+  let hasMoreData = true;
+
   try {
-    const response = await api.get(`/agendamentos-com-placa?CodigoUsuario=${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
+    // Loop para buscar agendamentos enquanto houver dados disponíveis
+    while (hasMoreData) {
+      const response = await api.get(
+        `/agendamentos-com-placa?CodigoUsuario=${userId}&limit=${limit}&offset=${offset}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Se não houver dados ou o status for 204 (sem conteúdo), pare a busca
+      if (response.status === 204 || !response.data.length) {
+        hasMoreData = false;
+      } else {
+        // Adiciona os agendamentos retornados à lista total
+        allAgendamentos.push(...response.data);
+
+        // Incrementa o offset para buscar o próximo lote
+        offset += limit;
+      }
+    }
+
+    return allAgendamentos; // Retorna todos os agendamentos após finalizar as requisições
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      console.error('Erro ao buscar agendamentos com placa:', error.message);
+      console.error("Erro ao buscar agendamentos com placa:", error.message);
       if (error.response) {
-        console.error('Detalhes do erro:', error.response.data);
+        console.error("Detalhes do erro:", error.response.data);
       }
     } else {
-      console.error('Erro desconhecido ao buscar agendamentos com placa:', error);
+      console.error("Erro desconhecido ao buscar agendamentos com placa:", error);
     }
     throw error;
   }
 };
 
-// Função para buscar agendamentos
+
+
 // Função para buscar agendamentos
 export const getAgendamentos = async (token: string): Promise<Agendamento[]> => {
   try {
@@ -40,29 +66,38 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
       },
     });
 
-    const agendamentos = response.data;
+    if (response.status === 204) {
+      return [];
+    }
 
-    // Iterar pelos agendamentos e buscar a descrição do produto e o AnoSafra para cada um
+    let agendamentos = response.data;
+
+    // Filtra agendamentos que não são "Indisponível"
+    agendamentos = agendamentos.filter(
+      (agendamento: Agendamento) => agendamento.SituacaoAgendamento !== "Indisponível"
+    );
+
     for (const agendamento of agendamentos) {
       if (agendamento.CodigoProduto) {
         try {
           const descricaoProduto = await getProdutoByCodigo(agendamento.CodigoProduto, token);
-          agendamento.DescricaoProduto = descricaoProduto; // Adiciona a descrição do produto ao agendamento
+          agendamento.DescricaoProduto = descricaoProduto;
         } catch (error) {
           console.error(`Erro ao buscar o produto para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
-      } else {
-        console.error(`Agendamento ${agendamento.CodigoAgendamento} não possui CodigoProduto.`);
       }
 
-      // Adicionar a busca pelo AnoSafra se o CodigoSafra estiver presente
       if (agendamento.CodigoSafra) {
         try {
           const anoSafra = await getSafraByCodigo(agendamento.CodigoSafra, token);
-          agendamento.AnoSafra = anoSafra; // Adiciona o AnoSafra ao agendamento
+          agendamento.AnoSafra = anoSafra;
         } catch (error) {
           console.error(`Erro ao buscar o AnoSafra para o agendamento ${agendamento.CodigoAgendamento}`, error);
         }
+      }
+
+      if (agendamento.ArquivoAnexado) { // Adicione lógica para preencher Arquivo se estiver presente
+        agendamento.Arquivo = agendamento.ArquivoAnexado;
       }
     }
 
@@ -74,7 +109,49 @@ export const getAgendamentos = async (token: string): Promise<Agendamento[]> => 
 };
 
 
-// Função para adicionar um novo agendamento
+// Função para buscar dados da portaria por CodigoAgendamento
+export const getDadosPortaria = async (codigoAgendamento: number, token: string) => {
+  try {
+    const response = await api.get(`/portarias/${codigoAgendamento}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar dados da portaria:", error);
+    throw error;
+  }
+};
+
+// Função para buscar o nome do Produto
+export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
+  try {
+    const response = await api.get(`/cadastroprodutos/${codigoProduto}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.DescricaoProduto;
+  } catch (error) {
+    console.error("Erro ao buscar Produto:", error);
+    throw error;
+  }
+};
+// Função para buscar a safra pelo código
+export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
+  try {
+    const response = await api.get(`/cadastrosafra/${codigoSafra}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.AnoSafra;
+  } catch (error) {
+    console.error("Erro ao buscar Safra:", error);
+    throw error;
+  }
+};
 export const addAgendamento = async (token: string, agendamento: Agendamento): Promise<Agendamento> => {
   try {
     const response = await api.post('/agendamentos', agendamento, {
@@ -95,37 +172,26 @@ export const addAgendamento = async (token: string, agendamento: Agendamento): P
     throw error;
   }
 };
-
-// Função para buscar o nome do Produto
-export const getProdutoByCodigo = async (codigoProduto: number, token: string) => {
+export const getAgendamentosAdmin = async (token: string): Promise<Agendamento[]> => {
   try {
-    const response = await api.get(`/produtos/${codigoProduto}`, {
+    const response = await api.get('/agendamentosAdmin', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data.DescricaoProduto;  // Retorna a descrição do produto
-  } catch (error) {
-    console.error("Erro ao buscar Produto:", error);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      console.error('Erro ao buscar agendamentos admin:', error.message);
+      if (error.response) {
+        console.error('Detalhes do erro:', error.response.data);
+      }
+    } else {
+      console.error('Erro desconhecido ao buscar agendamentos admin:', error);
+    }
     throw error;
   }
 };
-
-// Função para buscar a safra pelo código
-export const getSafraByCodigo = async (codigoSafra: number, token: string) => {
-  try {
-    const response = await api.get(`/safras/${codigoSafra}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data.AnoSafra;  // Retorna o ano da safra
-  } catch (error) {
-    console.error("Erro ao buscar Safra:", error);
-    throw error;
-  }
-};
-
 // Função para atualizar o status do agendamento no banco de dados
 export const updateAgendamentoStatus = async (
   id: number, 
@@ -133,7 +199,6 @@ export const updateAgendamentoStatus = async (
   token: string
 ) => {
   try {
-    // Decodificando o token para obter o ID do usuário
     const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
     const usuarioId = decodedToken.id;
 
@@ -141,7 +206,6 @@ export const updateAgendamentoStatus = async (
       throw new Error('ID do usuário não encontrado no token');
     }
 
-    // Atualizando o status do agendamento com o tipo de agendamento
     const response = await api.put(`/agendamentos/${id}`, {
       ...data,
       UsuarioAprovacao: usuarioId,
@@ -158,42 +222,12 @@ export const updateAgendamentoStatus = async (
   }
 };
 
-
-
 // Função para autorizar agendamentos
-export const finalizarAgendamento = async (
-  token: string,
-  agendamentoId: number,
-  tipoAgendamento: string
-) => {
-  try {
-    const dataHoraSaida = new Date().toISOString();
 
-    const response = await api.put(
-      `/agendamentos/${agendamentoId}`,
-      {
-        SituacaoAgendamento: "Finalizado",
-        DataHoraSaida: dataHoraSaida,
-        TipoAgendamento: tipoAgendamento,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return { message: "Agendamento finalizado com sucesso!" };
-  } catch (error) {
-    console.error("Erro ao finalizar o agendamento:", error);
-    throw error;
-  }
-};
 
 // Função para recusar agendamentos com motivo
 export const recusarAgendamento = async (token: string, id: number, motivo: string): Promise<void> => {
   try {
-    // Decodificando o token para obter o ID do usuário
     const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
     const usuarioId = decodedToken.id;
 
@@ -269,6 +303,11 @@ export const getIndisponibilidades = async (token: string): Promise<Agendamento[
         Authorization: `Bearer ${token}`,
       },
     });
+
+    if (response.status === 204) {
+      return [];
+    }
+
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {

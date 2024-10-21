@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/axiosConfig";
-import { AxiosError } from "axios";  // Importa AxiosError para definir o tipo do erro
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";  // Importa o locale para PT-BR
+import { AxiosError } from "axios";
+import { isValid, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface DadosPortariaProps {
   codigoAgendamento: number | null;
   dataHoraSaida: string;
   observacaoPortaria: string;
   setObservacaoPortaria: React.Dispatch<React.SetStateAction<string>>;
-  isObservacaoEditable: boolean; // Prop para controlar se a observação é editável
-  situacaoAgendamento: string; // Status do agendamento
+  isObservacaoEditable: boolean;
+  situacaoAgendamento: string;
 }
 
 const DadosPortaria: React.FC<DadosPortariaProps> = ({ 
@@ -19,19 +19,24 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
   observacaoPortaria, 
   setObservacaoPortaria,
   isObservacaoEditable,
-  situacaoAgendamento // Status do agendamento
+  situacaoAgendamento
 }) => {
   const [portariaData, setPortariaData] = useState({
     dataChegada: "N/A",
-    observacao: "",
-    motivoRecusa: "", // Adiciona o motivo da recusa aqui
+    motivoRecusa: "",
   });
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const formatarData = (dataString: string) => {
     if (!dataString || dataString === "N/A") return "N/A";
+    
     const data = new Date(dataString);
+    
+    if (!isValid(data)) {
+      return "Data inválida";
+    }
+    
     return format(data, "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR });
   };
 
@@ -44,8 +49,7 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
           if (isMounted) {
             setPortariaData({
               dataChegada: formatarData(response.data.DataHoraEntrada) || "N/A",
-              observacao: response.data.ObservacaoPortaria || "Nenhuma observação disponível",
-              motivoRecusa: response.data.MotivoRecusa || "Nenhum motivo de recusa disponível", // Adiciona o motivo da recusa
+              motivoRecusa: response.data.MotivoRecusa || "Nenhum motivo de recusa disponível",
             });
 
             // Se o status for "Reprovado", exibe o MotivoRecusa em vez de ObservacaoPortaria
@@ -61,11 +65,9 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
           if (error instanceof AxiosError) {
             if (error.response?.status === 404) {
               setPortariaData({ 
-                dataChegada: "N/A", 
-                observacao: "Nenhuma observação disponível", 
+                dataChegada: "N/A",
                 motivoRecusa: "Nenhum motivo de recusa disponível" 
               });
-              setObservacaoPortaria("Nenhuma observação disponível");
               setErrorMessage(null); 
             } else {
               setErrorMessage("Erro ao carregar dados da portaria.");
@@ -119,10 +121,10 @@ const DadosPortaria: React.FC<DadosPortariaProps> = ({
             <label className="block font-semibold">Observação</label>
             <textarea
               className="border w-full px-2 py-1 rounded-md"
-              value={observacaoPortaria} // Usando observacaoPortaria ou motivoRecusa
-              onChange={(e) => setObservacaoPortaria(e.target.value)} // Permitir que a observação seja atualizada
+              value={observacaoPortaria}
+              onChange={(e) => setObservacaoPortaria(e.target.value)}
               placeholder="Insira uma observação"
-              disabled={!isObservacaoEditable} // Desabilita o campo se não for editável
+              disabled={!isObservacaoEditable}
             ></textarea>
           </div>
         </div>

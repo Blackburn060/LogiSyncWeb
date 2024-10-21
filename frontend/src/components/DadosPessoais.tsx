@@ -10,20 +10,46 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
     nome: "Não Informado",
     cpf: "Não Informado",
     telefone: "Não Informado",
+    transportadora: "Não Informada",
   });
 
   useEffect(() => {
     const fetchDadosPessoais = async () => {
       try {
-        const response = await api.get(`/usuarios/${usuarioId}`);
-        const userData = response.data || {}; // Verifique se há dados
-        setDadosPessoais({
+        // Buscar dados pessoais do usuário vinculado ao agendamento
+        const responseUsuario = await api.get(`/usuarios/${usuarioId}`);
+        const userData = responseUsuario.data || {};
+
+
+        // Atualiza dados pessoais
+        setDadosPessoais((prevState) => ({
+          ...prevState,
           nome: userData.NomeCompleto || "Não Informado",
           cpf: userData.CPF || "Não Informado",
           telefone: userData.NumeroCelular || "Não Informado",
-        });
+        }));
+
+        // Buscar transportadora vinculada ao usuário do agendamento
+        if (userData.CodigoTransportadora) {
+          const responseTransportadora = await api.get(
+            `/transportadoras/${userData.CodigoTransportadora}`
+          );
+          const transportadoraData = responseTransportadora.data || {};
+
+          // Atualiza transportadora
+          setDadosPessoais((prevState) => ({
+            ...prevState,
+            transportadora: transportadoraData.Nome || "Não Informada",
+          }));
+        } else {
+          // Caso o usuário não tenha uma transportadora vinculada
+          setDadosPessoais((prevState) => ({
+            ...prevState,
+            transportadora: "Não Informada",
+          }));
+        }
       } catch (error) {
-        console.error("Erro ao buscar dados pessoais:", error);
+        console.error("Erro ao buscar dados pessoais e transportadora:", error);
       }
     };
 
@@ -56,12 +82,21 @@ const DadosPessoais: React.FC<DadosPessoaisProps> = ({ usuarioId }) => {
             readOnly
           />
         </div>
-        <div className="col-span-2">
+        <div>
           <label className="block font-semibold">Telefone</label>
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
             value={dadosPessoais.telefone}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Transportadora</label>
+          <input
+            type="text"
+            className="border w-full px-2 py-1 rounded-md"
+            value={dadosPessoais.transportadora} // Exibindo a transportadora
             readOnly
           />
         </div>

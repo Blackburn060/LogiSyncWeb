@@ -46,6 +46,98 @@ const addTransportadora = (transportadora, userId) => {
         const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
         const sqlInsert = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
 
+        db.run(sqlInsert, [transportadora.Nome, transportadora.NomeFantasia, transportadora.CNPJ, 1, dataGeracao], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                const newCodigoTransportadora = this.lastID; 
+                if (!newCodigoTransportadora) {
+                    reject(new Error('Falha ao obter o CodigoTransportadora após a inserção'));
+                } else {
+                    
+                    const sqlUpdateUser = 'UPDATE cadastrousuarios SET CodigoTransportadora = ?, DataAlteracao = ? WHERE CodigoUsuario = ?';
+                    const dataAlteracao = dataGeracao;
+
+                    db.run(sqlUpdateUser, [newCodigoTransportadora, dataAlteracao, userId], function(err) {
+                        if (err) {
+                            reject(err);
+                        } else {
+
+                            resolve({
+                                CodigoTransportadora: newCodigoTransportadora,
+                                Nome: transportadora.Nome,
+                                NomeFantasia: transportadora.NomeFantasia,
+                                CNPJ: transportadora.CNPJ,
+                                SituacaoTransportadora: 1,
+                                DataGeracao: dataGeracao
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    });
+};
+
+const updateTransportadora = (transportadora, id, userId) => {
+    return new Promise((resolve, reject) => {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
+        let sql = 'UPDATE cadastrotransportadora SET ';
+        let params = [];
+        let updates = [];
+
+        if (transportadora.Nome !== undefined) {
+            updates.push('Nome = ?');
+            params.push(transportadora.Nome);
+        }
+        if (transportadora.CNPJ !== undefined) {
+            updates.push('CNPJ = ?');
+            params.push(transportadora.CNPJ);
+        }
+        if (transportadora.NomeFantasia !== undefined) {
+            updates.push('NomeFantasia = ?');
+            params.push(transportadora.NomeFantasia);
+        }
+
+        updates.push('DataAlteracao = ?, UsuarioAlteracao = ?');
+        params.push(dataAlteracao, userId);
+
+        if (updates.length > 0) {
+            sql += updates.join(', ') + ' WHERE CodigoTransportadora = ?';
+            params.push(id);
+
+            db.run(sql, params, function(err) {
+                if (err) reject(err);
+                else resolve(this.changes);
+            });
+        } else {
+            reject(new Error("No fields to update"));
+        }
+    });
+};
+
+// Deletar uma transportadora
+const deleteTransportadora = (id) => {
+    return new Promise((resolve, reject) => {
+        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
+        const sql = 'UPDATE cadastrotransportadora SET SituacaoTransportadora = 0, DataAlteracao = ? WHERE CodigoTransportadora = ?';
+        db.run(sql, [dataAlteracao, id], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.changes);
+            }
+        });
+    });
+};
+
+
+// Adicionar uma nova transportadora
+const addTransportadoraPublic = (transportadora, userId) => {
+    return new Promise((resolve, reject) => {
+        const dataGeracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
+        const sqlInsert = `INSERT INTO cadastrotransportadora (Nome, NomeFantasia, CNPJ, SituacaoTransportadora, DataGeracao) VALUES (?, ?, ?, ?, ?)`;
+
         db.run(sqlInsert, [transportadora.nomeEmpresa, transportadora.nomeFantasia, transportadora.cnpj, 1, dataGeracao], function(err) {
             if (err) {
                 reject(err);
@@ -79,66 +171,11 @@ const addTransportadora = (transportadora, userId) => {
     });
 };
 
-  
-
-
-// Atualizar uma transportadora
-const updateTransportadora = (transportadora, id) => {
-    return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
-        let sql = 'UPDATE cadastrotransportadora SET ';
-        let params = [];
-        let updates = [];
-
-        if (transportadora.Nome !== undefined) {
-            updates.push('Nome = ?');
-            params.push(transportadora.Nome);
-        }
-        if (transportadora.CNPJ !== undefined) {
-            updates.push('CNPJ = ?');
-            params.push(transportadora.CNPJ);
-        }
-        if (transportadora.NomeFantasia !== undefined) {
-            updates.push('NomeFantasia = ?');
-            params.push(transportadora.NomeFantasia);
-        }
-
-        updates.push('DataAlteracao = ?');
-        params.push(dataAlteracao);
-
-        if (updates.length > 0) {
-            sql += updates.join(', ') + ' WHERE CodigoTransportadora = ?';
-            params.push(id);
-
-            db.run(sql, params, function(err) {
-                if (err) reject(err);
-                else resolve(this.changes);
-            });
-        } else {
-            reject(new Error("No fields to update"));
-        }
-    });
-};
-
-// Deletar uma transportadora
-const deleteTransportadora = (id) => {
-    return new Promise((resolve, reject) => {
-        const dataAlteracao = moment().tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss');
-        const sql = 'UPDATE cadastrotransportadora SET SituacaoTransportadora = 0, DataAlteracao = ? WHERE CodigoTransportadora = ?';
-        db.run(sql, [dataAlteracao, id], function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(this.changes);
-            }
-        });
-    });
-};
-
 module.exports = {
     getAllTransportadoras,
     addTransportadora,
     updateTransportadora,
     deleteTransportadora,
-    getTransportadoraById 
+    getTransportadoraById,
+    addTransportadoraPublic
 };

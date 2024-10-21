@@ -53,7 +53,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ logout, user }) => {
                     <button onClick={logout} className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-500 hover:text-white flex items-center transition-colors duration-300"><FaSignOutAlt className="mr-2" /> Sair
                     </button>
                     <div className="px-4 py-2 text-gray-800 italic">
-                        Version: Alpha 1.5.34
+                        Versão: Beta v1.1.0
                     </div>
                 </div>
             )}

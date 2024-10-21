@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSpinner } from 'react-icons/fa';
 import { Toaster, toast } from 'react-hot-toast';
+import Cleave from 'cleave.js/react';
+import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 import { checkEmailExistsPublic } from '../services/usuarioService';
 import imagemLateralLogin from '../assets/images/Imagem-Lateral-Login.webp';
 import { FaAsterisk } from 'react-icons/fa';
@@ -21,11 +23,23 @@ const RegistroUsuario: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setFormData({ ...formData, cpf: value });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
   
     try {
+      const cleanedCPF = formData.cpf.replace(/\D/g, '');
+      if (!cpfValidator.isValid(cleanedCPF)) {
+        toast.error('CPF inválido. Verifique e tente novamente.');
+        setLoading(false);
+        return;
+      }
+
       const { exists, active } = await checkEmailExistsPublic(formData.email);
   
       if (exists && active) {
@@ -55,15 +69,15 @@ const RegistroUsuario: React.FC = () => {
         <img src={imagemLateralLogin} alt="Image Login Screen" className="w-auto h-full object-contain" />
       </div>
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-logisync-color-blue-400 lg:rounded-lg lg:rounded-r-lg lg:rounded-l-none">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent scrollbar-thumb-rounded-full">
 
           <div className="mb-6">
             <h1 className="bg-logisync-color-blue-50 text-white text-2xl font-extrabold py-2 w-full rounded flex items-center justify-center">Insira seus dados</h1>
           </div>
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="nomeCompleto">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="nomeCompleto">
               Nome Completo
-              <FaAsterisk size={13} color='red' className='ml-2' /></label>
+              <FaAsterisk size={11} color='red' className='ml-1' /></label>
             <input
               type="text"
               id="nomeCompleto"
@@ -76,24 +90,24 @@ const RegistroUsuario: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="cpf">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="cpf">
               CPF
-              <FaAsterisk size={13} color='red' className='ml-2' /></label>
-            <input
-              type="text"
+              <FaAsterisk size={11} color='red' className='ml-1' /></label>
+            <Cleave
               id="cpf"
               name="cpf"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="Digite o seu CPF"
+              options={{ blocks: [3, 3, 3, 2], delimiters: ['.', '.', '-'], numericOnly: true }}
               value={formData.cpf}
-              onChange={handleChange}
+              onChange={handleCPFChange}
               required
             />
           </div>
           <div className="mb-4">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="email">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="email">
               E-mail
-              <FaAsterisk size={13} color='red' className='ml-2' /></label>
+              <FaAsterisk size={11} color='red' className='ml-1' /></label>
             <input
               type="email"
               id="email"
@@ -106,9 +120,9 @@ const RegistroUsuario: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="flex text-white text-lg font-extrabold mb-1" htmlFor="senha">
+            <label className="flex text-white text-lg font-bold mb-1" htmlFor="senha">
               Senha
-              <FaAsterisk size={13} color='red' className='ml-2' /></label>
+              <FaAsterisk size={11} color='red' className='ml-1' /></label>
             <input
               type="password"
               id="senha"

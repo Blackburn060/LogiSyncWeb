@@ -3,7 +3,7 @@ import Calendar, { CalendarProps } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Horario } from '../models/Horario';
 import { getHorariosDisponiveis } from '../services/horarioService';
@@ -12,25 +12,21 @@ import Modal from 'react-modal';
 
 const CalendarioAgendamentos: React.FC = () => {
   const { user, token } = useAuth();
-  const [authChecked, setAuthChecked] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<Horario[]>([]);
   const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [tipoAgendamento, setTipoAgendamento] = useState<string>(localStorage.getItem('TipoAgendamento') || 'carga');
 
   const navigate = useNavigate();
 
-
   useEffect(() => {
-    const tipoAgendamento = localStorage.getItem('TipoAgendamento');
     if (!tipoAgendamento) {
       navigate('/processo');
     }
-  }, [navigate]);
-
+  }, [navigate, tipoAgendamento]);
 
   const handleRevisarAgendamento = () => {
     if (!user || !token) {
@@ -58,23 +54,18 @@ const CalendarioAgendamentos: React.FC = () => {
     navigate('/registro/usuario');
   };
 
+  const fetchHorarios = async (selectedDate: Date, tipo: string) => {
+    const formattedDate = selectedDate.toISOString().split('T')[0];
+    const horarios = await getHorariosDisponiveis(formattedDate, tipo, token!);
+    setHorariosDisponiveis(horarios);
+    setHorarioSelecionado(null);
+    setAlertMessage('');
+  };
+
   useEffect(() => {
-    const fetchHorariosDisponiveis = async () => {
-      if (!selectedDate) return;
-
-      try {
-        const formattedDate = selectedDate.toISOString().split('T')[0];
-        const tipoAgendamento = localStorage.getItem('TipoAgendamento') || 'carga';
-        const horarios = await getHorariosDisponiveis(formattedDate, tipoAgendamento);
-        setHorariosDisponiveis(horarios);
-        setHorarioSelecionado(null);
-      } catch (error) {
-        console.error('Erro ao buscar horários disponíveis', error);
-      }
-    };
-
-    fetchHorariosDisponiveis();
-  }, [selectedDate]);
+    if (!selectedDate) return;
+    fetchHorarios(selectedDate, tipoAgendamento);
+  }, [selectedDate, tipoAgendamento, token]);
 
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
@@ -84,62 +75,79 @@ const CalendarioAgendamentos: React.FC = () => {
       selectedDate.setHours(0, 0, 0, 0);
 
       if (selectedDate.getTime() < now.getTime()) {
-        setAlertMessage("Você não pode selecionar uma data anterior ao dia de hoje. Por favor, escolha uma data válida.");
-        setIsAlertModalOpen(true);
+        setAlertMessage('Você não pode selecionar uma data anterior ao dia de hoje. Por favor, escolha uma data válida.');
+        setHorarioSelecionado(null);
       } else {
         setSelectedDate(value);
         setHorarioSelecionado(null);
+        setAlertMessage('');
       }
     }
   };
 
   const handleHorarioClick = (horario: Horario) => {
     if (horario.agendado) {
-      setAlertMessage("Este horário já está agendado. Por favor, selecione outro horário.");
-      setIsAlertModalOpen(true);
+      setAlertMessage('Este horário já está agendado. Por favor, selecione outro horário.');
     } else {
       setHorarioSelecionado(horario);
+      setAlertMessage('');
     }
   };
 
-  const handleCloseAlertModal = () => {
-    setIsAlertModalOpen(false);
+  // Função para alternar o tipo de agendamento entre "Carga" e "Descarga"
+  const toggleTipoAgendamento = () => {
+    const novoTipo = tipoAgendamento === 'carga' ? 'descarga' : 'carga';
+    localStorage.setItem('TipoAgendamento', novoTipo);
+    setTipoAgendamento(novoTipo);
+    if (selectedDate) {
+      fetchHorarios(selectedDate, novoTipo);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-black">
-      {/* Barra de navegação personalizada */}
-      <Navbar showLogin={!user} showRegister={!user} /> {/* Navbar com condições */}
+      <Navbar showLogin={!user} showRegister={!user} />
+      <Toaster position="top-right" containerClassName='mt-20' />
 
-      <Toaster position="top-right" />
       <div className="container mx-auto pt-10 flex-grow">
+        {/* Botão de Alternar para Carga/Descarga */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={toggleTipoAgendamento}
+            className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
+          >
+            Alternar para {tipoAgendamento === 'carga' ? 'Descarga' : 'Carga'}
+          </button>
+        </div>
+
+        {/* Conteúdo do Calendário */}
         <div className="bg-white flex justify-center items-start p-6">
           <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
             {/* Calendário */}
             <div
               className="p-4 bg-gray-900 text-white rounded-t-lg md:rounded-l-lg md:rounded-t-none flex justify-center items-center md:w-1/2 w-full"
-              style={{ height: "550px" }}
+              style={{ height: '550px' }}
             >
               <Calendar
                 onChange={handleDateChange}
                 value={selectedDate}
                 className="text-lg bg-gray-800 p-4 rounded-lg shadow w-full h-full"
                 tileClassName={({ date }) => {
-                  let classes = "text-white text-xl h-16 w-16 flex items-center justify-center rounded-full transition duration-200 ease-in-out";
+                  let classes = 'text-white text-xl h-16 w-16 flex items-center justify-center rounded-full transition duration-200 ease-in-out';
                   const now = new Date();
                   now.setHours(0, 0, 0, 0);
-                  
+
                   // Adiciona uma cor de fundo especial para o dia atual
                   if (date.getTime() === now.getTime()) {
-                    classes += " bg-yellow-500 text-white";
-                  }
-                  
-                  // Estilo para o dia selecionado
-                  if (selectedDate && date.getTime() === selectedDate.getTime()) {
-                    classes += " bg-blue-600 text-white";
+                    classes += ' bg-yellow-500 text-white';
                   }
 
-                  return classes + " hover:bg-blue-400 hover:text-black hover:border hover:border-blue-600";
+                  // Estilo para o dia selecionado
+                  if (selectedDate && date.getTime() === selectedDate.getTime()) {
+                    classes += ' bg-blue-600 text-white';
+                  }
+
+                  return classes + ' hover:bg-blue-400 hover:text-black hover:border hover:border-blue-600';
                 }}
                 next2Label={null}
                 prev2Label={null}
@@ -154,27 +162,46 @@ const CalendarioAgendamentos: React.FC = () => {
             {/* Seção de Horários e Status */}
             <div
               className="p-4 bg-blue-700 text-white flex flex-col justify-start items-center flex-grow md:w-1/2 w-full"
-              style={{ height: "550px" }}
+              style={{ height: '550px' }}
             >
-              <h2 className="text-md font-semibold mb-4">
-                {selectedDate
-                  ? `${selectedDate.toLocaleDateString("pt-BR", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
+              {/* Título com o indicador de tipo de agendamento */}
+              <div className="flex items-center space-x-4">
+                <h2 className="text-md font-semibold">
+                  {selectedDate
+                    ? `${selectedDate.toLocaleDateString('pt-BR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
                     })}`
-                  : "Escolha um dia no calendário!"}
-              </h2>
+                    : 'Escolha um dia no calendário!'}
+                </h2>
+                {/* Indicador de TipoAgendamento */}
+                <div
+                  className={`flex items-center justify-center px-2 py-1 text-sm font-semibold rounded ${tipoAgendamento === 'carga' ? 'bg-green-500' : 'bg-yellow-500'
+                    }`}
+                >
+                  {tipoAgendamento === 'carga' ? 'Carga' : 'Descarga'}
+                </div>
+              </div>
 
               {/* Títulos de Horários e Status */}
               <div className="w-full grid grid-cols-2 text-center mb-2">
-                <span className="font-bold">Horários</span>
-                <span className="font-bold">Status</span>
+                <div className="flex justify-start pl-4">
+                  <span className="font-bold">Horários</span>
+                </div>
+                <div className="flex justify-end pr-4">
+                  <span className="font-bold">Status</span>
+                </div>
               </div>
 
+              {/* Verificação de mensagem de erro */}
               <div className="overflow-y-auto w-full border-l border-gray-500 flex-grow">
-                {horariosDisponiveis.length > 0 ? (
+                {alertMessage ? (
+                  <div className="text-center bg-red-500 text-white p-4 rounded-lg">
+                    {alertMessage}
+                  </div>
+                ) : horariosDisponiveis.length > 0 ? (
                   <ul className="space-y-2">
                     {horariosDisponiveis.map((horario) => (
                       <li
@@ -182,19 +209,19 @@ const CalendarioAgendamentos: React.FC = () => {
                         className="mb-2 flex justify-between px-4"
                       >
                         <button
-                          className={`px-4 py-2 rounded-lg w-full flex justify-between items-center text-sm ${
-                            horarioSelecionado === horario
-                              ? "bg-blue-800"
-                              : "bg-blue-600"
-                          } hover:bg-blue-800`}
+                          className={`px-4 py-2 rounded-lg w-full flex justify-between items-center text-sm ${horarioSelecionado === horario ? 'bg-blue-800' : 'bg-blue-600'
+                            } hover:bg-blue-800`}
                           onClick={() => handleHorarioClick(horario)}
                         >
-                          <span>{`${horario.horarioInicio} - ${horario.horarioFim}`}</span>
-                          <span
-                            className={`w-4 h-4 rounded-full ${
-                              !horario.agendado ? "bg-green-500" : "bg-gray-500"
-                            }`}
-                          ></span>
+                          <div className="flex justify-start w-full">
+                            <span>{`${horario.horarioInicio} - ${horario.horarioFim}`}</span>
+                          </div>
+                          <div className="flex justify-end w-full">
+                            <span
+                              className={`w-4 h-4 rounded-full ${!horario.agendado ? 'bg-green-500' : 'bg-gray-500'
+                                }`}
+                            ></span>
+                          </div>
                         </button>
                       </li>
                     ))}
@@ -206,7 +233,7 @@ const CalendarioAgendamentos: React.FC = () => {
 
               <button
                 onClick={handleRevisarAgendamento}
-                className="mt-4 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
+                className="mt-4 bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
                 disabled={!horarioSelecionado}
               >
                 Revisar Agendamento
@@ -214,7 +241,6 @@ const CalendarioAgendamentos: React.FC = () => {
             </div>
           </div>
 
-          {/* Modal de Revisão de Agendamento */}
           {isModalOpen && horarioSelecionado && selectedDate && (
             <RevisarDadosAgendamento
               selectedDate={selectedDate}
@@ -223,7 +249,6 @@ const CalendarioAgendamentos: React.FC = () => {
             />
           )}
 
-          {/* Modal de Login/Cadastro */}
           <Modal
             isOpen={isLoginModalOpen}
             onRequestClose={handleCloseLoginModal}
@@ -247,24 +272,6 @@ const CalendarioAgendamentos: React.FC = () => {
                 Cadastrar-se
               </button>
             </div>
-          </Modal>
-
-          {/* Modal de Alerta de Horário já agendado ou data anterior */}
-          <Modal
-            isOpen={isAlertModalOpen}
-            onRequestClose={handleCloseAlertModal}
-            contentLabel="Ação Inválida"
-            className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
-            overlayClassName="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
-          >
-            <h2 className="text-xl font-bold text-center">Ação Inválida</h2>
-            <p className="mt-4 text-center">{alertMessage}</p>
-            <button
-              onClick={handleCloseAlertModal}
-              className="mt-6 bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded mx-auto"
-            >
-              Fechar
-            </button>
           </Modal>
         </div>
       </div>
