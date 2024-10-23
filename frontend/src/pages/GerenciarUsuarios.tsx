@@ -213,8 +213,11 @@ const GerenciarUsuarios: React.FC = () => {
         setIsSaving(true);
 
         try {
+
+            const { Senha, ...usuarioData } = selectedUser;
+
             await updateUsuario(token, selectedUser.CodigoUsuario!, {
-                ...selectedUser,
+                ...usuarioData ,
                 UsuarioAlteracao: user.id
             });
 
