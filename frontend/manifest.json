@@ -1,19 +1,19 @@
 {
   "name": "LogiSync",
   "short_name": "LogiSync",
-  "description": "LogiSync Application official WebApp",
+  "description": "LogiSync - Seu sistema de agendamento logístico!",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0335b0",
   "theme_color": "#0335b0",
   "icons": [
     {
-      "src": "logo192ComFundo.webp",
+      "src": "./logo192ComFundo.webp",
       "sizes": "192x192",
       "type": "image/webp"
     },
     {
-      "src": "logo512ComFundo.webp",
+      "src": "./logo512ComFundo.webp",
       "sizes": "512x512",
       "type": "image/webp"
     }
