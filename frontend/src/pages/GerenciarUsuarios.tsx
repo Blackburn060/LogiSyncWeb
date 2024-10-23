@@ -93,6 +93,42 @@ const GerenciarUsuarios: React.FC = () => {
         sortable: true,
     });
 
+    const localeText = {
+        page: 'Página',
+        more: 'Mais',
+        to: 'até',
+        of: 'de',
+        next: 'Próximo',
+        last: 'Último',
+        first: 'Primeiro',
+        previous: 'Anterior',
+        filterOoo: 'Filtrar...',
+        applyFilter: 'Aplicar Filtro...',
+        equals: 'Igual a',
+        notEqual: 'Diferente de',
+        lessThan: 'Menor que',
+        greaterThan: 'Maior que',
+        lessThanOrEqual: 'Menor ou igual a',
+        greaterThanOrEqual: 'Maior ou igual a',
+        inRange: 'No intervalo',
+        contains: 'Contém',
+        notContains: 'Não contém',
+        startsWith: 'Começa com',
+        endsWith: 'Termina com',
+        loadingOoo: 'Carregando...',
+        noRowsToShow: 'Nenhum dado para mostrar',
+        pinColumn: 'Fixar Coluna',
+        autoSizeThisColumn: 'Auto-ajustar esta Coluna',
+        autoSizeAllColumns: 'Auto-ajustar todas as Colunas',
+        resetColumns: 'Redefinir Colunas',
+        export: 'Exportar',
+        csvExport: 'Exportar CSV',
+        excelExport: 'Exportar Excel',
+        blank: 'Vazio',
+        notBlank: 'Não vazio',
+        pageSize: 'Itens por Página',
+    };
+
     useEffect(() => {
         const fetchUsuarios = async () => {
             if (!token) {
@@ -164,7 +200,7 @@ const GerenciarUsuarios: React.FC = () => {
     const handleSaveUser = async () => {
         if (!selectedUser || !token || !user) return;
 
-        if (!selectedUser.NomeCompleto || !selectedUser.Email || !selectedUser.CPF || !selectedUser.NumeroCelular) {
+        if (!selectedUser.NomeCompleto || !selectedUser.Email || !selectedUser.CPF || !selectedUser.NumeroCelular || !selectedUser.TipoUsuario) {
             toast.error('Por favor, preencha todos os campos obrigatórios.');
             return;
         }
@@ -282,7 +318,7 @@ const GerenciarUsuarios: React.FC = () => {
 
     // Função para adicionar um novo usuário
     const handleAddNewUser = async () => {
-        if (!newUsuario.NomeCompleto || !newUsuario.Email || !newUsuario.CPF || !newUsuario.NumeroCelular) {
+        if (!newUsuario.NomeCompleto || !newUsuario.Email || !newUsuario.CPF || !newUsuario.NumeroCelular || !newUsuario.TipoUsuario) {
             toast.error('Por favor, preencha todos os campos obrigatórios.');
             return;
         }
@@ -346,6 +382,7 @@ const GerenciarUsuarios: React.FC = () => {
                             defaultColDef={defaultColDef}
                             pagination={true}
                             paginationPageSize={20}
+                            localeText={localeText}
                         />
                     )}
                 </div>
@@ -429,6 +466,25 @@ const GerenciarUsuarios: React.FC = () => {
                             />
                         </div>
 
+                        <div>
+                            <label htmlFor="TipoUsuario" className="block text-sm font-medium text-gray-700">
+                                Função do Usuário
+                            </label>
+                            <select
+                                id="TipoUsuario"
+                                value={newUsuario.TipoUsuario}
+                                onChange={(e) => setNewUsuario((prev) => ({ ...prev, TipoUsuario: e.target.value }))}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                required
+                            >
+                                <option value="administrador">Administrador</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="portaria">Portaria</option>
+                                <option value="patio">Patio</option>
+                                <option value="motorista">Motorista</option>
+                            </select>
+                        </div>
+
                         <div className="flex justify-end gap-4 mt-6">
                             <button
                                 type="button"
@@ -460,7 +516,6 @@ const GerenciarUsuarios: React.FC = () => {
                 className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
                 ariaHideApp={false}
             >
-                {/* Conteúdo do modal de edição */}
                 {selectedUser && (
                     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
                         <h2 className="text-2xl font-bold mb-4">Editar Usuário</h2>
@@ -529,6 +584,25 @@ const GerenciarUsuarios: React.FC = () => {
                                     className="mt-1 block w-full p-2 border border-gray-300 rounded"
                                     required
                                 />
+                            </div>
+
+                            <div>
+                                <label htmlFor="TipoUsuario" className="block text-sm font-medium text-gray-700">
+                                    Função do Usuário
+                                </label>
+                                <select
+                                    id="TipoUsuario"
+                                    value={selectedUser.TipoUsuario}
+                                    onChange={(e) => handleInputChange('TipoUsuario', e.target.value)}
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded"
+                                    required
+                                >
+                                    <option value="administrador">Administrador</option>
+                                    <option value="gerente">Gerente</option>
+                                    <option value="portaria">Portaria</option>
+                                    <option value="patio">Patio</option>
+                                    <option value="motorista">Motorista</option>
+                                </select>
                             </div>
 
                             <div className="flex justify-between items-center mt-6">
