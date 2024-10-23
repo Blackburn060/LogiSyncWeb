@@ -248,7 +248,7 @@ const GerenciarProdutos: React.FC = () => {
                 </div>
 
                 <div>
-                    <div className="ag-theme-quartz" style={{ height: 500, width: '100%' }}>
+                    <div className="ag-theme-quartz h-[26rem] w-full">
                         {isLoading ? (
                             <div className="flex justify-center items-center h-full">
                                 <l-helix size="45" speed="2.5" color="black"></l-helix>

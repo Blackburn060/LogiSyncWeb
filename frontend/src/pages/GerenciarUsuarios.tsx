@@ -370,7 +370,7 @@ const GerenciarUsuarios: React.FC = () => {
                         Novo Usuário
                     </button>
                 </div>
-                <div className="ag-theme-quartz" style={{ height: 500, width: '100%' }}>
+                <div className="ag-theme-quartz h-[30rem] w-full">
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
                             <FaSpinner className="animate-spin text-4xl" />
