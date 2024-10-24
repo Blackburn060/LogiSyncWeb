@@ -342,7 +342,7 @@ const GerenciarHorarios: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="diaTodo" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="diaTodo" className="block text-sm font-medium text-gray-700 w-20">
                     <input
                       type="checkbox"
                       id="diaTodo"
