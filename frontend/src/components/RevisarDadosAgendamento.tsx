@@ -17,6 +17,7 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  UploadTask,
   UploadTaskSnapshot,
 } from "firebase/storage";
 import { storage } from "../../firebaseConfig";
@@ -50,9 +51,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
   const [observacao, setObservacao] = useState<string>("");
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [uploadTask, setUploadTask] = useState<any>(null);
+  const [uploadTask, setUploadTask] = useState<UploadTask | null>(null);
   const [arquivoUrl, setArquivoUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [quantidadeValida, setQuantidadeValida] = useState<boolean>(true);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -62,12 +64,11 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     setUploadProgress(0);
     setUploadTask(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const navigate = useNavigate();
-
   useEffect(() => {
     const fetchData = async () => {
       if (token && user) {
@@ -77,11 +78,14 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
 
           const veiculosData = await getVeiculos(token);
           setVeiculos(
-            veiculosData.filter((veiculo) => veiculo.SituacaoVeiculo === 1)
+            veiculosData.filter((veiculo) => veiculo.SituacaoVeiculo = 1)
           );
 
           const produtosData = await getProdutos(token);
-          setProdutos(produtosData);
+          const produtosAtivos = produtosData.filter(
+            (produto) => produto.SituacaoProduto = 1
+          );
+          setProdutos(produtosAtivos);
 
           const safrasData = await getSafras(token);
           setSafras(safrasData);
@@ -139,7 +143,9 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     if (!validateFile(file)) return;
 
     const storageRef = ref(storage, `uploads/${file.name}`);
-    const task = uploadBytesResumable(storageRef, file, { cacheControl: 'no-store' });
+    const task = uploadBytesResumable(storageRef, file, {
+      cacheControl: "no-store",
+    });
     setUploadTask(task);
 
     task.on(
@@ -184,12 +190,37 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
     });
   };
 
-  // Quando um novo arquivo é selecionado, ele automaticamente inicia o pré-processamento
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setArquivo(file);
     if (file) {
       handlePrepareUpload(file);
+    }
+  };
+
+  const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const quantidadeInserida = e.target.value;
+    setQuantidade(quantidadeInserida);
+
+    const capacidadeVeiculo = veiculos.find(
+      (v) => v.CodigoVeiculo === Number(veiculoSelecionado)
+    )?.CapacidadeCarga;
+
+    if (
+      quantidadeInserida &&
+      capacidadeVeiculo &&
+      Number(quantidadeInserida) > capacidadeVeiculo
+    ) {
+      setQuantidadeValida(false);
+      toast.dismiss();
+      toast.error(
+        `A quantidade não pode exceder a capacidade do veículo (${capacidadeVeiculo} kg).`
+      );
+    } else if (quantidadeInserida && Number(quantidadeInserida) === 0) {
+      setQuantidadeValida(false);
+      toast.error(`A quantidade deve ser maior que 0.`);
+    } else {
+      setQuantidadeValida(true);
     }
   };
 
@@ -242,7 +273,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
 
   return (
     <>
-      <Toaster position="top-right" containerClassName='mt-20' />
+      <Toaster position="top-right" containerClassName="mt-20" />
       <Modal
         isOpen={true}
         onRequestClose={onClose}
@@ -267,12 +298,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
             <div className="border p-3 rounded-lg">
               <h3 className="text-lg font-semibold mb-1">Dados Pessoais</h3>
               <div>
-                <strong>Nome:</strong>{" "}
-                {usuario?.NomeCompleto || "Não disponível"}
+                <strong>Nome:</strong> {usuario?.NomeCompleto || "Não disponível"}
               </div>
               <div>
-                <strong>Telefone:</strong>{" "}
-                {usuario?.NumeroCelular || "Não disponível"}
+                <strong>Telefone:</strong> {usuario?.NumeroCelular || "Não disponível"}
               </div>
               <div>
                 <strong>CPF:</strong> {usuario?.CPF || "Não disponível"}
@@ -283,16 +312,13 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
             <div className="border p-3 rounded-lg">
               <h3 className="text-lg font-semibold mb-1">Transportadora</h3>
               <div>
-                <strong>Nome fantasia:</strong>{" "}
-                {transportadora?.NomeFantasia || "Não disponível"}
+                <strong>Nome fantasia:</strong> {transportadora?.NomeFantasia || "Não disponível"}
               </div>
               <div>
-                <strong>Empresa:</strong>{" "}
-                {transportadora?.Nome || "Transportadora não registrada"}
+                <strong>Empresa:</strong> {transportadora?.Nome || "Transportadora não registrada"}
               </div>
               <div>
-                <strong>CPF/CNPJ:</strong>{" "}
-                {transportadora?.CNPJ || "Não disponível"}
+                <strong>CPF/CNPJ:</strong> {transportadora?.CNPJ || "Não disponível"}
               </div>
             </div>
 
@@ -307,10 +333,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
               >
                 <option value="">Selecione</option>
                 {veiculos.map((veiculo) => (
-                  <option
-                    key={veiculo.CodigoVeiculo}
-                    value={veiculo.CodigoVeiculo}
-                  >
+                  <option key={veiculo.CodigoVeiculo} value={veiculo.CodigoVeiculo}>
                     {veiculo.NomeVeiculo}
                   </option>
                 ))}
@@ -350,10 +373,7 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                 >
                   <option value="">Selecione</option>
                   {produtos.map((produto) => (
-                    <option
-                      key={produto.CodigoProduto}
-                      value={produto.CodigoProduto}
-                    >
+                    <option key={produto.CodigoProduto} value={produto.CodigoProduto}>
                       {produto.DescricaoProduto}
                     </option>
                   ))}
@@ -386,13 +406,20 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                   <strong>Quantidade:</strong>
                 </label>
                 <input
-                  type="text"
-                  className="border rounded p-1 w-full"
+                  type="number"
+                  className={`border rounded p-1 w-full ${
+                    !quantidadeValida ? "border-red-600" : ""
+                  }`}
                   placeholder="Quantidade"
                   value={quantidade}
-                  onChange={(e) => setQuantidade(e.target.value)}
+                  onChange={handleQuantidadeChange}
                   disabled={isSubmitting}
                 />
+                {!quantidadeValida && (
+                  <p className="text-red-600">
+                    A quantidade inserida excede a capacidade do veículo selecionado.
+                  </p>
+                )}
               </div>
 
               <div className="mt-2">
@@ -455,8 +482,9 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
 
             <button
               onClick={handleAgendar}
-              className={`bg-blue-500 text-white py-2 px-4 rounded mt-4 flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+              className={`bg-blue-500 text-white py-2 px-4 rounded mt-4 flex items-center justify-center ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               disabled={isSubmitting}
             >
               {isSubmitting ? <FaSpinner className="animate-spin text-2xl" /> : "Confirmar Agendamento"}
