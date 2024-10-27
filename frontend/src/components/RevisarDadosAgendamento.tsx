@@ -78,12 +78,12 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
 
           const veiculosData = await getVeiculos(token);
           setVeiculos(
-            veiculosData.filter((veiculo) => veiculo.SituacaoVeiculo = 1)
+            veiculosData.filter((veiculo) => (veiculo.SituacaoVeiculo = 1))
           );
 
           const produtosData = await getProdutos(token);
           const produtosAtivos = produtosData.filter(
-            (produto) => produto.SituacaoProduto = 1
+            (produto) => (produto.SituacaoProduto = 1)
           );
           setProdutos(produtosAtivos);
 
@@ -227,7 +227,12 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
   const handleAgendar = async () => {
     if (isSubmitting) return;
 
-    if (!usuario || !veiculoSelecionado || !selectedDate || !horarioSelecionado) {
+    if (
+      !usuario ||
+      !veiculoSelecionado ||
+      !selectedDate ||
+      !horarioSelecionado
+    ) {
       toast.error("Preencha todos os campos obrigatórios!");
       return;
     }
@@ -298,10 +303,12 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
             <div className="border p-3 rounded-lg">
               <h3 className="text-lg font-semibold mb-1">Dados Pessoais</h3>
               <div>
-                <strong>Nome:</strong> {usuario?.NomeCompleto || "Não disponível"}
+                <strong>Nome:</strong>{" "}
+                {usuario?.NomeCompleto || "Não disponível"}
               </div>
               <div>
-                <strong>Telefone:</strong> {usuario?.NumeroCelular || "Não disponível"}
+                <strong>Telefone:</strong>{" "}
+                {usuario?.NumeroCelular || "Não disponível"}
               </div>
               <div>
                 <strong>CPF:</strong> {usuario?.CPF || "Não disponível"}
@@ -312,13 +319,16 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
             <div className="border p-3 rounded-lg">
               <h3 className="text-lg font-semibold mb-1">Transportadora</h3>
               <div>
-                <strong>Nome fantasia:</strong> {transportadora?.NomeFantasia || "Não disponível"}
+                <strong>Nome fantasia:</strong>{" "}
+                {transportadora?.NomeFantasia || "Não disponível"}
               </div>
               <div>
-                <strong>Empresa:</strong> {transportadora?.Nome || "Transportadora não registrada"}
+                <strong>Empresa:</strong>{" "}
+                {transportadora?.Nome || "Transportadora não registrada"}
               </div>
               <div>
-                <strong>CPF/CNPJ:</strong> {transportadora?.CNPJ || "Não disponível"}
+                <strong>CPF/CNPJ:</strong>{" "}
+                {transportadora?.CNPJ || "Não disponível"}
               </div>
             </div>
 
@@ -333,7 +343,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
               >
                 <option value="">Selecione</option>
                 {veiculos.map((veiculo) => (
-                  <option key={veiculo.CodigoVeiculo} value={veiculo.CodigoVeiculo}>
+                  <option
+                    key={veiculo.CodigoVeiculo}
+                    value={veiculo.CodigoVeiculo}
+                  >
                     {veiculo.NomeVeiculo}
                   </option>
                 ))}
@@ -373,7 +386,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                 >
                   <option value="">Selecione</option>
                   {produtos.map((produto) => (
-                    <option key={produto.CodigoProduto} value={produto.CodigoProduto}>
+                    <option
+                      key={produto.CodigoProduto}
+                      value={produto.CodigoProduto}
+                    >
                       {produto.DescricaoProduto}
                     </option>
                   ))}
@@ -417,7 +433,8 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
                 />
                 {!quantidadeValida && (
                   <p className="text-red-600">
-                    A quantidade inserida excede a capacidade do veículo selecionado.
+                    A quantidade inserida excede a capacidade do veículo
+                    selecionado.
                   </p>
                 )}
               </div>
@@ -483,11 +500,17 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
             <button
               onClick={handleAgendar}
               className={`bg-blue-500 text-white py-2 px-4 rounded mt-4 flex items-center justify-center ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                isSubmitting || !quantidadeValida
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }`}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !quantidadeValida} // Desativa o botão se a quantidade for inválida
             >
-              {isSubmitting ? <FaSpinner className="animate-spin text-2xl" /> : "Confirmar Agendamento"}
+              {isSubmitting ? (
+                <FaSpinner className="animate-spin text-2xl" />
+              ) : (
+                "Confirmar Agendamento"
+              )}
             </button>
           </div>
         </div>
