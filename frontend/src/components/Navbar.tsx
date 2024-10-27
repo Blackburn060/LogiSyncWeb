@@ -50,7 +50,39 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin = true, showRegister = true }
 
   const isActive = (path: string) => location.pathname === path;
 
+  type PermissionPages = keyof typeof permissions;
+
+  const permissions = {
+    //Externo
+    calendario: ['motorista', 'gerente', 'administrador'],
+    agendamentos: ['motorista', 'gerente', 'administrador'],
+    veiculos: ['motorista', 'gerente', 'administrador'],
+    transportadora: ['motorista', 'gerente', 'administrador'],
+
+    //Interno
+    autorizarAgendamentos: ['administrador', 'gerente'],
+    portaria: ['administrador', 'gerente', 'portaria'],
+    patio: ['administrador', 'gerente', 'portaria', 'patio'],
+    relatorios: ['administrador', 'gerente'],
+    configuracoes: ['administrador', 'gerente'],
+    usuarios: ['administrador'],
+    produtos: ['administrador'],
+    horarios: ['administrador', 'gerente'],
+    safra: ['administrador']
+  };
+
   const renderNavLinks = () => {
+    if (!user) return null;
+
+    const hasPermission = (page: PermissionPages) => {
+      return permissions[page]?.includes(user.tipousuario);
+    };
+
+    const linkClass = (isActive: boolean, isDisabled: boolean) =>
+      `flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 
+        ${isActive ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'} 
+        ${isDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`;
+
     if (user?.tipousuario === 'motorista') {
       return (
         <>
@@ -74,37 +106,69 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin = true, showRegister = true }
           <Link to="/gestao/home" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/home') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
             <FaHome className="mr-1 md:mr-2" /> Início
           </Link>
-          <Link to="/gestao/autorizarAgendamentos" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/autorizarAgendamentos') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
-            <FaCalendarAlt className="mr-1 md:mr-2" /> Agendamentos
+
+          <Link
+            to={hasPermission('agendamentos') ? "/gestao/autorizarAgendamentos" : "#"}
+            className={linkClass(isActive('/gestao/autorizarAgendamentos'), !hasPermission('agendamentos'))}
+          >
+            <FaClock className="mr-1 md:mr-2" /> Agendamentos
           </Link>
-          <Link to="/gestao/portaria" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/portaria') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+
+          <Link to={hasPermission('portaria') ? "/gestao/portaria" : "#"} className={linkClass(isActive('/gestao/portaria'), !hasPermission('portaria'))}>
             <FaBuilding className="mr-1 md:mr-2" /> Portaria
           </Link>
-          <Link to="/gestao/patio" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/patio') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+
+          <Link to={hasPermission('patio') ? "/gestao/patio" : "#"} className={linkClass(isActive('/gestao/patio'), !hasPermission('patio'))}>
             <FaTruck className="mr-1 md:mr-2" /> Gestão de Pátio
           </Link>
-          <Link to="/gestao/relatorios" className={`flex items-center px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition duration-300 ${isActive('/gestao/relatorios') ? 'bg-logisync-color-blue-50 text-gray-800 shadow-md' : 'hover:bg-gray-200 hover:text-gray-800'}`}>
+
+          <Link to={hasPermission('relatorios') ? "/gestao/relatorios" : "#"} className={linkClass(isActive('/gestao/relatorios'), !hasPermission('relatorios'))}>
             <FaChartLine className="mr-1 md:mr-2" /> Relatórios
           </Link>
-          <div onClick={toggleDropdown} className="relative cursor-pointer">
+
+          <div
+            onClick={hasPermission('configuracoes') ? toggleDropdown : undefined}
+            className={`relative ${hasPermission('configuracoes') ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'}`}
+          >
             <div className="hover:text-gray-300 flex items-center">
-              <FaCog className="mr-1 md:mr-2" /> Configurações <FaChevronDown className={`ml-2 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <FaCog className="mr-1 md:mr-2" /> Configurações{' '}
+              <FaChevronDown
+                className={`ml-2 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+              />
             </div>
-            <div className={`absolute mt-2 py-2 w-40 bg-white rounded-lg shadow-xl z-20 ${isDropdownOpen ? 'block' : 'hidden'}`}>
-              <Link to="/gestao/usuarios" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/usuarios') ? 'bg-gray-200' : ''}`}>
+
+            {/* Dropdown items */}
+            <div
+              className={`absolute mt-2 py-2 w-40 bg-logisync-color-blue-300 rounded-lg shadow-xl z-20 ${isDropdownOpen && hasPermission('configuracoes') ? 'block' : 'hidden'
+                }`}
+            >
+              <Link
+                to={hasPermission('usuarios') ? '/gestao/usuarios' : '#'}
+                className={linkClass(isActive('/gestao/usuarios'), !hasPermission('usuarios'))}
+              >
                 <FaUsers className="mr-1 md:mr-2" /> Usuários
               </Link>
-              <Link to="/gestao/produtos" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/produtos') ? 'bg-gray-200' : ''}`}>
+              <Link
+                to={hasPermission('produtos') ? '/gestao/produtos' : '#'}
+                className={linkClass(isActive('/gestao/produtos'), !hasPermission('produtos'))}
+              >
                 <FaBoxOpen className="mr-1 md:mr-2" /> Produtos
               </Link>
-              <Link to="/gestao/horarios" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/horarios') ? 'bg-gray-200' : ''}`}>
+              <Link
+                to={hasPermission('horarios') ? '/gestao/horarios' : '#'}
+                className={linkClass(isActive('/gestao/horarios'), !hasPermission('horarios'))}
+              >
                 <FaClock className="mr-1 md:mr-2" /> Horários
               </Link>
-              <Link to="/gestao/safra" className={`px-2 py-1 md:px-4 md:py-2 text-sm md:text-base text-gray-800 hover:bg-gray-200 flex items-center ${isActive('/gestao/safra') ? 'bg-gray-200' : ''}`}>
+              <Link
+                to={hasPermission('safra') ? '/gestao/safra' : '#'}
+                className={linkClass(isActive('/gestao/safra'), !hasPermission('safra'))}
+              >
                 <FaSeedling className="mr-1 md:mr-2" /> Safra
               </Link>
             </div>
           </div>
+
         </>
       );
     }

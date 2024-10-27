@@ -68,15 +68,15 @@ const GerenciarUsuarios: React.FC = () => {
         {
             headerName: 'Ações',
             cellRenderer: (params: { data: Usuario; }) => (
-                <div className="flex gap-6">
+                <div className="flex gap-6 justify-center items-center">
                     <button
                         className="text-blue-500"
                         onClick={() => handleEdit(params.data)}
                     >
-                        <FaEdit className="text-xl" />
+                        <FaEdit className="text-2xl" />
                     </button>
                     <button
-                        className={`font-bold text-${params.data.SituacaoUsuario === 1 ? 'red' : 'green'}-500`}
+                        className={`mt-1 flex items-center justify-center font-bold ${params.data.SituacaoUsuario === 1 ? 'bg-red-600 rounded-lg h-8 pl-2 pr-2 text-white' : 'bg-logisync-color-blue-200 rounded-lg h-8 pl-5 pr-5 text-white'}`}
                         onClick={() => openConfirmationModal(params.data)}
                     >
                         {params.data.SituacaoUsuario === 1 ? 'Desativar' : 'Ativar'}
@@ -217,7 +217,7 @@ const GerenciarUsuarios: React.FC = () => {
             const { Senha, ...usuarioData } = selectedUser;
 
             await updateUsuario(token, selectedUser.CodigoUsuario!, {
-                ...usuarioData ,
+                ...usuarioData,
                 UsuarioAlteracao: user.id
             });
 
