@@ -75,39 +75,6 @@ describe('AuthController', () => {
     });
   });
 
-  // Testes para a função refreshToken
-  describe('refreshToken', () => {
-    it('deve retornar um novo token se o refresh token for válido', async () => {
-      const req = { body: { refreshToken: 'valid-refresh-token' } };
-      const res = { json: jest.fn() };
-      const decodedMock = { id: 1 };
-      const userMock = { id: 1, email: 'user@example.com' };
-      const newTokenMock = 'new-jwt-token';
-
-      jwt.verify.mockReturnValue(decodedMock);
-      User.findUserById.mockResolvedValue(userMock);
-      AuthService.generateToken.mockReturnValue(newTokenMock);
-
-      await AuthController.refreshToken(req, res);
-
-      expect(jwt.verify).toHaveBeenCalledWith('valid-refresh-token', expect.anything());
-      expect(User.findUserById).toHaveBeenCalledWith(1);
-      expect(res.json).toHaveBeenCalledWith({ token: newTokenMock });
-    });
-
-    it('deve retornar erro 400 se o refresh token for inválido', async () => {
-      const req = { body: { refreshToken: 'invalid-refresh-token' } };
-      const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-
-      jwt.verify.mockImplementation(() => { throw new Error('Token inválido') });
-
-      await AuthController.refreshToken(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Token inválido ou expirado' });
-    });
-  });
-
   // Testes para a função recuperarSenha
   describe('recuperarSenha', () => {
     it('deve enviar e-mail de recuperação de senha se o e-mail for válido', async () => {

@@ -33,19 +33,20 @@ class AuthController {
 
   static async refreshToken(req, res) {
     const { refreshToken } = req.body;
-
+  
     try {
       const decoded = jwt.verify(refreshToken, refreshSecret);
       const user = await User.findUserById(decoded.id);
-
+  
       if (!user) throw new Error("Usuário não encontrado");
-
+  
       const newToken = AuthService.generateToken(user);
       res.json({ token: newToken });
     } catch (error) {
       res.status(400).json({ message: "Token inválido ou expirado" });
     }
   }
+  
 
   // Função para solicitar recuperação de senha
   static async recuperarSenha(req, res) {
