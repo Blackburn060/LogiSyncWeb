@@ -74,7 +74,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp config appsettings set --name logisync-frontend --resource-group LogiSync --settings VITE_APP_BACKEND_API_URL_PROD=${{ secrets.VITE_APP_BACKEND_API_URL_PROD }} VITE_APP_GOOGLE_APIKEY=${{ secrets.VITE_APP_GOOGLE_APIKEY }}
+            az webapp config appsettings set --name logisync-frontend --resource-group LogiSync --settings VITE_APP_BACKEND_API_URL_PROD=${{ secrets.VITE_APP_BACKEND_API_URL_PROD }} VITE_APP_EXCHANGE_API_KEY=${{ secrets.VITE_APP_EXCHANGE_API_KEY }} VITE_APP_NEWS_API_KEY=${{ secrets.VITE_APP_NEWS_API_KEY }} VITE_APP_GOOGLE_APIKEY=${{ secrets.VITE_APP_GOOGLE_APIKEY }}
             az webapp config container set --name logisync-frontend --resource-group LogiSync --container-image-name ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-frontend:v1 --container-registry-url https://ghcr.io --container-registry-user ${{ secrets.GHCR_USERNAME }} --container-registry-password ${{ secrets.GHCR_TOKEN }}
 
       - name: Restart Azure App Service for Frontend

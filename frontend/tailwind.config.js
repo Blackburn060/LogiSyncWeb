@@ -6,7 +6,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/flowbite/**/*.{js,jsx,ts,tsx}",  // Adiciona o Flowbite aqui
+    "node_modules/flowbite/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
@@ -26,6 +26,6 @@ export default {
   },
   plugins: [
     scrollbar,
-    flowbitePlugin,  // Adiciona o plugin do Flowbite
+    flowbitePlugin,
   ],
 };

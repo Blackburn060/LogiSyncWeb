@@ -210,7 +210,7 @@ const Navbar: React.FC<NavbarProps> = ({ showLogin = true, showRegister = true }
         <div className='flex items-center'>
           {user && (
             <div className="hidden min-[1410px]:flex items-center">
-              <span className="text-white font-bold text-sm md:text-base mr-2 md:mr-3">Olá, {user.nomecompleto}</span>
+              <span className="text-white font-bold text-sm md:text-base mr-2 md:mr-3">{user.nomecompleto}</span>
             </div>
           )}
           {user ? <UserMenu logout={logout} user={user} /> : renderAuthLinks()}

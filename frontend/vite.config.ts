@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         name: 'LogiSync',
         short_name: 'LogiSync',
-        description: 'LogiSync Application official WebApp',
+        description: 'LogiSync - Seu sistema de agendamento logístico!',
         theme_color: '#0335b0',
         icons: [
           {
@@ -32,6 +32,8 @@ export default defineConfig({
   ],
   define: {
     'import.meta.env.VITE_APP_BACKEND_API_URL_PROD': JSON.stringify(process.env.VITE_APP_BACKEND_API_URL_PROD),
+    'import.meta.env.VITE_APP_EXCHANGE_API_KEY': JSON.stringify(process.env.VITE_APP_EXCHANGE_API_KEY),
+    'import.meta.env.VITE_APP_NEWS_API_KEY': JSON.stringify(process.env.VITE_APP_NEWS_API_KEY),
     'import.meta.env.VITE_APP_GOOGLE_APIKEY': JSON.stringify(process.env.VITE_APP_GOOGLE_APIKEY)
   },
   build: {
