@@ -81,6 +81,7 @@ const isHorarioAgendado = (horarioIntervalo, data, tipoAgendamento) => {
             WHERE DataAgendamento = ?
             AND (HoraAgendamento = ? OR DiaTodo = 1)
             AND TipoAgendamento = ?
+            AND SituacaoAgendamento != 'Cancelado'  -- Ignora agendamentos cancelados
         `;
         db.get(sql, [data, horarioIntervalo, tipoAgendamento], (err, row) => {
             if (err) {
@@ -98,7 +99,7 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
         try {
             const diaTodoIndisponivel = await isDiaTodoIndisponivel(data, tipoAgendamento);
             if (diaTodoIndisponivel) {
-                return resolve([]);
+                return resolve([]); 
             }
 
             const sql = 'SELECT * FROM cadastroHorarios LIMIT 1';
@@ -113,7 +114,7 @@ const getHorariosDisponiveisPorData = (data, tipoAgendamento) => {
                         for (let horario of horarios) {
                             const horarioIntervalo = `${horario.horarioInicio} - ${horario.horarioFim}`;
                             const agendado = await isHorarioAgendado(horarioIntervalo, data, tipoAgendamento);
-                            horario.agendado = agendado;
+                            horario.agendado = agendado; 
                         }
 
                         resolve(horarios);
