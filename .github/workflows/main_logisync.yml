@@ -40,9 +40,13 @@ jobs:
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/logisync-frontend:v1
           build-args: |
             VITE_APP_BACKEND_API_URL_PROD=${{ secrets.VITE_APP_BACKEND_API_URL_PROD }}
+            VITE_APP_EXCHANGE_API_KEY=${{ secrets.VITE_APP_EXCHANGE_API_KEY }}
+            VITE_APP_NEWS_API_KEY=${{ secrets.VITE_APP_NEWS_API_KEY }}
             VITE_APP_GOOGLE_APIKEY=${{ secrets.VITE_APP_GOOGLE_APIKEY }}
         env:
           VITE_APP_BACKEND_API_URL_PROD: ${{ secrets.VITE_APP_BACKEND_API_URL_PROD }}
+          VITE_APP_EXCHANGE_API_KEY: ${{ secrets.VITE_APP_EXCHANGE_API_KEY }}
+          VITE_APP_NEWS_API_KEY: ${{ secrets.VITE_APP_NEWS_API_KEY }}
           VITE_APP_GOOGLE_APIKEY: ${{ secrets.VITE_APP_GOOGLE_APIKEY }}
 
       - name: Build and push backend production Docker image
