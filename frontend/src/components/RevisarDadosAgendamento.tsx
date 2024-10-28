@@ -88,7 +88,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
           setProdutos(produtosAtivos);
   
           const safrasData = await getSafras(token);
-          setSafras(safrasData);
+          const safrasAtivas = safrasData.filter(
+            (safra) => safra.SituacaoSafra === 1 // Aplicando o filtro para exibir apenas safras ativas
+          );
+          setSafras(safrasAtivas);
   
           if (usuarioData.CodigoTransportadora) {
             const transportadoraData = await getTransportadora(
@@ -105,7 +108,6 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
   
     fetchData();
   }, [token, user]);
-  
 
   const tipoAgendamento = localStorage.getItem("TipoAgendamento") || "carga";
 
