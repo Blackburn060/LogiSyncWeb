@@ -75,21 +75,21 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
         try {
           const usuarioData = await getUsuarioById(token, Number(user.id));
           setUsuario(usuarioData);
-
+  
           const veiculosData = await getVeiculos(token);
           setVeiculos(
-            veiculosData.filter((veiculo) => (veiculo.SituacaoVeiculo = 1))
+            veiculosData.filter((veiculo) => veiculo.SituacaoVeiculo === 1)
           );
-
+  
           const produtosData = await getProdutos(token);
           const produtosAtivos = produtosData.filter(
-            (produto) => (produto.SituacaoProduto = 1)
+            (produto) => produto.SituacaoProduto === 1
           );
           setProdutos(produtosAtivos);
-
+  
           const safrasData = await getSafras(token);
           setSafras(safrasData);
-
+  
           if (usuarioData.CodigoTransportadora) {
             const transportadoraData = await getTransportadora(
               token,
@@ -102,9 +102,10 @@ const RevisarDadosAgendamento: React.FC<RevisarDadosAgendamentoProps> = ({
         }
       }
     };
-
+  
     fetchData();
   }, [token, user]);
+  
 
   const tipoAgendamento = localStorage.getItem("TipoAgendamento") || "carga";
 
