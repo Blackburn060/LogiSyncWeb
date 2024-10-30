@@ -1,4 +1,4 @@
-const db = require('../Config/database');
+const db = require('../../database');
 const moment = require('moment-timezone');
 
 // Buscar todas as safras com filtros

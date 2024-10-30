@@ -1,4 +1,4 @@
-const db = require('../Config/database');
+const db = require('../../database');
 
 // Buscar todos os dados da portaria
 const getAllPortarias = () => {

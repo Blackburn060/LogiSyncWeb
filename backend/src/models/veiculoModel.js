@@ -1,4 +1,4 @@
-const db = require('../Config/database');
+const db = require('../../database');
 const moment = require('moment-timezone');
 
 // Função para normalizar as chaves do objeto veiculo para letras minúsculas
