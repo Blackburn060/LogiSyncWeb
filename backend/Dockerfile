@@ -1,7 +1,7 @@
-# Use uma imagem oficial do Node.js como base
+# Use a imagem oficial do Node.js como base
 FROM node:20
 
-# Instalar o servidor SSH
+# Instale o servidor SSH
 RUN apt-get update && apt-get install -y openssh-server
 
 # Crie o diretório necessário para o SSH
@@ -27,6 +27,9 @@ RUN echo 'root:root' | chpasswd \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config \
     && sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
+
+# Criar um volume para o SQLite
+VOLUME ["/app/src/Config"]
 
 # Iniciar o SSH e a aplicação Node.js
 CMD service ssh start && node src/App.js
