@@ -25,15 +25,16 @@ const generateRandomPassword = () => {
 };
 
 // Função para formatar CPF
-const formatCPF = (cpf: string) => {
+const formatCPF = (cpf: string | null | undefined) => {
+    if (!cpf) return '';
     return cpf.replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, "$1.$2")
         .replace(/(\d{3})(\d)/, "$1.$2")
         .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 };
 
-// Função para formatar número de celular
-const formatPhone = (phone: string) => {
+const formatPhone = (phone: string | null | undefined) => {
+    if (!phone) return '';
     return phone.replace(/\D/g, '')
         .replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
 };
