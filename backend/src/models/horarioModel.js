@@ -1,4 +1,4 @@
-const db = require('../../database');
+const db = require('../Config/database');
 const moment = require('moment-timezone');
 
 // Função para buscar todos os horários

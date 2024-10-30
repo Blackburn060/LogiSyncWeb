@@ -1,4 +1,4 @@
-const db = require("../../database");
+const db = require("../Config/database");
 const getAllAgendamentos = (filters = {}) => {
   return new Promise((resolve, reject) => {
     // Atualize a consulta SQL para excluir "Indisponível"

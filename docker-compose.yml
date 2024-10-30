@@ -17,7 +17,7 @@ services:
       - CLIENT_SECRET=${CLIENT_SECRET}
       - REFRESH_TOKEN=${REFRESH_TOKEN}
     volumes:
-      - backend_data:./LogiSync.db
+      - backend_data:/app/src/Config/LogiSync.db
     networks:
       - backend
 
