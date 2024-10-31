@@ -15,7 +15,7 @@ services:
       - CLIENT_SECRET=${CLIENT_SECRET}
       - REFRESH_TOKEN=${REFRESH_TOKEN}
     volumes:
-      - ./backend/src/Config:/app/src/Config
+      - ./backend/src/Config:/home/Config
     networks:
       - backend
 
