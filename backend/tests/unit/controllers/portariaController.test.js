@@ -42,25 +42,27 @@ describe('PortariaController', () => {
       const portariaMock = { id: 1, CodigoAgendamento: 123, DataHoraEntrada: '2023-10-01 08:00:00' };
       
       portariaModel.getPortariaByCodigoAgendamento.mockResolvedValue(portariaMock);
-
+  
       await portariaController.buscarPortariaPorAgendamento(req, res);
-
+  
       expect(portariaModel.getPortariaByCodigoAgendamento).toHaveBeenCalledWith(123);
       expect(res.json).toHaveBeenCalledWith(portariaMock);
     });
-
-    it('deve retornar erro 404 se os dados da portaria não forem encontrados', async () => {
+  
+    it('deve retornar status 204 se os dados da portaria não forem encontrados', async () => {
       const req = { params: { CodigoAgendamento: 123 } };
       const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
-
+  
+      // Simula a situação em que nenhum dado de portaria é encontrado
       portariaModel.getPortariaByCodigoAgendamento.mockResolvedValue(null);
-
+  
       await portariaController.buscarPortariaPorAgendamento(req, res);
-
+  
       expect(portariaModel.getPortariaByCodigoAgendamento).toHaveBeenCalledWith(123);
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.send).toHaveBeenCalledWith({ message: 'Dados da portaria não encontrados' });
+      expect(res.status).toHaveBeenCalledWith(204); // Verifica se o código 204 foi retornado
+      expect(res.send).toHaveBeenCalled(); // Verifica se uma resposta foi enviada, mesmo que sem conteúdo
     });
+ 
 
     it('deve retornar erro 500 se ocorrer um erro ao buscar os dados da portaria', async () => {
       const req = { params: { CodigoAgendamento: 123 } };

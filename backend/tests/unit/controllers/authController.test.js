@@ -145,7 +145,4 @@ describe('AuthController', () => {
       expect(res.json).toHaveBeenCalledWith({ message: 'Token inválido ou expirado.' });
     });
   });
-
-  // Você pode continuar criando outros testes para as demais funções, como `resetarSenhaUsuario`.
-
 });

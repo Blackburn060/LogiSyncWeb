@@ -37,36 +37,46 @@ describe('SafraController', () => {
   });
 
   // Teste para a função adicionarSafra
-  describe('adicionarSafra', () => {
-    it('deve adicionar uma nova safra e retornar o ID gerado', async () => {
-      const req = { body: { nome: 'Nova Safra', CodigoUsuario: 1 } };
-      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
-      const idMock = 1;
-
-      safraModel.addSafra.mockResolvedValue(idMock);
-
-      await safraController.adicionarSafra(req, res);
-
-      expect(safraModel.addSafra).toHaveBeenCalledWith(req.body);
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.send).toHaveBeenCalledWith({ id: idMock, message: 'Safra adicionada com sucesso' });
-    });
-
-    it('deve retornar erro 500 se ocorrer um erro ao adicionar safra', async () => {
-      const req = { body: { nome: 'Nova Safra', CodigoUsuario: 1 } };
-      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
-      const errorMock = new Error('Erro ao adicionar safra');
-
-      safraModel.addSafra.mockRejectedValue(errorMock);
-
-      await safraController.adicionarSafra(req, res);
-
-      expect(safraModel.addSafra).toHaveBeenCalledWith(req.body);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.send).toHaveBeenCalledWith({ message: `Erro ao adicionar safra: ${errorMock.message}` });
+  describe('SafraController', () => {
+    describe('adicionarSafra', () => {
+      it('deve adicionar uma nova safra e retornar o ID gerado', async () => {
+        const req = { body: { AnoSafra: 2023, SituacaoSafra: 'Ativa', CodigoUsuario: 1 } };
+        const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+        const idMock = 1;
+  
+        safraModel.addSafra.mockResolvedValue(idMock);
+  
+        await safraController.adicionarSafra(req, res);
+  
+        expect(safraModel.addSafra).toHaveBeenCalledWith({
+          AnoSafra: 2023,
+          SituacaoSafra: 'Ativa',
+          UsuarioAlteracao: 1
+        });
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.send).toHaveBeenCalledWith({ id: idMock, message: 'Safra adicionada com sucesso' });
+      });
+  
+      it('deve retornar erro 500 se ocorrer um erro ao adicionar safra', async () => {
+        const req = { body: { AnoSafra: 2023, SituacaoSafra: 'Ativa', CodigoUsuario: 1 } };
+        const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+        const errorMock = new Error('Erro ao adicionar safra');
+  
+        safraModel.addSafra.mockRejectedValue(errorMock);
+  
+        await safraController.adicionarSafra(req, res);
+  
+        expect(safraModel.addSafra).toHaveBeenCalledWith({
+          AnoSafra: 2023,
+          SituacaoSafra: 'Ativa',
+          UsuarioAlteracao: 1
+        });
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.send).toHaveBeenCalledWith({ message: `Erro ao adicionar safra: ${errorMock.message}` });
+      });
     });
   });
-
+  
   // Teste para a função getSafraById
   describe('getSafraById', () => {
     it('deve retornar uma safra pelo ID com sucesso', async () => {

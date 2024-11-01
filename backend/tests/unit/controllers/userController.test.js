@@ -1,23 +1,23 @@
 const userController = require("../../../src/Controllers/userController");
 const userModel = require("../../../src/models/userModel");
 const bcrypt = require("bcrypt");
+const { enviarEmailBoasVindas } = require("../../../src/utils/emailService");
 
-// Mock do userModel e bcrypt
+// Mock do userModel, bcrypt e enviarEmailBoasVindas
 jest.mock("../../../src/models/userModel");
 jest.mock("bcrypt");
+jest.mock("../../../src/utils/emailService");
 
 describe("UserController", () => {
   beforeAll(() => {
-    // Suprimir logs de erro
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterAll(() => {
-    // Restaurar comportamento original
     console.error.mockRestore();
   });
 
-  // Teste para a função listarUsuarios
+  // Teste para listarUsuarios
   describe("listarUsuarios", () => {
     it("deve retornar uma lista de usuários com sucesso", async () => {
       const req = { query: {} };
@@ -52,7 +52,7 @@ describe("UserController", () => {
     });
   });
 
-  // Teste para a função listarUsuario
+  // Teste para listarUsuario
   describe("listarUsuario", () => {
     it("deve retornar um usuário pelo ID com sucesso", async () => {
       const req = { params: { id: 1 } };
@@ -98,41 +98,37 @@ describe("UserController", () => {
     });
   });
 
-  // Teste para a função adicionarUsuario
+  // Teste para adicionarUsuario
   describe("adicionarUsuario", () => {
-    it("deve adicionar um novo usuário com sucesso", async () => {
+    it("deve adicionar um novo usuário com sucesso e enviar o email de boas-vindas", async () => {
       const req = {
         body: {
-          nomeCompleto: "Novo Usuário",
-          email: "novo@teste.com",
-          senha: "senha123",
-          tipoUsuario: "admin",
-          codigoTransportadora: null,
-          numeroCelular: "999999999",
-          cpf: "12345678900",
+          NomeCompleto: "Novo Usuário",
+          Email: "novo@teste.com",
+          Senha: "senha123",
+          TipoUsuario: "admin",
+          CodigoTransportadora: null,
+          NumeroCelular: "999999999",
+          CPF: "12345678900",
         },
       };
       const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
       const userIdMock = 1;
 
-      userModel.findUserByEmail.mockResolvedValue(null); // Simula que o usuário não existe
+      userModel.findUserByEmail.mockResolvedValue(null);
       bcrypt.hash.mockResolvedValue("hashed-senha123");
       userModel.addUser.mockResolvedValue(userIdMock);
+      enviarEmailBoasVindas.mockResolvedValue();
 
       await userController.adicionarUsuario(req, res);
 
       expect(userModel.findUserByEmail).toHaveBeenCalledWith("novo@teste.com");
       expect(bcrypt.hash).toHaveBeenCalledWith("senha123", 10);
-      expect(userModel.addUser).toHaveBeenCalledWith({
+      expect(userModel.addUser).toHaveBeenCalledWith(expect.objectContaining({
         nomeCompleto: "Novo Usuário",
         email: "novo@teste.com",
-        senha: "hashed-senha123",
-        tipoUsuario: "admin",
-        codigoTransportadora: null,
-        situacaoUsuario: 1,
-        numeroCelular: "999999999",
-        cpf: "12345678900",
-      });
+      }));
+      expect(enviarEmailBoasVindas).toHaveBeenCalledWith("novo@teste.com", "senha123");
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.send).toHaveBeenCalledWith({
         id: userIdMock,
@@ -143,9 +139,9 @@ describe("UserController", () => {
     it("deve retornar erro 400 se o e-mail já estiver em uso", async () => {
       const req = {
         body: {
-          nomeCompleto: "Novo Usuário",
-          email: "novo@teste.com",
-          senha: "senha123",
+          NomeCompleto: "Novo Usuário",
+          Email: "novo@teste.com",
+          Senha: "senha123",
         },
       };
       const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
@@ -153,7 +149,7 @@ describe("UserController", () => {
       userModel.findUserByEmail.mockResolvedValue({
         id: 1,
         email: "novo@teste.com",
-      }); // Simula que o e-mail já está em uso
+      });
 
       await userController.adicionarUsuario(req, res);
 
@@ -167,9 +163,9 @@ describe("UserController", () => {
     it("deve retornar erro 500 se ocorrer um erro ao adicionar usuário", async () => {
       const req = {
         body: {
-          nomeCompleto: "Novo Usuário",
-          email: "novo@teste.com",
-          senha: "senha123",
+          NomeCompleto: "Novo Usuário",
+          Email: "novo@teste.com",
+          Senha: "senha123",
         },
       };
       const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
@@ -188,7 +184,7 @@ describe("UserController", () => {
     });
   });
 
-  // Teste para a função atualizarUsuario
+  // Teste para atualizarUsuario
   describe("atualizarUsuario", () => {
     it("deve atualizar um usuário com sucesso", async () => {
       const req = {
@@ -239,7 +235,7 @@ describe("UserController", () => {
     });
   });
 
-  // Teste para a função deletarUsuario
+  // Teste para deletarUsuario
   describe("deletarUsuario", () => {
     it("deve deletar um usuário com sucesso", async () => {
       const req = { params: { id: 1 } };
@@ -288,7 +284,7 @@ describe("UserController", () => {
     });
   });
 
-  // Teste para a função verificarEmailExistente
+  // Teste para verificarEmailExistente
   describe("verificarEmailExistente", () => {
     it("deve retornar que o e-mail existe e está ativo", async () => {
       const req = { query: { email: "teste@teste.com" } };

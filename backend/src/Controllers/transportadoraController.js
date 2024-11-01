@@ -77,16 +77,17 @@ const getTransportadoraById = async (req, res) => {
         const transportadora = await transportadoraModel.getTransportadoraById(req.params.id);
         if (transportadora) {
             if (transportadora.SituacaoTransportadora === 0) {
-                return res.status(200).json({ message: "Transportadora não encontrada" });
+                return res.status(204).send(); 
             }
             res.json(transportadora);
         } else {
-            res.status(200).json({ message: "Nenhuma transportadora encontrada." });
+            res.status(404).json({ message: "Nenhuma transportadora encontrada." });
         }
     } catch (error) {
         res.status(500).send({ message: "Erro ao buscar transportadora: " + error.message });
     }
 };
+
 
 const adicionarTransportadoraPublic = async (req, res) => {
     try {
