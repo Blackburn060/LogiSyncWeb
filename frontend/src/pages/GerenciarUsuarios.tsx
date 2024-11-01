@@ -25,15 +25,16 @@ const generateRandomPassword = () => {
 };
 
 // Função para formatar CPF
-const formatCPF = (cpf: string) => {
+const formatCPF = (cpf: string | null | undefined) => {
+    if (!cpf) return '';
     return cpf.replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, "$1.$2")
         .replace(/(\d{3})(\d)/, "$1.$2")
         .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 };
 
-// Função para formatar número de celular
-const formatPhone = (phone: string) => {
+const formatPhone = (phone: string | null | undefined) => {
+    if (!phone) return '';
     return phone.replace(/\D/g, '')
         .replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
 };
@@ -64,9 +65,11 @@ const GerenciarUsuarios: React.FC = () => {
         { headerName: 'Nome Completo', field: 'NomeCompleto', sortable: true, filter: true },
         { headerName: 'Email', field: 'Email', sortable: true, filter: true },
         { headerName: 'CPF', field: 'CPF', sortable: true, filter: true, valueFormatter: (params) => formatCPF(params.value) },
-        { headerName: 'Número Celular', field: 'NumeroCelular', sortable: true, filter: true, valueFormatter: (params) => formatPhone(params.value) },
+        { headerName: 'Número de Celular', field: 'NumeroCelular', sortable: true, filter: true, valueFormatter: (params) => formatPhone(params.value) },
         {
             headerName: 'Ações',
+            filter: false,
+            sortable: false,
             cellRenderer: (params: { data: Usuario; }) => (
                 <div className="flex gap-6 justify-center items-center">
                     <button
@@ -492,7 +495,7 @@ const GerenciarUsuarios: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleCloseNewUserModal}
-                                className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
+                                className="bg-gray-600 text-white font-bold py-2 px-4 rounded"
                             >
                                 Cancelar
                             </button>
@@ -612,14 +615,14 @@ const GerenciarUsuarios: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
+                                    className="bg-gray-600 text-white font-bold py-2 px-4 rounded"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleResetarSenha}
-                                    className="bg-orange-500 text-white font-bold py-2 px-4 rounded"
+                                    className="bg-orange-600 text-white font-bold py-2 px-4 rounded"
                                 >
                                     Resetar Senha
                                 </button>
@@ -655,7 +658,7 @@ const GerenciarUsuarios: React.FC = () => {
                         <button
                             type="button"
                             onClick={handleCloseConfirmationModal}
-                            className="bg-gray-400 text-white font-bold py-2 px-4 rounded"
+                            className="bg-gray-600 text-white font-bold py-2 px-4 rounded"
                         >
                             Cancelar
                         </button>

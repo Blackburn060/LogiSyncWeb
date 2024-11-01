@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   backend:
     build:
@@ -16,6 +14,8 @@ services:
       - CLIENT_ID=${CLIENT_ID}
       - CLIENT_SECRET=${CLIENT_SECRET}
       - REFRESH_TOKEN=${REFRESH_TOKEN}
+    volumes:
+      - ./backend/src/Config:/home/Config
     networks:
       - backend
 
@@ -40,3 +40,6 @@ networks:
     driver: bridge
   frontend:
     driver: bridge
+
+volumes:
+  backend_data:
