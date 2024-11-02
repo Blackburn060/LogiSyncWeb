@@ -106,7 +106,7 @@ const Portaria: React.FC = () => {
       try {
         setLoading(true);
         const data = await getAgendamentosPorStatus(token!);
-        setAgendamentos(data);
+        setAgendamentos(data || []);
       } catch (error) {
         toast.error("Erro ao buscar agendamentos.");
         console.error("Erro ao buscar agendamentos:", error);

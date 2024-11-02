@@ -50,7 +50,7 @@ const Login: React.FC = () => {
         } else if (err.response?.status === 404) {
           toast.error('Conta não encontrada com o e-mail informado.');
         } else if (err.response?.status === 403) {
-          toast.error('Conta inativa. Entre em contato com o suporte.');
+          toast.error('Conta não encontrada com o e-mail informado.');
         } else if (err.response?.status === 401) {
           toast.error('Senha inválida. Por favor, tente novamente.');
         } else {
