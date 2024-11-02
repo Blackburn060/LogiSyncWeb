@@ -124,7 +124,7 @@ const MeusAgendamentos: React.FC = () => {
       setLoading(true);
       await api.put(
         `/agendamentos/cancelar/${agendamentoToCancel.CodigoAgendamento}`,
-        null,
+        { CodigoUsuario: user?.id },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
