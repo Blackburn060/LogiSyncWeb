@@ -8,6 +8,8 @@ const {
   enviarEmailFinalizacaoAgendamento,
 } = require("../utils/emailService");
 const User = require("../models/userModel");
+const { format, parseISO } = require("date-fns"); // Importando a função format
+const { ptBR } = require("date-fns/locale"); 
 
 let clients = [];
 
@@ -145,7 +147,7 @@ const aprovarAgendamento = async (req, res) => {
         CodigoAgendamento
       );
       const detalhesAgendamento = {
-        data: agendamento.DataAgendamento,
+        data: format(new Date(agendamento.DataAgendamento), "dd/MM/yyyy", { locale: ptBR }),
         horario: agendamento.HoraAgendamento,
       };
       await enviarEmailAprovacaoAgendamento(user.Email, detalhesAgendamento);
@@ -228,7 +230,7 @@ const adicionarAgendamento = async (req, res) => {
 
     // Envio de e-mail de confirmação
     const detalhesAgendamento = {
-      data: req.body.DataAgendamento,
+      data: format(parseISO (req.body.DataAgendamento), "dd/MM/yyyy", { locale: ptBR }),
       horario: req.body.HoraAgendamento,
       local: req.body.Local || "Local não especificado",
     };
@@ -246,10 +248,7 @@ const atualizarAgendamento = async (req, res) => {
   const changes = req.body;
 
   try {
-    const updated = await agendamentoModel.updateAgendamento(
-      changes,
-      agendamentoId
-    );
+    const updated = await agendamentoModel.updateAgendamento(changes, agendamentoId);
 
     if (updated) {
       res.send({ message: "Agendamento atualizado com sucesso." });
@@ -261,9 +260,7 @@ const atualizarAgendamento = async (req, res) => {
       });
 
       // Obter informações do agendamento e usuário para enviar o e-mail
-      const agendamento = await agendamentoModel.getAgendamentoById(
-        agendamentoId
-      );
+      const agendamento = await agendamentoModel.getAgendamentoById(agendamentoId);
       const user = await User.getUserById(agendamento.CodigoUsuario);
 
       if (!user) {
@@ -271,49 +268,32 @@ const atualizarAgendamento = async (req, res) => {
         return;
       }
 
+      // Formatar a data do agendamento para o padrão DD/MM/YYYY
       const detalhesAgendamento = {
-        data: agendamento.DataAgendamento,
+        data: format(parseISO (agendamento.DataAgendamento), "dd/MM/yyyy", { locale: ptBR }),
         horario: agendamento.HoraAgendamento,
       };
 
       // Enviar e-mails com base no status do agendamento
       switch (changes.SituacaoAgendamento) {
         case "Confirmado":
-          await enviarEmailAprovacaoAgendamento(
-            user.Email,
-            detalhesAgendamento
-          );
+          await enviarEmailAprovacaoAgendamento(user.Email, detalhesAgendamento);
           break;
 
         case "Recusado":
-          const motivoRecusa =
-            changes.MotivoRecusa || "Motivo não especificado";
-          await enviarEmailRecusaAgendamento(
-            user.Email,
-            detalhesAgendamento,
-            motivoRecusa
-          );
+          const motivoRecusa = changes.MotivoRecusa || "Motivo não especificado";
+          await enviarEmailRecusaAgendamento(user.Email, detalhesAgendamento, motivoRecusa);
           break;
 
         case "Finalizado":
-          await enviarEmailFinalizacaoAgendamento(
-            user.Email,
-            detalhesAgendamento
-          );
+          await enviarEmailFinalizacaoAgendamento(user.Email, detalhesAgendamento);
           break;
-
-        /* default:
-          console.log(
-            `Status de agendamento não requer e-mail: ${changes.SituacaoAgendamento}`
-          ); */
       }
     } else {
       res.status(404).send({ message: "Agendamento não encontrado." });
     }
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Erro ao atualizar agendamento: " + error.message });
+    res.status(500).send({ message: "Erro ao atualizar agendamento: " + error.message });
   }
 };
 
@@ -356,7 +336,7 @@ const cancelarAgendamento = async (req, res) => {
         req.params.id
       );
       const detalhesAgendamento = {
-        data: agendamento.DataAgendamento,
+        data: format(parseISO(agendamento.DataAgendamento), "dd/MM/yyyy", { locale: ptBR }),
         horario: agendamento.HoraAgendamento,
       };
       await enviarEmailCancelamentoAgendamento(user.Email, detalhesAgendamento);
