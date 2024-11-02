@@ -469,6 +469,8 @@ const MeusAgendamentos: React.FC = () => {
                   observacao={selectedAgendamento?.Observacao ?? null}
                   safra={selectedAgendamento?.AnoSafra ?? "Não informada"}
                   arquivo={selectedAgendamento?.ArquivoAnexado ?? null}
+                  situacaoAgendamento={selectedAgendamento?.SituacaoAgendamento}
+                  motivoRecusa={selectedAgendamento?.MotivoRecusa}
                 />
 
                 {/* Dados da Portaria */}

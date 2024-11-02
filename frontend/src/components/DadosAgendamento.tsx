@@ -7,8 +7,10 @@ interface DadosAgendamentoProps {
   quantidade: number | null;
   observacao: string | null;
   safra?: string | null;
-  arquivo?: string | Blob | null; // Aceitando string ou Blob
-  editable?: boolean; // Propriedade para permitir edição
+  arquivo?: string | Blob | null; 
+  editable?: boolean; 
+  motivoRecusa?: string | null; 
+  situacaoAgendamento?: string;
   onProdutoChange?: (value: string) => void;
   onQuantidadeChange?: (value: number | null) => void;
   onSafraChange?: (value: string) => void;
@@ -22,29 +24,29 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
   observacao,
   safra,
   arquivo,
-  editable = false, // Se editable for true, os campos serão editáveis
+  editable = false, 
+  motivoRecusa,
+  situacaoAgendamento,
   onProdutoChange,
   onQuantidadeChange,
   onSafraChange,
 }) => {
   const [arquivoUrl, setArquivoUrl] = useState<string | null>(null);
 
-  // Função para gerar a URL do Blob, se necessário
+  
   useEffect(() => {
     if (arquivo && arquivo instanceof Blob) {
       const url = URL.createObjectURL(arquivo);
       setArquivoUrl(url);
-      return () => URL.revokeObjectURL(url); // Limpeza da URL criada
+      return () => URL.revokeObjectURL(url); 
     } else if (typeof arquivo === "string") {
       setArquivoUrl(arquivo);
     }
   }, [arquivo]);
 
-  // Função para formatar a data no formato dia/mês/ano sem converter para objeto Date
   const formatarData = (data: string) => {
     const [ano, mes, dia] = data.split('-');
     
-    // Retorna a data no formato dia/mês/ano
     return `${dia}/${mes}/${ano}`;
   };
 
@@ -57,7 +59,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
           <input
             type="text"
             className="border w-full px-2 py-1 rounded-md"
-            value={formatarData(dataAgendamento)} // Exibindo a data formatada
+            value={formatarData(dataAgendamento)} 
             readOnly
           />
         </div>
@@ -77,7 +79,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             className="border w-full px-2 py-1 rounded-md"
             value={produto || ""}
             onChange={(e) => onProdutoChange && onProdutoChange(e.target.value)}
-            readOnly={!editable} // Produto será editável apenas se editable for true
+            readOnly={!editable} 
           />
         </div>
         <div>
@@ -89,7 +91,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             onChange={(e) =>
               onQuantidadeChange && onQuantidadeChange(Number(e.target.value))
             }
-            readOnly={!editable} // Quantidade será editável apenas se editable for true
+            readOnly={!editable} 
           />
         </div>
         <div>
@@ -99,7 +101,7 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             className="border w-full px-2 py-1 rounded-md"
             value={safra || ""}
             onChange={(e) => onSafraChange && onSafraChange(e.target.value)}
-            readOnly={!editable} // Safra será editável apenas se editable for true
+            readOnly={!editable} 
           />
         </div>
         <div>
@@ -125,6 +127,17 @@ const DadosAgendamento: React.FC<DadosAgendamentoProps> = ({
             readOnly
           ></textarea>
         </div>
+        
+        {situacaoAgendamento === "Recusado" && motivoRecusa && (
+          <div className="col-span-2">
+            <label className="block font-semibold">Motivo da Recusa</label>
+            <textarea
+              className="border w-full px-2 py-1 rounded-md bg-gray-100"
+              value={motivoRecusa}
+              readOnly
+            ></textarea>
+          </div>
+        )}
       </div>
     </div>
   );

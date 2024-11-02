@@ -86,11 +86,13 @@ const AgendamentosAdmin: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { token } = useAuth(); // Usando token do contexto de autenticação
   const [loading, setLoading] = useState<boolean>(true); // Declaração de loading e setLoading
+  const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false);
 
-  const [motivoRecusa, setMotivoRecusa] = useState<string>("");
+  const [motivoRecusa, setMotivoRecusa] = useState("");
   const [showMotivoInput, setShowMotivoInput] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false); // Filtro dropdown
+  const [statusFilterLabel, setStatusFilterLabel] = useState("Todos");
 
   const daysToShow = 7;
 
@@ -124,7 +126,14 @@ const AgendamentosAdmin: React.FC = () => {
         new Date(agendamento.DataAgendamento) > lastDayShown
     ).length;
   };
+  const handleOpenRecusaModal = () => {
+    setIsRecusaModalOpen(true);
+};
 
+const handleCloseRecusaModal = () => {
+    setIsRecusaModalOpen(false);
+    setMotivoRecusa("");
+};
   const formatarData = (data: string | Date) => {
     const dataObj = new Date(data);
     return format(dataObj, "eee, dd/MM/yyyy", { locale: ptBR });
@@ -244,181 +253,224 @@ const AgendamentosAdmin: React.FC = () => {
 
   const handleRejeitar = async () => {
     if (selectedAgendamento && motivoRecusa) {
-      try {
-        await updateAgendamentoStatus(
-          selectedAgendamento.CodigoAgendamento!,
-          {
-            SituacaoAgendamento: "Recusado",
-            MotivoRecusa: motivoRecusa,
-            TipoAgendamento: selectedAgendamento.TipoAgendamento || "",
-            Observacao: selectedAgendamento.Observacao || "Sem observação",
-          },
-          token!
-        );
+        try {
+            await updateAgendamentoStatus(
+                selectedAgendamento.CodigoAgendamento!,
+                {
+                    SituacaoAgendamento: "Recusado",
+                    MotivoRecusa: motivoRecusa,
+                    TipoAgendamento: selectedAgendamento.TipoAgendamento || "",
+                    Observacao: selectedAgendamento.Observacao || "Sem observação",
+                },
+                token!
+            );
 
-        setAgendamentos((prevAgendamentos) =>
-          prevAgendamentos.map((agendamento) =>
-            agendamento.CodigoAgendamento ===
-            selectedAgendamento.CodigoAgendamento
-              ? {
-                  ...agendamento,
-                  SituacaoAgendamento: "Recusado",
-                  MotivoRecusa: motivoRecusa,
-                  Observacao:
-                    selectedAgendamento.Observacao || "Sem observação",
-                }
-              : agendamento
-          )
-        );
+            setAgendamentos((prevAgendamentos) =>
+                prevAgendamentos.map((agendamento) =>
+                    agendamento.CodigoAgendamento ===
+                    selectedAgendamento.CodigoAgendamento
+                        ? {
+                              ...agendamento,
+                              SituacaoAgendamento: "Recusado",
+                              MotivoRecusa: motivoRecusa,
+                              Observacao:
+                                  selectedAgendamento.Observacao || "Sem observação",
+                          }
+                        : agendamento
+                )
+            );
 
-        toast.success("Agendamento recusado com sucesso!");
-        handleCloseModal();
-      } catch (error) {
-        console.error("Erro ao rejeitar agendamento:", error);
-        toast.error("Erro ao rejeitar o agendamento.");
-      }
+            toast.success("Agendamento recusado com sucesso!");
+            handleCloseRecusaModal();
+        } catch (error) {
+            console.error("Erro ao rejeitar agendamento:", error);
+            toast.error("Erro ao rejeitar o agendamento.");
+        }
     } else {
-      toast.error("Por favor, informe o motivo da recusa.");
+        toast.error("Por favor, informe o motivo da recusa.");
     }
-  };
+};
 
-  const handleFilterByStatus = (status: string | null) => {
-    setStatusFilter(status);
-  };
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <Toaster position="top-right" reverseOrder={false} />
+const handleFilterByStatus = (status: string | null, label: string) => {
+  setStatusFilter(status);
+  setStatusFilterLabel(label); // Atualiza o rótulo exibido com o nome do filtro
+  setIsFilterDropdownOpen(false); // Fecha o dropdown ao selecionar
+};
 
-      <Navbar />
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-6">
+
+return (
+  <div className="min-h-screen bg-gray-100 flex flex-col">
+    <Toaster position="top-right" reverseOrder={false} />
+
+    <Navbar />
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={handlePreviousWeek}
+          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+        >
+          <span className="block md:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+          </span>
+          <span className="hidden md:block">&larr; Dias anteriores</span>
+        </button>
+
+        <div className="flex items-center space-x-4">
           <button
-            onClick={handlePreviousWeek}
+            onClick={voltarParaHoje}
             className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
           >
-            <span className="block md:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-              </svg>
-            </span>
-            <span className="hidden md:block">&larr; Dias anteriores</span>
+            <IcRoundRefresh width={20} height={20} />
           </button>
 
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={voltarParaHoje}
-              className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
-            >
-              <IcRoundRefresh width={20} height={20} />
+          <div
+            className="text-lg font-semibold cursor-pointer flex items-center"
+            onClick={() => setIsCalendarOpen(true)}
+          >
+            <button className="block md:hidden p-2 bg-blue-500 text-white rounded-lg">
+              <IcOutlineCalendarMonth width={24} height={24} />
             </button>
 
-            <div
-              className="text-lg font-semibold cursor-pointer flex items-center"
-              onClick={() => setIsCalendarOpen(true)}
-            >
-              <button className="block md:hidden p-2 bg-blue-500 text-white rounded-lg">
-                <IcOutlineCalendarMonth width={24} height={24} />
-              </button>
-
-              <span className="hidden md:block">
-                {format(currentStartDate, "dd/MM/yyyy")} -{" "}
-                {format(
-                  addDays(currentStartDate, daysToShow - 1),
-                  "dd/MM/yyyy"
-                )}
-              </span>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={toggleFilterDropdown}
-                className="relative p-3 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                <FunnelIcon className="w-6 h-6" />
-              </button>
-
-              {isFilterDropdownOpen && (
-                <div className="absolute right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                  <ul className="py-1">
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus(null)}
-                    >
-                      Todos
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Pendente")}
-                    >
-                      Pendente
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Confirmado")}
-                    >
-                      Confirmado
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Recusado")}
-                    >
-                      Recusado
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Andamento")}
-                    >
-                      Andamento
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Finalizado")}
-                    >
-                      Finalizado
-                    </li>
-                    <li
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleFilterByStatus("Reprovado")}
-                    >
-                      Reprovado
-                    </li>
-                  </ul>
-                </div>
+            <span className="hidden md:block">
+              {format(currentStartDate, "dd/MM/yyyy")} -{" "}
+              {format(
+                addDays(currentStartDate, daysToShow - 1),
+                "dd/MM/yyyy"
               )}
-            </div>
+            </span>
           </div>
 
-          <button
-            onClick={handleNextWeek}
-            className="relative flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+          <Modal
+            isOpen={isRecusaModalOpen}
+            onRequestClose={handleCloseRecusaModal}
+            className="bg-white rounded-lg p-6 max-w-lg mx-auto my-auto shadow-lg z-50"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
           >
-            <span className="block md:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+            <h2 className="text-lg font-bold mb-4">
+              Por favor, insira o motivo da recusa:
+            </h2>
+            <textarea
+              value={motivoRecusa}
+              onChange={(e) => setMotivoRecusa(e.target.value)}
+              className="w-full border border-gray-300 p-2 rounded mb-4"
+              rows={4}
+              placeholder="Digite o motivo da recusa"
+            />
+            <div className="flex justify-end space-x-4">
+              <button
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                onClick={handleCloseRecusaModal}
               >
-                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
-              </svg>
-            </span>
-            <span className="hidden md:block">Próximos dias &rarr;</span>
+                Cancelar
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={handleRejeitar}
+              >
+                Confirmar
+              </button>
+            </div>
+          </Modal>
 
-            {countFuturePendingAgendamentos() > 0 && (
-              <span className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                {countFuturePendingAgendamentos()}
-              </span>
-            )}
-          </button>
-        </div>
+          <div className="relative flex items-center space-x-2">
+  <button
+    onClick={toggleFilterDropdown}
+    className="relative p-3 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
+  >
+    <FunnelIcon className="w-6 h-6" />
+  </button>
+
+  {/* Exibir o status selecionado ao lado do ícone do filtro */}
+  <span className="text-sm font-semibold text-gray-700 bg-gray-200 px-2 py-1 rounded">
+    {statusFilterLabel}
+  </span>
+
+  {isFilterDropdownOpen && (
+    <div
+      className="absolute top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+      style={{ right: 0 }} // Posiciona o dropdown à direita do botão
+    >
+      <ul className="py-1">
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus(null, "Todos")}
+        >
+          Todos
+        </li>
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus("Pendente", "Pendente")}
+        >
+          Pendente
+        </li>
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus("Confirmado", "Confirmado")}
+        >
+          Confirmado
+        </li>
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus("Recusado", "Recusado")}
+        >
+          Recusado
+        </li>
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus("Andamento", "Andamento")}
+        >
+          Andamento
+        </li>
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus("Finalizado", "Finalizado")}
+        >
+          Finalizado
+        </li>
+        <li
+          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleFilterByStatus("Reprovado", "Reprovado")}
+        >
+          Reprovado
+        </li>
+      </ul>
+    </div>
+  )}
+</div>
+</div>
+        <button
+          onClick={handleNextWeek}
+          className="relative flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition"
+        >
+          <span className="block md:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
+            </svg>
+          </span>
+          <span className="hidden md:block">Próximos dias &rarr;</span>
+
+          {countFuturePendingAgendamentos() > 0 && (
+            <span className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+              {countFuturePendingAgendamentos()}
+            </span>
+          )}
+        </button>
+      </div>
 
         <Modal
           isOpen={isCalendarOpen}
@@ -549,11 +601,12 @@ const AgendamentosAdmin: React.FC = () => {
 
                     {!showMotivoInput ? (
                       <button
-                        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-                        onClick={() => setShowMotivoInput(true)}
-                      >
-                        Rejeitar
-                      </button>
+                      className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                      onClick={handleOpenRecusaModal}
+                  >
+                      Rejeitar
+                  </button>
+                  
                     ) : (
                       <button
                         className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
