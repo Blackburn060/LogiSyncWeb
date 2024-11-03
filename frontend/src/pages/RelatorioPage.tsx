@@ -7,8 +7,10 @@ import autoTable from 'jspdf-autotable';
 import { gerarRelatorio } from '../services/relatorioService';
 import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuth } from '../context/AuthContext';
 
 const RelatorioPage: React.FC = () => {
+    const { user } = useAuth();
     const [reportName, setReportName] = useState('');
     const [dataInicio, setDataInicio] = useState('');
     const [dataFim, setDataFim] = useState('');
@@ -71,7 +73,7 @@ const RelatorioPage: React.FC = () => {
 
         // Adicionar informações do cabeçalho
         doc.setFontSize(12);
-        doc.text(`Gerado por: Nome do Usuário`, 14, 32);
+        doc.text(`Gerado por: ${user?.nomecompleto || 'Usuário'}`, 14, 32);
         doc.text(`Data de geração: ${format(new Date(), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}`, 14, 40);
         doc.text(`Período: ${formatDateForDisplay(dataInicio)} - ${formatDateForDisplay(dataFim)}`, 14, 48);
 
