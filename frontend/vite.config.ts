@@ -27,6 +27,9 @@ export default defineConfig({
             type: 'image/webp'
           }
         ]
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3000000,
       }
     })
   ],
@@ -37,7 +40,8 @@ export default defineConfig({
     'import.meta.env.VITE_APP_GOOGLE_APIKEY': JSON.stringify(process.env.VITE_APP_GOOGLE_APIKEY)
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     port: 3000
