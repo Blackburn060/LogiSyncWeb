@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { gerarRelatorio } from '../services/relatorioService';
 import Navbar from '../components/Navbar';
 import { FaSpinner } from 'react-icons/fa';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { gerarRelatorio } from '../services/relatorioService';
+import { format, parseISO, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const RelatorioPage: React.FC = () => {
     const [reportName, setReportName] = useState('');
@@ -24,7 +28,7 @@ const RelatorioPage: React.FC = () => {
         setIsGenerating(true);
 
         try {
-            const pdfBlob = await gerarRelatorio(reportName, {
+            const filtros = {
                 dataInicio,
                 dataFim,
                 codigoTransportadora,
@@ -32,15 +36,16 @@ const RelatorioPage: React.FC = () => {
                 codigoSafra,
                 situacao,
                 tipoAgendamento
-            });
+            };
 
-            if (!pdfBlob) {
+            const reportData = await gerarRelatorio(reportName, filtros);
+
+            if (!reportData || reportData.rows.length === 0) {
                 toast.error('Nenhum dado encontrado para os parâmetros informados.');
                 return;
             }
 
-            const fileURL = URL.createObjectURL(pdfBlob);
-            window.open(fileURL);
+            generatePDF(reportData);
         } catch (error: any) {
             toast.error(error.message || 'Erro ao gerar o relatório');
             console.error('Erro ao gerar relatório:', error);
@@ -49,16 +54,97 @@ const RelatorioPage: React.FC = () => {
         }
     };
 
+    const formatDateForDisplay = (dateString: string) => {
+        const date = parseISO(dateString);
+        return isValid(date) ? format(date, 'dd/MM/yyyy', { locale: ptBR }) : dateString;
+    };
+
+    const formatDateTimeForDisplay = (dateTimeString: string) => {
+        const date = parseISO(dateTimeString);
+        return isValid(date) ? format(date, 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }) : dateTimeString;
+    };
+
+    const generatePDF = (data: { headers: string[]; rows: any[] }) => {
+        const doc = new jsPDF('landscape');
+        doc.setFontSize(18);
+        doc.text(`Relatório de ${reportName}`, 14, 22);
+
+        // Adicionar informações do cabeçalho
+        doc.setFontSize(12);
+        doc.text(`Gerado por: Nome do Usuário`, 14, 32);
+        doc.text(`Data de geração: ${format(new Date(), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}`, 14, 40);
+        doc.text(`Período: ${formatDateForDisplay(dataInicio)} - ${formatDateForDisplay(dataFim)}`, 14, 48);
+
+        // Configuração da tabela usando headers e rows do JSON
+        const headers = data.headers;
+
+        const rows = data.rows.map(row => {
+            // Mapeia os dados de acordo com o tipo de relatório
+            if (reportName === 'agendamentos') {
+                return [
+                    row.CodigoAgendamento,
+                    row.Usuario,
+                    row.Veiculo,
+                    row.Produto,
+                    row.Transportadora,
+                    formatDateForDisplay(row.DataAgendamento),
+                    row.HoraAgendamento,
+                    row.SituacaoAgendamento,
+                    row.Quantidade || '',
+                    row.Observacao || ''
+                ];
+            } else if (reportName === 'portaria') {
+                return [
+                    row.CodigoPortaria,
+                    row.NomeVeiculo,
+                    row.Placa,
+                    row.Transportadora,
+                    formatDateTimeForDisplay(row.DataHoraEntrada),
+                    formatDateTimeForDisplay(row.DataHoraSaida),
+                    row.ObservacaoPortaria || ''
+                ];
+            } else if (reportName === 'transportadoras') {
+                return [
+                    row.Nome,
+                    row.QuantidadeAgendamentos
+                ];
+            } else {
+                return headers.map(header => row[header] ?? '');
+            }
+        });
+
+        autoTable(doc, {
+            startY: 60,
+            head: [headers],
+            body: rows,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] },
+            styles: { cellPadding: 2, fontSize: 10 },
+            columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 30 },
+                3: { cellWidth: 30 },
+                4: { cellWidth: 50 },
+                5: { cellWidth: 25 },
+                6: { cellWidth: 20 },
+                7: { cellWidth: 25 }
+            }
+        });
+
+        doc.save(`relatorio_${reportName}.pdf`);
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             <Navbar />
-            <Toaster position="top-right" containerClassName='mt-20'/>
+            <Toaster position="top-right" containerClassName='mt-20' />
             <div className="flex-grow flex flex-col items-center p-6">
                 <div className="w-full max-w-lg bg-logisync-color-blue-400 p-6 rounded-lg shadow-lg">
                     <h1 className="text-2xl font-bold mb-4 text-center text-white shadow-md bg-logisync-color-blue-50 p-2 rounded">
                         Relatórios
                     </h1>
-                    
+
                     <div className="mb-4">
                         <label className="block text-white text-lg font-extrabold mb-2" htmlFor="reportName">
                             Selecione o Relatório

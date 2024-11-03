@@ -11,50 +11,29 @@ interface FiltrosRelatorio {
     tipoAgendamento?: string;
 }
 
-// Função auxiliar para ler o conteúdo de um Blob como texto
-const readBlobAsText = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsText(blob);
-    });
-};
+interface ReportData {
+    headers: string[];
+    rows: any[];
+}
 
-const isErrorMessage = (obj: any): obj is { message: string } => {
-    return typeof obj === 'object' && obj !== null && 'message' in obj && typeof obj.message === 'string';
-};
-
-export const gerarRelatorio = async (reportName: string, filtros: FiltrosRelatorio): Promise<Blob | null> => {
+export const gerarRelatorio = async (reportName: string, filtros: FiltrosRelatorio): Promise<ReportData | null> => {
     try {
-        const response = await api.post(
-            `/reports/${reportName}`,
-            filtros,
-            { responseType: 'blob', validateStatus: (status) => status === 200 || status === 204 }
-        );
+        const response = await api.post(`/reports/${reportName}`, filtros);
 
         if (response.status === 204) {
             return null;
         }
 
-        return response.data; 
+        const parsedData: ReportData = response.data;
+
+        if (!parsedData.headers || !Array.isArray(parsedData.rows)) {
+            throw new Error('Resposta do servidor em formato inesperado');
+        }
+
+        return parsedData;
     } catch (error) {
         if (error instanceof AxiosError) {
-            if (error.response?.data instanceof Blob) {
-                try {
-                    const errorText = await readBlobAsText(error.response.data);
-                    const errorMessage = JSON.parse(errorText);
-
-                    if (isErrorMessage(errorMessage)) {
-                        throw new Error(errorMessage.message || 'Erro desconhecido ao gerar o relatório');
-                    } else {
-                        throw new Error('Erro desconhecido ao gerar o relatório');
-                    }
-                } catch {
-                    throw new Error('Erro ao processar a resposta do relatório');
-                }
-            }
-            throw new Error(isErrorMessage(error.response?.data) ? error.response.data.message : 'Erro ao gerar o relatório');
+            throw new Error(error.response?.data?.message || 'Erro ao gerar o relatório');
         } else {
             throw new Error('Erro desconhecido ao gerar o relatório');
         }
